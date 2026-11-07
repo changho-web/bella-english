@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#ff7aa8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Bella English</title>
+<style>
+:root{--main:#ff7aa8;--main-d:#e0457b;--blue:#3d8bff;--green:#22b573;--miss:#ff9f1c;--bg:#fff6f9;--card:#fff;--text:#2b2b2b;--sub:#777;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Segoe UI","Malgun Gothic","Apple SD Gothic Neo",sans-serif;background:var(--bg);color:var(--text);}
+header{background:var(--main);color:#fff;padding:0 14px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5;height:56px;}
+header .brand{display:flex;align-items:center;gap:8px;}
+header h1{font-size:20px;margin:0;}
+#headAvatar{width:42px;height:42px;border-radius:50%;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+#headAvatar img{width:42px;height:42px;object-fit:cover;}
+#starTotal{font-weight:700;background:rgba(255,255,255,.25);padding:4px 10px;border-radius:20px;}
+nav{display:flex;background:#fff;border-bottom:1px solid #eee;position:sticky;top:56px;z-index:4;overflow-x:auto;}
+nav button{flex:1;border:none;background:none;padding:12px 8px;font-size:15px;color:var(--sub);border-bottom:3px solid transparent;white-space:nowrap;cursor:pointer;}
+nav button.on{color:var(--main-d);border-bottom-color:var(--main);font-weight:700;}
+main{max-width:640px;margin:0 auto;padding:16px;}
+section{display:none;} section.on{display:block;}
+.card{background:var(--card);border-radius:18px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:14px;}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+.chip{border:2px solid var(--main);background:#fff;color:var(--main-d);border-radius:20px;padding:8px 14px;font-size:15px;cursor:pointer;}
+.chip.on{background:var(--main);color:#fff;}
+.progress{font-size:14px;color:var(--sub);text-align:center;margin-bottom:6px;}
+.target{font-size:28px;font-weight:700;text-align:center;line-height:1.4;margin:10px 0;word-break:keep-all;}
+.target span{padding:0 2px;border-radius:6px;}
+.target span.ok{color:var(--green);}
+.target span.miss{color:var(--miss);text-decoration:underline wavy;}
+.ko{text-align:center;color:var(--sub);font-size:16px;min-height:22px;}
+.row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
+.btn{border:none;border-radius:14px;padding:12px 18px;font-size:16px;cursor:pointer;background:#f0f0f0;color:var(--text);}
+.btn.blue{background:var(--blue);color:#fff;}
+.btn.main{background:var(--main);color:#fff;}
+.btn:disabled{opacity:.4;cursor:default;}
+.mic{width:96px;height:96px;border-radius:50%;border:none;background:var(--main);color:#fff;font-size:40px;cursor:pointer;box-shadow:0 4px 14px rgba(255,122,168,.45);display:block;margin:16px auto 6px;}
+.mic.listening{background:#ff4d4d;animation:pulse 1s infinite;}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,77,77,.6);}100%{box-shadow:0 0 0 22px rgba(255,77,77,0);}}
+.micLabel{text-align:center;color:var(--sub);font-size:14px;}
+.said{text-align:center;margin-top:10px;font-size:18px;min-height:26px;color:#444;}
+.feedback{text-align:center;font-size:22px;font-weight:700;margin-top:6px;min-height:32px;}
+.stars{font-size:30px;text-align:center;min-height:38px;}
+.chat{display:flex;flex-direction:column;gap:10px;max-height:50vh;overflow-y:auto;padding:4px;}
+.bubble{max-width:85%;padding:10px 14px;border-radius:16px;font-size:18px;line-height:1.4;}
+.bubble.tobi{background:#fff1e6;align-self:flex-start;border-bottom-left-radius:4px;}
+.bubble.me{background:#ffe6f0;align-self:flex-end;border-bottom-right-radius:4px;}
+.bubble.hint{background:#fffbe0;align-self:flex-start;border:1px dashed #e0c200;font-size:16px;}
+.bubble small{display:block;color:var(--sub);font-size:14px;margin-top:4px;}
+.koline{cursor:pointer;}
+.listen-only{color:var(--sub);font-size:15px;}
+.bubble .replay.slow{margin-left:2px;}
+.bubble .replay{border:none;background:none;cursor:pointer;font-size:16px;}
+textarea{width:100%;min-height:150px;font-size:15px;padding:10px;border-radius:12px;border:1px solid #ddd;font-family:inherit;}
+label{display:block;margin:12px 0 6px;font-weight:600;}
+input[type=text],select{width:100%;padding:10px;font-size:16px;border-radius:10px;border:1px solid #ddd;}
+.stat{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.stat div{background:#fff0f5;border-radius:14px;padding:12px;text-align:center;font-size:14px;}
+.stat b{display:block;font-size:26px;color:var(--main-d);}
+.log{font-size:14px;}
+.log .item{border-bottom:1px solid #f0f0f0;padding:8px 0;}
+.log .t{color:var(--sub);font-size:12px;}
+.warn{background:#ffecec;color:#b00020;padding:12px;border-radius:12px;margin-bottom:12px;display:none;font-size:14px;}
+.celebrate{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(0);font-size:90px;pointer-events:none;transition:transform .3s;z-index:10;}
+.celebrate.show{transform:translate(-50%,-50%) scale(1);}
+.small{font-size:13px;color:var(--sub);}
+code{background:#f4f4f4;padding:1px 5px;border-radius:4px;}
+/* 공통 무대(배경+캐릭터+펫) */
+.stage{position:relative;aspect-ratio:2/3;border-radius:18px;overflow:hidden;background:#f3ecff;}
+.stage .lay{position:absolute;}
+.stage .bg{inset:0;width:100%;height:100%;object-fit:cover;}
+.stage .ch{inset:0;width:100%;height:100%;object-fit:contain;}
+.stage .pet{width:34%;right:2%;bottom:2%;}
+/* 공부 화면 왼쪽 아바타 */
+.layout{position:relative;}
+#side{display:none;}
+.layout.study #side{display:flex;align-items:center;gap:12px;position:sticky;top:104px;z-index:3;background:var(--bg);padding:8px 16px;max-width:640px;margin:0 auto;box-shadow:0 6px 8px -8px rgba(0,0,0,.15);}
+.sideStage{position:relative;width:62px;flex:none;aspect-ratio:2/3;border-radius:14px;overflow:hidden;background:#f3ecff;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.08);}
+.sideStage .lay{position:absolute;}
+.sideStage .bg{inset:0;width:100%;height:100%;object-fit:cover;}
+.sideStage .ch{inset:0;width:100%;height:100%;object-fit:contain;}
+.sideStage .pet{width:34%;right:2%;bottom:2%;}
+.sideInfo{font-size:14px;color:var(--sub);}
+.sideInfo b{display:block;font-size:22px;color:var(--main-d);margin:2px 0;}
+.sideStage.hop{animation:hop .6s ease;}
+@keyframes hop{0%{transform:translateY(0)}30%{transform:translateY(-14px) scale(1.04)}60%{transform:translateY(0)}80%{transform:translateY(-5px)}100%{transform:translateY(0)}}
+.floaty{position:absolute;left:30px;top:10px;font-size:18px;font-weight:700;color:var(--main-d);pointer-events:none;animation:floaty 1.2s ease forwards;z-index:3;white-space:nowrap;}
+@keyframes floaty{0%{opacity:0;transform:translateY(10px)}20%{opacity:1}100%{opacity:0;transform:translateY(-50px)}}
+@media (min-width: 900px){
+  .layout.study{display:grid;grid-template-columns:270px minmax(0,640px);gap:24px;justify-content:center;max-width:960px;margin:0 auto;padding:16px;}
+  .layout.study main{padding:0;margin:0;max-width:none;}
+  .layout.study #side{display:flex;flex-direction:column;align-items:stretch;gap:12px;position:sticky;top:116px;align-self:start;margin:0;padding:0;background:none;box-shadow:none;}
+  .layout.study .sideStage{width:100%;border-radius:20px;}
+  .sideInfo{background:#fff;border-radius:16px;padding:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.06);}
+  .floaty{left:50%;top:40%;font-size:26px;}
+}
+/* 꾸미기 */
+.lbl{font-weight:700;margin:4px 0 8px;}
+.dress-top{display:flex;flex-direction:column;gap:0;}
+.dress-me{display:flex;flex-direction:column;align-items:center;}
+#avatarBig{width:240px;}
+.small-stage{width:120px;}
+.pv-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12px;color:var(--sub);padding:8px;line-height:1.5;}
+.wallet{font-size:20px;font-weight:700;margin:8px 0 14px;}
+#shopAction{text-align:center;min-height:60px;margin-top:8px;}
+#shopAction .nm{font-size:16px;font-weight:700;margin-bottom:6px;}
+.wh-cat{font-size:14px;font-weight:700;color:var(--main-d);margin:10px 0 6px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;}
+.small-grid{grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;}
+.item{background:#fff;border:2px solid #f3d3df;border-radius:14px;padding:6px;text-align:center;cursor:pointer;font-size:13px;}
+.item img{width:84px;height:122px;object-fit:contain;}
+.small-grid .item img{width:64px;height:92px;}
+.item.pet img{height:84px;margin:19px 0;}
+.small-grid .item.pet img{height:64px;margin:14px 0;}
+.item.bg img{object-fit:cover;border-radius:8px;}
+.item.sel{border-color:var(--main);box-shadow:0 0 0 3px rgba(255,122,168,.25);}
+.item .p{font-weight:700;color:var(--main-d);}
+.item .p.own{color:var(--green);}
+.item.none{display:flex;flex-direction:column;justify-content:center;min-height:120px;font-size:24px;}
+.item.none span{font-size:12px;}
+@media (min-width: 900px){
+  .layout:not(.study) main{max-width:960px;}
+  .dress-top{display:grid;grid-template-columns:300px 1fr;gap:16px;}
+  .dress-top .card{margin-bottom:14px;}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div id="headAvatar" title="꾸미기"></div><h1>Bella English</h1></div>
+  <span id="starTotal">⭐ 0</span>
+</header>
+<nav id="tabs">
+  <button data-tab="repeat" class="on">따라 말하기</button>
+  <button data-tab="role">상황극</button>
+  <button data-tab="words">단어장</button>
+  <button data-tab="dress">꾸미기 👗</button>
+  <button data-tab="record">기록</button>
+  <button data-tab="settings">설정</button>
+</nav>
+<div class="layout study" id="layout">
+<aside id="side">
+  <div class="sideStage" id="sideStage" title="꾸미기"></div>
+  <div class="sideInfo"><div>오늘 받은 별</div><b>⭐ <span id="sideToday">0</span></b><div class="small">내 별 ⭐ <span id="sideBal">0</span></div></div>
+</aside>
+<main>
+  <div class="warn" id="warn"></div>
+
+  <section id="repeat" class="on">
+    <div class="chips" id="setChips"></div>
+    <div id="repeatDeck"></div>
+  </section>
+
+  <section id="role">
+    <p class="small">토비가 외국인 역할을 해요. 단계를 고르고 상황을 눌러 시작하세요. 잘못 들리면 토비가 다시 물어봐요!</p>
+    <div class="chips" id="roleLevels"></div>
+    <p class="small" id="roleLevelDesc"></p>
+    <div class="chips" id="roleList"></div>
+    <div class="card" id="roleBox" style="display:none">
+      <div class="chat" id="chat"></div>
+      <button class="mic" id="roleMic">🎤</button>
+      <div class="micLabel" id="roleMicLabel">눌러서 대답하기</div>
+      <div class="row">
+        <button class="btn" id="roleHint">💡 힌트</button>
+        <button class="btn" id="roleReplay">🔊 다시 듣기</button>
+        <button class="btn" id="roleSlow">🐢 또박또박</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="words">
+    <div class="card">
+      <b>학원 단어 넣기</b>
+      <p class="small">한 줄에 하나씩 입력: <code>영어 / 뜻 / 예문(없어도 됨)</code></p>
+      <textarea id="wordInput"></textarea>
+      <div class="row"><button class="btn main" id="wordSave">저장하고 연습 시작</button></div>
+    </div>
+    <div id="wordDeck"></div>
+  </section>
+
+  <section id="dress">
+    <div class="dress-top">
+      <div class="card dress-me">
+        <div class="lbl">지금 내 모습</div>
+        <div id="avatarBig" class="stage"></div>
+        <div class="wallet">내 별 ⭐ <span id="balanceBig">0</span></div>
+        <div class="lbl">미리 입어 보기</div>
+        <div id="previewBox" class="stage small-stage"></div>
+        <div id="shopAction"></div>
+      </div>
+      <div class="card dress-wardrobe">
+        <div class="lbl">👚 내 옷장 <span class="small">(누르면 바로 갈아입어요)</span></div>
+        <div id="wardrobe"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="lbl">🛍️ 상점 <span class="small">(눌러서 미리 입어 보고 사요)</span></div>
+      <div class="chips" id="shopCats"></div>
+      <div class="grid" id="shopGrid"></div>
+    </div>
+  </section>
+
+  <section id="record">
+    <div class="card"><div class="stat" id="statBox"></div></div>
+    <div class="card"><b>어려워한 문장</b> <span class="small">(따라 말하기 평균 80% 미만)</span><div class="log" id="weakBox"></div></div>
+    <div class="card"><b>최근에 말한 문장</b><div class="log" id="logBox"></div></div>
+    <div class="row"><button class="btn" id="logReset">기록 지우기</button></div>
+  </section>
+
+  <section id="settings">
+    <div class="card">
+      <label for="setName">아이 이름 (영어)</label>
+      <input type="text" id="setName" placeholder="예: Bella">
+      <label for="setVoice">토비 목소리</label>
+      <select id="setVoice"></select>
+      <label for="setRate">말하기 속도: <span id="rateVal"></span></label>
+      <input type="range" id="setRate" min="0.6" max="1.1" step="0.05" style="width:100%">
+      <label for="setWait">말 멈춤 기다리는 시간: <span id="waitVal"></span>초</label>
+      <input type="range" id="setWait" min="1.5" max="6" step="0.5" style="width:100%">
+      <p class="small">아이가 말하다 멈춘 뒤 이 시간 동안 조용하면 대답이 끝난 걸로 봐요. 자주 끊기면 늘려 주세요.</p>
+      <div class="row"><button class="btn blue" id="voiceTest">🔊 목소리 들어보기</button></div>
+    </div>
+    <div class="card">
+      <b>마이크 테스트</b>
+      <button class="mic" id="testMic">🎤</button>
+      <div class="said" id="testSaid">눌러서 아무 영어나 말해보세요</div>
+    </div>
+    <p class="small">크롬 브라우저에서 사용하세요. 음성 인식은 인터넷 연결이 필요합니다. 기록은 이 기기의 브라우저에만 저장됩니다.</p>
+  </section>
+</main>
+</div>
+<div class="celebrate" id="celebrate">🎉</div>
+
+<script>
+'use strict';
+/* ================= 이전 버전(Tobi) 기록 옮기기 ================= */
+(function migrate(){
+  try{
+    if(localStorage.getItem('bella_migrated')) return;
+    ['settings','log','stars','words'].forEach(k => {
+      const v = localStorage.getItem('tobi_' + k);
+      if(v !== null && localStorage.getItem('bella_' + k) === null) localStorage.setItem('bella_' + k, v);
+    });
+    localStorage.setItem('bella_migrated', '1');
+  }catch(e){}
+})();
+
+/* ================= 학습 데이터 ================= */
+const SETS = [
+  {id:'intro', name:'👋 인사·소개', items:[
+    ['Hi, nice to meet you.','안녕, 만나서 반가워.'],
+    ['How are you today?','오늘 기분 어때?'],
+    ["I'm fine, thank you.",'좋아, 고마워.'],
+    ["What's your name?",'이름이 뭐야?'],
+    ["I'm ten years old.",'나는 열 살이야.'],
+    ['I live in Korea.','나는 한국에 살아.'],
+    ['I like ice cream.','나는 아이스크림을 좋아해.'],
+    ['See you later!','나중에 봐!']]},
+  {id:'daily', name:'🏫 학교·일상', items:[
+    ['I go to school every day.','나는 매일 학교에 가.'],
+    ['My favorite subject is math.','내가 제일 좋아하는 과목은 수학이야.'],
+    ['I like to play with my friends.','나는 친구들이랑 노는 걸 좋아해.'],
+    ["I'm hungry.",'배고파.'],
+    ['Can I have some water, please?','물 좀 주실 수 있어요?'],
+    ["It's sunny today.",'오늘 날씨가 맑아.'],
+    ['What time is it?','지금 몇 시야?'],
+    ['I had a great day.','오늘 정말 좋은 하루였어.']]},
+  {id:'foreigner', name:'🌏 외국인과 대화', items:[
+    ['Excuse me, can you help me?','실례합니다, 도와주실 수 있어요?'],
+    ['Where are you from?','어디에서 왔어요?'],
+    ["I'm from Korea.",'저는 한국에서 왔어요.'],
+    ['Welcome to Korea!','한국에 온 걸 환영해요!'],
+    ['Can you say that again, please?','다시 한번 말해 주실래요?'],
+    ['Can you speak slowly, please?','천천히 말해 주실래요?'],
+    ["Sorry, I don't understand.",'미안해요, 이해를 못 했어요.'],
+    ['Have a nice day!','좋은 하루 보내세요!']]}
+];
+
+/* ================= 상황극 데이터 =================
+   S(질문, 질문 뜻, 예시 답, 예시 답 뜻, 맞는 답 단어(|로 구분, 빈칸이면 아무 대답), 토비 반응) */
+function S(q, ko, hint, hko, kw, ok){ return {q, ko, hint, hko, kw: kw ? kw.split('|') : [], ok}; }
+const ROLES = [
+{id:'friend', name:'🧒 새 친구 만나기', lv:{
+1:{steps:[
+  S("Hi! I'm Tobi. What's your name?", "안녕! 나는 토비야. 너 이름이 뭐야?", "My name is ___.", "내 이름은 ___야.", "", "Nice to meet you!"),
+  S("How old are you?", "몇 살이야?", "I'm ten years old.", "나는 열 살이야.", "ten|old|years|nine|eleven", "Cool! I'm ten, too!"),
+  S("Do you like dogs?", "강아지 좋아해?", "Yes, I do. / No, I don't.", "응, 좋아해. / 아니, 안 좋아해.", "yes|no|do|like|love|not", "Me too!"),
+  S("What color do you like?", "무슨 색 좋아해?", "I like pink.", "나는 분홍색을 좋아해.", "pink|red|blue|green|yellow|purple|white|black|orange|mint|like|color", "That's a pretty color!")
+ ], end:"Let's be friends! Bye!"},
+2:{steps:[
+  S("Hi! I'm Tobi. I'm new here. What's your name?", "안녕! 나는 토비야. 여기 처음 왔어. 너 이름이 뭐야?", "Hi Tobi! My name is ___.", "안녕 토비! 내 이름은 ___야.", "", "Nice to meet you!"),
+  S("Where do you live?", "어디 살아?", "I live in Korea.", "나는 한국에 살아.", "live|korea|in|near", "Oh, cool!"),
+  S("What do you like to do after school?", "방과 후에 뭐 하는 거 좋아해?", "I like to draw pictures.", "나는 그림 그리는 걸 좋아해.", "like|love|enjoy|play|read|draw|watch|go", "That sounds fun!"),
+  S("What's your favorite food?", "제일 좋아하는 음식이 뭐야?", "My favorite food is tteokbokki.", "내가 제일 좋아하는 음식은 떡볶이야.", "favorite|like|love|food|is", "Yummy! I want to try it."),
+  S("Do you have any brothers or sisters?", "형제나 자매 있어?", "Yes, I have a little brother. / No, I don't.", "응, 남동생이 있어. / 아니, 없어.", "yes|no|have|brother|sister|not|only", "Oh, I see!")
+ ], end:"It was great to meet you. See you tomorrow!"},
+3:{steps:[
+  S("Hey! I just moved here from Canada. Can you tell me a little about yourself?", "안녕! 나 캐나다에서 막 이사 왔어. 너에 대해 조금 말해줄래?", "Sure! My name is ___. I'm ten years old and I love drawing.", "그럼! 내 이름은 ___야. 열 살이고 그림 그리는 걸 좋아해.", "", "Wow, nice to meet you!"),
+  S("What's your school like?", "너희 학교는 어때?", "It's big and my friends are kind.", "커. 그리고 친구들이 착해.", "is|it|school|big|small|fun|friends|teacher|good|nice|kind", "It sounds like a nice school."),
+  S("What do you usually do on weekends?", "주말에 보통 뭐 해?", "I usually go to the park with my family.", "보통 가족이랑 공원에 가.", "usually|go|play|watch|visit|read|sometimes|stay", "That sounds relaxing."),
+  S("Why do you like doing that?", "그게 왜 좋아?", "Because it's fun and I can see my friends.", "재밌고 친구들을 볼 수 있어서.", "because|fun|like|it|love|can", "That makes sense!"),
+  S("I don't know any places here yet. Where should I go first?", "나 여기 아는 곳이 아직 없어. 어디부터 가 보면 좋을까?", "You should go to the park. It's really fun.", "공원에 가 봐. 진짜 재밌어.", "should|go|try|visit|park|mall|library|museum|how|about", "Great idea! Let's go together sometime.")
+ ], end:"Thanks! I'm so happy I met you today."}
+}},
+{id:'icecream', name:'🍦 아이스크림 가게', lv:{
+1:{steps:[
+  S("Hello! What flavor would you like?", "안녕하세요! 무슨 맛으로 드릴까요?", "Chocolate, please.", "초콜릿 주세요.", "chocolate|vanilla|strawberry|mint|mango|please|like", "Great choice!"),
+  S("Cup or cone?", "컵이요, 콘이요?", "A cone, please.", "콘으로 주세요.", "cup|cone", "Okay!"),
+  S("Small or big?", "작은 거요, 큰 거요?", "Small, please.", "작은 거 주세요.", "small|big|large|medium", "Sure!"),
+  S("Here you are. Enjoy!", "여기 있어요. 맛있게 드세요!", "Thank you!", "고맙습니다!", "thank|thanks", "You're welcome!")
+ ], end:"Bye bye!"},
+2:{steps:[
+  S("Hi there! Welcome to Tobi's Ice Cream. What can I get for you?", "어서 오세요! 토비 아이스크림이에요. 뭘 드릴까요?", "Can I have a strawberry ice cream, please?", "딸기 아이스크림 주시겠어요?", "can|have|like|want|please|chocolate|vanilla|strawberry|mint|mango", "Sure thing!"),
+  S("Would you like one scoop or two scoops?", "한 스쿱 드릴까요, 두 스쿱 드릴까요?", "Two scoops, please.", "두 스쿱 주세요.", "one|two|three|scoop|scoops", "Okay!"),
+  S("Do you want any toppings? We have sprinkles and chocolate chips.", "토핑 올려 드릴까요? 스프링클이랑 초코칩 있어요.", "Yes, sprinkles, please. / No, thank you.", "네, 스프링클 주세요. / 아니요, 괜찮아요.", "yes|no|sprinkles|chocolate|chips|please|thank", "Good choice!"),
+  S("Is it for here or to go?", "여기서 드실 거예요, 가져가실 거예요?", "For here, please. / To go, please.", "여기서 먹을게요. / 가져갈게요.", "here|go", "Alright."),
+  S("That's four dollars, please.", "4달러예요.", "Here you are.", "여기 있어요.", "here|okay|sure|card|cash", "Thank you!")
+ ], end:"Enjoy your ice cream. Have a nice day!"},
+3:{steps:[
+  S("Hi! Our special today is mango ice cream. Have you ever tried it?", "안녕하세요! 오늘 스페셜은 망고 아이스크림이에요. 먹어 본 적 있어요?", "No, I haven't. What does it taste like?", "아니요, 안 먹어 봤어요. 무슨 맛이에요?", "yes|no|have|not|never|tried|taste|before", "It's sweet and a little bit sour."),
+  S("Would you like to try a sample first?", "먼저 맛보기 해 볼래요?", "Yes, please! That sounds great.", "네, 좋아요! 좋은 생각이에요.", "yes|no|please|sure|okay|thank", "Here you go."),
+  S("So, what do you think? Do you like it?", "어때요? 마음에 들어요?", "It's delicious! I'll have a cup of mango, please.", "맛있어요! 망고 한 컵 주세요.", "delicious|good|like|yummy|love|great|not|sweet|have|take", "I'm glad you like it!"),
+  S("Oh no, we're out of cups. Is a cone okay?", "아이고, 컵이 다 떨어졌어요. 콘도 괜찮아요?", "Sure, a cone is fine.", "네, 콘도 괜찮아요.", "sure|okay|fine|yes|no|cone|problem", "Thank you for understanding."),
+  S("Is there anything else I can get for you?", "더 필요한 거 있으세요?", "No, that's all. Thank you!", "아니요, 그게 다예요. 고맙습니다!", "no|that|all|yes|water|napkin|spoon|thank", "Alright!")
+ ], end:"Have a wonderful day!"}
+}},
+{id:'burger', name:'🍔 햄버거 가게', lv:{
+1:{steps:[
+  S("Hi! What would you like?", "안녕하세요! 뭐 드릴까요?", "A cheeseburger, please.", "치즈버거 주세요.", "burger|cheeseburger|hamburger|chicken|fries|please", "Okay!"),
+  S("Do you want fries?", "감자튀김도 드릴까요?", "Yes, please.", "네, 주세요.", "yes|no|please|thank", "Sure!"),
+  S("What drink do you want?", "음료는 뭐로 드릴까요?", "Orange juice, please.", "오렌지 주스 주세요.", "juice|water|coke|cola|milk|soda|lemonade|please", "Got it!"),
+  S("Here you go!", "여기 있어요!", "Thank you!", "고맙습니다!", "thank|thanks", "Enjoy your meal!")
+ ], end:"Bye!"},
+2:{steps:[
+  S("Welcome! Are you ready to order?", "어서 오세요! 주문하시겠어요?", "Yes. I'd like a cheeseburger, please.", "네. 치즈버거 주세요.", "yes|like|want|have|burger|cheeseburger|please|can", "Great."),
+  S("Would you like a meal with fries and a drink?", "감자튀김과 음료 세트로 드릴까요?", "Yes, a meal, please.", "네, 세트로 주세요.", "yes|no|meal|please|just|set", "Okay."),
+  S("What size? Small, medium, or large?", "사이즈는요? 작은 거, 중간, 큰 거?", "Medium, please.", "중간 사이즈로 주세요.", "small|medium|large|big", "Sure."),
+  S("Any sauce? Ketchup or mayo?", "소스는요? 케첩이나 마요네즈?", "Ketchup, please.", "케첩 주세요.", "ketchup|mayo|mayonnaise|no|both|please", "No problem."),
+  S("Is that for here or to go?", "드시고 가세요, 가져가세요?", "For here, please.", "먹고 갈게요.", "here|go", "Okay. Your number is twelve.")
+ ], end:"Thank you! Your food will be ready soon."},
+3:{steps:[
+  S("Hi! Sorry for the wait. What can I get started for you?", "기다리게 해서 죄송해요. 뭐 드릴까요?", "Can I get a chicken burger without pickles, please?", "피클 빼고 치킨버거 주시겠어요?", "can|get|like|have|burger|chicken|please|want", "Sure, no pickles."),
+  S("Would you like to make it a combo? It's only two dollars more.", "세트로 하시겠어요? 2달러만 추가하면 돼요.", "Yes, please. What drinks do you have?", "네. 음료는 뭐가 있어요?", "yes|no|combo|please|what|drink|drinks|okay", "We have lemonade, orange juice, and milk."),
+  S("Which one would you like?", "어떤 걸로 하시겠어요?", "I'll have lemonade, please.", "레모네이드로 할게요.", "lemonade|juice|milk|have|please|orange", "Good choice."),
+  S("Oh, I'm sorry. We just ran out of lemonade. What would you like instead?", "죄송해요, 레모네이드가 방금 다 떨어졌어요. 대신 뭘 드릴까요?", "That's okay. Orange juice, please.", "괜찮아요. 오렌지 주스 주세요.", "okay|juice|milk|orange|instead|please|water", "Thank you for understanding."),
+  S("Your total is eight dollars. How would you like to pay?", "총 8달러입니다. 어떻게 결제하시겠어요?", "By card, please. / In cash.", "카드로 할게요. / 현금으로요.", "card|cash|pay|money", "Perfect. Here's your receipt.")
+ ], end:"Your order will be out in five minutes. Enjoy!"}
+}},
+{id:'tourist', name:'🗺️ 외국인에게 길 안내', lv:{
+1:{steps:[
+  S("Excuse me. Can you help me?", "실례합니다. 도와줄 수 있어요?", "Sure!", "그럼요!", "sure|yes|okay|course", "Thank you!"),
+  S("Where is the subway?", "지하철역이 어디예요?", "It's over there.", "저기 있어요.", "there|here|straight|left|right|go", "Oh, over there!"),
+  S("Is it far?", "멀어요?", "No, it's close.", "아니요, 가까워요.", "no|yes|close|far|near", "Good!"),
+  S("Thank you so much!", "정말 고마워요!", "You're welcome!", "천만에요!", "welcome|problem|okay|bye", "Bye!")
+ ], end:"Have a nice day!"},
+2:{steps:[
+  S("Excuse me, do you speak English?", "실례지만, 영어 할 줄 알아요?", "Yes, a little.", "네, 조금요.", "yes|little|bit|do|speak", "Oh, great!"),
+  S("I'm looking for the bus stop. Do you know where it is?", "버스 정류장을 찾고 있어요. 어디 있는지 알아요?", "Yes. Go straight and turn left.", "네. 쭉 가서 왼쪽으로 도세요.", "straight|left|right|turn|go|there|near", "Okay, straight and then left."),
+  S("How long does it take to walk there?", "걸어서 얼마나 걸려요?", "About five minutes.", "5분쯤 걸려요.", "minute|minutes|five|ten|three|about|long|not", "That's not bad."),
+  S("Which bus goes to the palace?", "궁궐 가는 버스는 몇 번이에요?", "I think bus number ten goes there.", "10번 버스가 갈 거예요.", "bus|number|think|know|sorry|not", "Thank you, that helps a lot."),
+  S("Your English is good! Where did you learn it?", "영어 잘하네요! 어디서 배웠어요?", "Thank you! I learn it at school.", "고마워요! 학교에서 배워요.", "thank|school|learn|academy|study|home", "Wow, keep it up!")
+ ], end:"Thanks again. Have a great day!"},
+3:{steps:[
+  S("Hi, sorry to bother you. I think I'm a little lost. Could you help me?", "방해해서 미안해요. 길을 좀 잃은 것 같아요. 도와줄 수 있어요?", "Of course. Where are you trying to go?", "물론이죠. 어디 가려고 하세요?", "course|sure|yes|where|okay|help", "Thank you so much."),
+  S("I want to go to a famous market with lots of street food. Do you know any?", "길거리 음식이 많은 유명한 시장에 가고 싶어요. 아는 곳 있어요?", "Yes, you should go to the traditional market near the station.", "네, 역 근처 전통시장에 가 보세요.", "yes|should|go|market|know|near|try", "That sounds perfect."),
+  S("What food would you recommend there?", "거기서 어떤 음식을 추천해요?", "You should try tteokbokki. It's spicy but delicious.", "떡볶이 드셔 보세요. 맵지만 맛있어요.", "should|try|recommend|eat|tteokbokki|delicious|spicy|good", "I love spicy food!"),
+  S("How do I get there from here?", "여기서 거기까지 어떻게 가요?", "Take the subway two stops, and then walk for five minutes.", "지하철로 두 정거장 가서 5분 걸으세요.", "take|subway|bus|walk|go|stop|stops|straight|turn", "Got it. Two stops, then walk."),
+  S("Is there anything else I should know about Korea?", "한국에 대해 더 알아야 할 게 있을까요?", "Koreans are kind, and you should try Korean barbecue too!", "한국 사람들은 친절해요. 한국식 바비큐도 꼭 드셔 보세요!", "", "Thanks for the tips!")
+ ], end:"You were so helpful. Thank you, and have a wonderful day!"}
+}},
+{id:'birthday', name:'🎂 친구 생일 파티', lv:{
+1:{steps:[
+  S("Hi! Come in! Welcome to my party!", "안녕! 들어와! 내 파티에 온 걸 환영해!", "Happy birthday!", "생일 축하해!", "happy|birthday|thank|hi|hello", "Thank you!"),
+  S("Is this gift for me?", "이 선물 나한테 주는 거야?", "Yes, it's for you.", "응, 너 주는 거야.", "yes|for|you|it", "Wow, thank you!"),
+  S("Do you want some cake?", "케이크 먹을래?", "Yes, please!", "응, 줘!", "yes|no|please|thank", "Here you go!"),
+  S("Do you like it?", "맛있어?", "Yes, it's yummy!", "응, 맛있어!", "yes|yummy|good|delicious|like|love|no", "I'm so happy!")
+ ], end:"Thanks for coming! See you!"},
+2:{steps:[
+  S("Hi! Thanks for coming to my birthday party!", "내 생일 파티에 와 줘서 고마워!", "Happy birthday! This is for you.", "생일 축하해! 이거 너 주는 거야.", "happy|birthday|this|for|you|thank", "Aww, thank you so much!"),
+  S("Can I open it now?", "지금 열어 봐도 돼?", "Sure! I hope you like it.", "그럼! 마음에 들었으면 좋겠다.", "sure|yes|course|okay|hope", "Wow, I love it!"),
+  S("What kind of cake do you like?", "어떤 케이크 좋아해?", "I like chocolate cake.", "나는 초콜릿 케이크 좋아해.", "like|chocolate|strawberry|cheese|cream|cake|love", "Me too! We have chocolate cake today."),
+  S("Let's play a game! Do you want to play hide and seek or musical chairs?", "게임하자! 숨바꼭질이랑 의자 뺏기 중에 뭐 할래?", "Let's play hide and seek!", "숨바꼭질하자!", "hide|seek|musical|chairs|play|let", "Okay! You count first."),
+  S("When is your birthday?", "네 생일은 언제야?", "My birthday is in May.", "내 생일은 5월이야.", "birthday|january|february|march|april|may|june|july|august|september|october|november|december|is", "Cool! I'll come to your party, too.")
+ ], end:"Thanks for coming! It was the best day ever!"},
+3:{steps:[
+  S("Hey, you made it! The party just started. How was your day?", "왔구나! 파티 막 시작했어. 오늘 하루 어땠어?", "It was good. I finished school early and came here.", "좋았어. 학교 일찍 끝나서 바로 왔어.", "good|great|fine|tired|busy|was|it|okay", "I'm glad you're here."),
+  S("I'm curious. How do people usually celebrate birthdays in Korea?", "궁금한데, 한국에서는 보통 생일을 어떻게 축하해?", "We eat seaweed soup and have a cake with candles.", "미역국을 먹고 초를 꽂은 케이크를 먹어.", "we|eat|seaweed|soup|cake|party|gifts|usually|celebrate", "Seaweed soup? That's so interesting!"),
+  S("Why do people eat seaweed soup on their birthday?", "왜 생일에 미역국을 먹어?", "Because it's healthy and it reminds us of our moms.", "몸에 좋고 엄마를 생각하게 해 주니까.", "because|healthy|mom|mother|think|know|good", "That's really sweet."),
+  S("If you could have any birthday gift, what would you want?", "어떤 생일 선물이든 받을 수 있다면 뭘 갖고 싶어?", "I would want a puppy because I love dogs.", "강아지를 갖고 싶어. 강아지를 정말 좋아하거든.", "would|want|like|wish|because|get|love", "That's a great wish!"),
+  S("Can you help me think of a fun game for everyone?", "다 같이 할 재밌는 게임 생각하는 거 도와줄래?", "How about a treasure hunt? We can hide candy around the house.", "보물찾기 어때? 집 곳곳에 사탕을 숨기는 거야.", "how|about|let|play|game|hunt|can|we|should", "That's a brilliant idea!")
+ ], end:"Thank you for making my birthday so special!"}
+}},
+{id:'dog', name:'🐶 공원에서 강아지 만나기', lv:{
+1:{steps:[
+  S("Hello! This is my dog.", "안녕! 이건 우리 강아지야.", "Hi! He's so cute!", "안녕하세요! 정말 귀여워요!", "cute|hi|hello|wow|pretty", "Thank you!"),
+  S("Do you want to pet him?", "쓰다듬어 볼래?", "Yes, please!", "네, 좋아요!", "yes|no|please|okay|sure", "Be gentle!"),
+  S("His name is Max. Do you have a dog?", "이름은 맥스야. 너도 강아지 있어?", "Yes, I do. / No, I don't.", "네, 있어요. / 아니요, 없어요.", "yes|no|do|not|have", "I see!"),
+  S("Do you like dogs or cats?", "강아지가 좋아, 고양이가 좋아?", "I like dogs.", "강아지가 좋아요.", "dog|dogs|cat|cats|both|like", "Dogs are the best!")
+ ], end:"Say bye to Max!"},
+2:{steps:[
+  S("Hi! Don't worry, my dog is very friendly.", "안녕! 걱정 마, 우리 강아지 순해.", "Hi! What's his name?", "안녕하세요! 이름이 뭐예요?", "what|name|hi|hello|cute", "His name is Max."),
+  S("Do you want to give him a treat?", "간식 줘 볼래?", "Yes! What should I do?", "네! 어떻게 하면 돼요?", "yes|no|what|how|sure|okay|please", "Just hold it out like this."),
+  S("How old do you think he is?", "몇 살 같아?", "I think he is three years old.", "세 살 같아요.", "think|one|two|three|four|five|years|old|maybe", "Good guess! He's four."),
+  S("Do you have any pets at home?", "집에 애완동물 있어?", "No, but I really want a dog.", "아니요, 그런데 강아지 정말 키우고 싶어요.", "yes|no|have|want|dog|cat|fish|hamster", "Maybe you can get one someday!"),
+  S("What would you name your dog?", "강아지 키우면 이름 뭐라고 지을 거야?", "I would name it Choco.", "초코라고 지을 거예요.", "name|would|call|it", "That's a cute name!")
+ ], end:"Max says bye bye! Woof woof!"},
+3:{steps:[
+  S("Oh, sorry! Max ran over to you. He gets excited when he sees kids. Are you okay?", "어머, 미안! 맥스가 너한테 달려갔네. 애들 보면 신나서 그래. 괜찮아?", "I'm okay. Don't worry, I love dogs.", "괜찮아요. 걱정 마세요, 강아지 좋아해요.", "okay|fine|worry|love|alright|no", "Phew, I'm glad."),
+  S("Have you ever had a pet before?", "애완동물 키워 본 적 있어?", "No, I haven't. My parents say it's a lot of work.", "아니요. 부모님이 손이 많이 간대요.", "yes|no|have|not|had|never|before", "They're right. It's a lot of work, but it's fun."),
+  S("What do you think is the hardest part of taking care of a dog?", "강아지 돌보는 데 가장 힘든 게 뭐라고 생각해?", "I think walking them every day is the hardest.", "매일 산책시키는 게 제일 힘들 것 같아요.", "think|walk|walking|clean|cleaning|feed|every|hard|hardest", "That's true. Rain or shine!"),
+  S("If you got a dog, what kind would you want and why?", "강아지를 키운다면 어떤 종류를 원하고, 이유는 뭐야?", "I'd want a poodle because they're smart and fluffy.", "푸들이요. 똑똑하고 복슬복슬하니까요.", "would|want|because|like|poodle|small|big", "Great choice!"),
+  S("Max loves to play fetch. Do you want to throw the ball for him?", "맥스는 공 던지기 놀이 좋아해. 공 던져 줄래?", "Sure! Ready, Max? Go get it!", "좋아요! 준비됐지, 맥스? 가져와!", "sure|yes|okay|ready|go|get", "Wow, he loves you!")
+ ], end:"Max had so much fun with you. See you at the park again!"}
+}},
+{id:'plane', name:'✈️ 비행기 안에서', lv:{
+1:{steps:[
+  S("Hello! Welcome aboard!", "안녕하세요! 탑승을 환영합니다!", "Hello! Thank you.", "안녕하세요! 고맙습니다.", "hello|hi|thank", "Here is your seat."),
+  S("Would you like water or juice?", "물 드릴까요, 주스 드릴까요?", "Juice, please.", "주스 주세요.", "water|juice|please|milk", "Here you go."),
+  S("Chicken or fish?", "치킨 드릴까요, 생선 드릴까요?", "Chicken, please.", "치킨 주세요.", "chicken|fish|please", "Enjoy your meal."),
+  S("Do you need a blanket?", "담요 필요하세요?", "Yes, please.", "네, 주세요.", "yes|no|please|thank", "Here you are.")
+ ], end:"Have a nice flight!"},
+2:{steps:[
+  S("Good afternoon! May I see your boarding pass?", "안녕하세요! 탑승권 보여 주시겠어요?", "Here you are.", "여기 있어요.", "here|you|are|sure|yes", "Thank you. Your seat is by the window."),
+  S("Is this your first time flying?", "비행기 처음 타 보세요?", "No, I flew to Jeju last year.", "아니요, 작년에 제주도 가 봤어요.", "yes|no|first|time|flew|before|not", "Oh, nice!"),
+  S("For dinner, we have chicken with rice or beef with noodles. Which would you like?", "저녁은 치킨과 밥, 소고기와 국수가 있어요. 어떤 걸로 하시겠어요?", "I'd like the chicken with rice, please.", "치킨이랑 밥으로 주세요.", "chicken|beef|rice|noodles|like|please|have", "Great choice."),
+  S("Would you like something to drink?", "마실 것 드릴까요?", "Can I have some apple juice, please?", "사과 주스 주시겠어요?", "can|have|juice|water|milk|please|yes|no", "Of course."),
+  S("Is there anything else you need?", "더 필요한 거 있으세요?", "Can I have a blanket, please? I'm a little cold.", "담요 주시겠어요? 조금 추워요.", "can|blanket|no|thank|pillow|water|cold", "Sure, I'll bring one right away.")
+ ], end:"Enjoy your flight!"},
+3:{steps:[
+  S("Excuse me, I think you're sitting in my seat. Could you check your boarding pass?", "실례지만, 제 자리에 앉아 계신 것 같아요. 탑승권 확인해 주시겠어요?", "Oh, I'm sorry! Let me check. You're right, my seat is next to you.", "어, 죄송해요! 확인해 볼게요. 맞네요, 제 자리는 옆자리예요.", "sorry|check|let|right|seat|my|oh", "No problem at all."),
+  S("So, where are you traveling to?", "어디로 여행 가요?", "I'm going to London to visit my aunt.", "이모 만나러 런던에 가요.", "going|go|to|visit|travel|trip|london|america|japan", "That sounds exciting!"),
+  S("What are you most looking forward to on your trip?", "여행에서 가장 기대되는 게 뭐예요?", "I'm excited to see the big clock tower and ride a red bus.", "큰 시계탑을 보고 빨간 버스를 타는 게 기대돼요.", "excited|see|want|looking|forward|ride|eat|visit", "You'll have a great time."),
+  S("The flight is twelve hours long. What will you do to pass the time?", "비행이 12시간이에요. 시간 보내려고 뭐 할 거예요?", "I'll watch movies and maybe read a book.", "영화 보고 책도 읽을 거예요.", "will|watch|read|sleep|play|draw|movies|book|games|listen", "Good plan."),
+  S("Oh, we're going through some turbulence. Are you feeling okay?", "비행기가 좀 흔들리네요. 괜찮아요?", "I'm a little scared, but I'm okay.", "조금 무섭지만 괜찮아요.", "okay|fine|scared|little|bit|good|alright", "Don't worry. It'll be over soon.")
+ ], end:"We're landing soon. It was nice talking with you!"}
+}},
+{id:'shop', name:'🛍️ 문구점에서 쇼핑', lv:{
+1:{steps:[
+  S("Hi! Can I help you?", "안녕하세요! 도와드릴까요?", "Yes, please.", "네, 부탁해요.", "yes|no|please|looking|just", "Sure!"),
+  S("Do you want this pencil case?", "이 필통 사실래요?", "Yes! How much is it?", "네! 얼마예요?", "yes|how|much|no|want", "It's five dollars."),
+  S("Pink or blue?", "분홍색이요, 파란색이요?", "Pink, please.", "분홍색 주세요.", "pink|blue|please", "Here you are."),
+  S("Anything else?", "더 필요한 거 있어요?", "No, thank you.", "아니요, 괜찮아요.", "no|thank|yes|eraser|pencil", "Okay!")
+ ], end:"Thank you! Come again!"},
+2:{steps:[
+  S("Hello! Are you looking for something special?", "안녕하세요! 특별히 찾는 거 있어요?", "Yes, I'm looking for a gift for my friend.", "네, 친구 선물을 찾고 있어요.", "yes|looking|for|gift|want|need|just", "How nice!"),
+  S("How old is your friend?", "친구가 몇 살이에요?", "She is ten years old, like me.", "저처럼 열 살이에요.", "ten|nine|eleven|years|old|is|she|he", "Okay. We have lots of things for kids your age."),
+  S("What does your friend like?", "친구가 뭘 좋아해요?", "She likes drawing and cute animals.", "그림 그리기랑 귀여운 동물을 좋아해요.", "like|likes|love|loves|drawing|animals|games|music|books", "Then how about this sketchbook with animals on it?"),
+  S("Do you like this one?", "이거 마음에 들어요?", "Yes, I love it! How much is it?", "네, 정말 좋아요! 얼마예요?", "yes|no|love|like|how|much|it", "It's seven dollars."),
+  S("Would you like me to wrap it as a gift?", "선물 포장해 드릴까요?", "Yes, please. Thank you!", "네, 해 주세요. 고맙습니다!", "yes|no|please|thank", "No problem.")
+ ], end:"Here you go. I hope your friend likes it!"},
+3:{steps:[
+  S("Welcome! Let me know if you need any help finding something.", "어서 오세요! 찾는 거 있으면 말해 주세요.", "Thanks. Actually, I need some school supplies.", "고마워요. 사실 학용품이 좀 필요해요.", "thanks|thank|need|looking|actually|school|supplies", "Sure, what do you need?"),
+  S("What exactly do you need?", "정확히 뭐가 필요해요?", "I need two notebooks, a ruler, and some colored pens.", "공책 두 권, 자 하나, 색깔 펜이 필요해요.", "need|notebook|notebooks|ruler|pens|pencils|eraser|and", "Let me get those for you."),
+  S("These notebooks come in three sizes. Which size works best for you?", "이 공책은 세 가지 크기가 있어요. 어떤 크기가 좋아요?", "The medium size, because it fits in my bag.", "중간 크기요. 가방에 들어가니까요.", "small|medium|large|big|because|size|fits", "Good thinking."),
+  S("Hmm, the colored pens are sold out. Would you like to try these markers instead?", "음, 색깔 펜이 품절이에요. 대신 이 마커 써 볼래요?", "Sure, can I test one first?", "좋아요, 먼저 한번 써 봐도 돼요?", "sure|yes|no|can|test|try|okay|instead", "Of course, go ahead."),
+  S("Your total is twelve dollars. Do you have a membership card?", "총 12달러예요. 회원 카드 있어요?", "No, I don't. Can I still pay by card?", "아니요, 없어요. 그래도 카드로 계산할 수 있어요?", "no|yes|not|have|pay|card|cash", "Yes, of course.")
+ ], end:"Thank you for shopping with us. Good luck at school!"}
+}},
+{id:'korea', name:'🇰🇷 외국인에게 한국 소개', lv:{
+1:{steps:[
+  S("Hi! I'm visiting Korea. Is Korean food good?", "안녕! 한국에 놀러 왔어. 한국 음식 맛있어?", "Yes, it's very good!", "응, 정말 맛있어!", "yes|good|delicious|yummy|very", "I want to try it!"),
+  S("What food do you like?", "넌 무슨 음식 좋아해?", "I like kimbap.", "나는 김밥 좋아해.", "like|kimbap|bibimbap|tteokbokki|kimchi|bulgogi|chicken|ramyeon|ramen|love", "Yum!"),
+  S("Is it spicy?", "매워?", "No, it's not spicy. / Yes, it's spicy.", "아니, 안 매워. / 응, 매워.", "yes|no|spicy|not|little", "Okay!"),
+  S("Do you like K-pop?", "케이팝 좋아해?", "Yes, I love K-pop!", "응, 케이팝 정말 좋아해!", "yes|no|love|like|do|not", "Me too!")
+ ], end:"Korea is so fun! Thank you!"},
+2:{steps:[
+  S("Hi! It's my first time in Korea. What should I eat?", "한국 처음 왔어! 뭐 먹어야 해?", "You should try bibimbap.", "비빔밥 먹어 봐.", "should|try|eat|bibimbap|kimbap|bulgogi|tteokbokki|kimchi", "Bibimbap? What is it?"),
+  S("What is it made of?", "그건 뭘로 만들어?", "It's rice with vegetables, egg, and red pepper paste.", "밥에 채소, 달걀, 고추장을 넣은 거야.", "rice|vegetables|egg|meat|made|with|it", "That sounds healthy!"),
+  S("Where is a fun place to visit?", "놀러 가기 좋은 곳이 어디야?", "You should go to Gyeongbokgung Palace.", "경복궁에 가 봐.", "should|go|visit|palace|park|jeju|seoul|busan|lotte|world|tower", "I'll add it to my list."),
+  S("What do Korean kids do for fun?", "한국 아이들은 재미로 뭐 해?", "We play games and go to the park.", "게임도 하고 공원에도 가.", "play|games|go|watch|we|park|sing|dance|read", "Sounds fun!"),
+  S("Can you teach me a Korean word?", "한국어 단어 하나 가르쳐 줄래?", "Sure! Annyeong means hello.", "그럼! '안녕'은 hello라는 뜻이야.", "sure|means|annyeong|hello|okay|yes|is", "Annyeong! Did I say it right?")
+ ], end:"Thank you! Kamsahamnida!"},
+3:{steps:[
+  S("I'm writing a blog about Korea. Can I ask you some questions?", "한국에 대한 블로그를 쓰고 있어. 질문 좀 해도 돼?", "Sure, go ahead. I'd be happy to help.", "그럼, 물어봐. 기꺼이 도와줄게.", "sure|yes|go|ahead|okay|happy|help|course", "Thank you!"),
+  S("What's the most important holiday in Korea?", "한국에서 가장 중요한 명절이 뭐야?", "Chuseok and Seollal are the biggest holidays.", "추석이랑 설날이 가장 큰 명절이야.", "chuseok|seollal|new|year|holiday|thanksgiving|is|are", "Interesting!"),
+  S("What do families do on that holiday?", "그 명절에 가족들은 뭐 해?", "Families get together, eat special food, and visit their grandparents.", "가족이 모여서 특별한 음식을 먹고, 조부모님 댁에 가.", "families|family|eat|visit|get|together|grandparents|play|wear", "That sounds warm."),
+  S("What's something about Korea that foreigners might find surprising?", "외국인들이 한국에서 놀랄 만한 게 뭐야?", "Delivery is super fast. You can get food delivered almost anywhere!", "배달이 엄청 빨라. 거의 어디서든 음식을 배달시킬 수 있어!", "", "Wow, I didn't know that!"),
+  S("If I could only visit one place in Korea, where should I go, and why?", "한국에서 딱 한 곳만 갈 수 있다면 어디로 가야 하고, 왜?", "You should go to Jeju Island because the beaches and nature are beautiful.", "제주도에 가. 바다랑 자연이 정말 예쁘거든.", "should|go|because|visit|jeju|seoul|busan|beautiful", "Great answer. I'll write that down!")
+ ], end:"Thank you so much! You're a great tour guide!"}
+}},
+{id:'school', name:'🎨 학교·취미 이야기', lv:{
+1:{steps:[
+  S("Hi! Do you like school?", "안녕! 학교 좋아해?", "Yes, I do.", "응, 좋아해.", "yes|no|do|like|not", "Cool!"),
+  S("What is your favorite subject?", "제일 좋아하는 과목이 뭐야?", "I like art.", "미술이 좋아.", "art|math|english|music|science|pe|korean|like|favorite", "Nice!"),
+  S("Do you play sports?", "운동 해?", "Yes, I play badminton.", "응, 배드민턴 해.", "yes|no|play|swim|soccer|badminton|basketball|jump|do", "That's great!"),
+  S("Do you like to sing?", "노래 부르는 거 좋아해?", "Yes, I love to sing!", "응, 노래하는 거 정말 좋아해!", "yes|no|love|like|sing|do|not", "Let's sing together sometime!")
+ ], end:"See you at school!"},
+2:{steps:[
+  S("Hey! What did you do last weekend?", "지난 주말에 뭐 했어?", "I went to the park with my family.", "가족이랑 공원에 갔어.", "went|played|watched|visited|ate|was|did|stayed|go", "That sounds nice!"),
+  S("Who did you go with?", "누구랑 같이 갔어?", "I went with my mom and dad.", "엄마 아빠랑 갔어.", "with|mom|dad|family|friend|friends|sister|brother|alone", "Oh, nice."),
+  S("What is your favorite hobby?", "제일 좋아하는 취미가 뭐야?", "My favorite hobby is drawing.", "내가 제일 좋아하는 취미는 그림 그리기야.", "hobby|favorite|like|drawing|reading|dancing|singing|playing|is", "Cool!"),
+  S("How often do you do it?", "얼마나 자주 해?", "I do it almost every day.", "거의 매일 해.", "every|day|week|often|sometimes|always|once|twice|times", "Wow, you must be good at it!"),
+  S("What are you going to do this weekend?", "이번 주말에는 뭐 할 거야?", "I'm going to watch a movie.", "영화 볼 거야.", "going|will|watch|play|visit|go|maybe|want", "Have fun!")
+ ], end:"Have a great weekend!"},
+3:{steps:[
+  S("You look happy today! Did something good happen?", "오늘 기분 좋아 보이네! 좋은 일 있었어?", "Yes! I got a good score on my English test.", "응! 영어 시험 점수 잘 받았어.", "yes|no|got|good|happy|today|test|because", "Congratulations!"),
+  S("That's awesome. How did you prepare for it?", "대단하다. 어떻게 준비했어?", "I studied a little every day and practiced speaking.", "매일 조금씩 공부하고 말하기 연습을 했어.", "studied|study|practiced|read|every|day|learned|did", "Hard work pays off!"),
+  S("What's something you're really good at, besides English?", "영어 말고 정말 잘하는 게 뭐야?", "I'm really good at drawing. I can draw animals well.", "그림을 정말 잘 그려. 동물을 잘 그려.", "good|at|can|well|drawing|swimming|dancing|singing", "I'd love to see your drawings sometime."),
+  S("If you could learn any new skill, what would it be?", "새로운 걸 하나 배울 수 있다면 뭘 배우고 싶어?", "I would learn to play the guitar because I love music.", "기타를 배우고 싶어. 음악을 좋아하거든.", "would|learn|because|want|like|play|cook", "That would be so cool!"),
+  S("What do you want to be when you grow up?", "커서 뭐가 되고 싶어?", "I want to be a designer because I like making pretty things.", "디자이너가 되고 싶어. 예쁜 걸 만드는 게 좋거든.", "want|be|because|designer|teacher|doctor|artist|scientist|youtuber|would", "I think you'd be great at that!")
+ ], end:"It was fun talking with you. See you tomorrow!"}
+}},
+{id:'lost', name:'😢 놀이공원에서 길을 잃었어요', lv:{
+1:{steps:[
+  S("Hi there. Are you okay?", "안녕. 괜찮니?", "No. I can't find my mom.", "아니요. 엄마를 못 찾겠어요.", "no|mom|dad|find|lost|not|help", "Don't worry. I will help you."),
+  S("What's your name?", "이름이 뭐니?", "My name is ___.", "제 이름은 ___예요.", "", "Thank you."),
+  S("Was your mom near the ice cream shop?", "엄마가 아이스크림 가게 근처에 계셨니?", "Yes. / I don't know.", "네. / 모르겠어요.", "yes|no|know|not|think", "Okay."),
+  S("Let's wait here together. Is that okay?", "여기서 같이 기다리자. 괜찮지?", "Okay. Thank you.", "네. 고맙습니다.", "okay|yes|thank|sure", "Look! Is that your mom?")
+ ], end:"Yay! You found your mom!"},
+2:{steps:[
+  S("Hi, are you okay? You look worried.", "괜찮니? 걱정스러워 보이는구나.", "I'm lost. I can't find my parents.", "길을 잃었어요. 부모님을 못 찾겠어요.", "lost|find|parents|mom|dad|not|help", "Don't worry. I work here. I'll help you."),
+  S("What does your mom look like?", "엄마는 어떻게 생기셨니?", "She has long hair and she's wearing a white jacket.", "머리가 길고 흰 재킷을 입고 계세요.", "has|hair|wearing|she|is|tall|short|long|jacket|glasses", "Okay, that helps."),
+  S("Where did you see her last?", "마지막으로 어디서 보셨니?", "Near the Ferris wheel.", "대관람차 근처에서요.", "near|at|by|ferris|wheel|shop|ride|entrance|there", "Okay."),
+  S("Do you know her phone number?", "엄마 전화번호 아니?", "Yes, I know it. / No, I don't.", "네, 알아요. / 아니요, 몰라요.", "yes|no|know|not|number", "Great. We can call her."),
+  S("Can you wait with me at the information center?", "안내 센터에서 나랑 같이 기다릴래?", "Yes, I can wait.", "네, 기다릴 수 있어요.", "yes|okay|can|wait|sure", "Good. You're very brave.")
+ ], end:"Look, here comes your mom! Stay close to her, okay?"},
+3:{steps:[
+  S("Excuse me, I noticed you've been standing here alone for a while. Is everything alright?", "혼자 한참 서 있는 것 같던데, 괜찮니?", "Not really. I got separated from my family near the roller coaster.", "아니요. 롤러코스터 근처에서 가족이랑 떨어졌어요.", "not|lost|separated|family|find|help|mom|dad", "I'm sorry to hear that. Let's figure this out together."),
+  S("Can you describe what your family members are wearing?", "가족들이 뭘 입고 있는지 말해 줄래?", "My dad is wearing a blue cap, and my mom has a red bag.", "아빠는 파란 모자를 쓰고, 엄마는 빨간 가방을 들고 계세요.", "wearing|is|has|cap|bag|jacket|shirt|blue|red|dad|mom", "Thank you. That's very helpful."),
+  S("Did you and your family plan a meeting place in case you got lost?", "길 잃었을 때 만날 장소를 가족이랑 정해 뒀니?", "No, we didn't. We should have done that.", "아니요. 정해 둘걸 그랬어요.", "no|yes|not|did|should|we|place", "Next time, that's a great idea."),
+  S("What do you think we should do first?", "우리가 먼저 뭘 해야 할까?", "I think we should call my mom or make an announcement.", "엄마한테 전화하거나 안내 방송을 하면 좋겠어요.", "think|should|call|announcement|wait|go|ask", "Good thinking. Let's call her now."),
+  S("Your mom is on her way. How are you feeling now?", "엄마가 오고 계셔. 지금 기분은 어떠니?", "I feel much better now. Thank you for helping me.", "이제 훨씬 나아요. 도와주셔서 고맙습니다.", "feel|better|okay|thank|good|relieved|happy", "You handled it really well.")
+ ], end:"There she is! Have fun, and stay together!"}
+}},
+{id:'nurse', name:'🤒 보건실에서', lv:{
+1:{steps:[
+  S("Hi! What's wrong?", "어디가 아프니?", "I have a headache.", "머리가 아파요.", "headache|stomachache|hurts|sick|cold|fever|tooth|have|head|stomach", "Oh no."),
+  S("Does it hurt a lot?", "많이 아프니?", "Yes, a little.", "네, 조금요.", "yes|no|little|lot|bit", "Okay."),
+  S("Do you want some water?", "물 마실래?", "Yes, please.", "네, 주세요.", "yes|no|please|thank", "Here you go."),
+  S("Lie down and rest. Okay?", "누워서 좀 쉬렴. 알겠지?", "Okay. Thank you.", "네. 고맙습니다.", "okay|thank|yes", "Feel better soon!")
+ ], end:"Take care!"},
+2:{steps:[
+  S("Hi, come in. You don't look well. What's the matter?", "들어오렴. 안 좋아 보이는구나. 무슨 일이니?", "I don't feel well. My stomach hurts.", "몸이 안 좋아요. 배가 아파요.", "feel|stomach|head|hurts|sick|well|ache|have", "I'm sorry to hear that."),
+  S("When did it start?", "언제부터 아팠니?", "It started after lunch.", "점심 먹고 나서부터요.", "after|before|morning|lunch|started|ago|since|today", "I see."),
+  S("What did you eat for lunch?", "점심에 뭐 먹었니?", "I ate rice, soup, and some fried chicken.", "밥이랑 국, 그리고 치킨을 먹었어요.", "ate|eat|rice|soup|chicken|kimchi|had", "Maybe it was too greasy."),
+  S("Do you feel hot or cold?", "몸이 뜨겁니, 춥니?", "I feel a little cold.", "조금 추워요.", "hot|cold|feel|little|bit|fine", "Let me check your temperature."),
+  S("You don't have a fever. Do you want to call your mom?", "열은 없네. 엄마한테 전화할래?", "No, I think I can rest here for a while.", "아니요, 여기서 좀 쉬면 될 것 같아요.", "yes|no|call|mom|rest|think|okay", "Okay, that's a good idea.")
+ ], end:"Rest well, and tell me if you feel worse."},
+3:{steps:[
+  S("Hi there. I heard you weren't feeling well in class. Can you tell me what happened?", "수업 중에 몸이 안 좋았다고 들었어. 무슨 일인지 말해 줄래?", "During math class, I suddenly felt dizzy and my head started to hurt.", "수학 시간에 갑자기 어지럽고 머리가 아프기 시작했어요.", "", "That must have been scary."),
+  S("Did you sleep well last night and eat breakfast this morning?", "어젯밤에 잘 자고 아침은 먹었니?", "Not really. I went to bed late and skipped breakfast.", "아니요. 늦게 자고 아침을 걸렀어요.", "not|yes|no|slept|ate|skipped|late|breakfast|bed", "Ah, that might be the reason."),
+  S("Why do you think it's important to eat breakfast?", "아침을 먹는 게 왜 중요하다고 생각해?", "Because it gives us energy for the day.", "하루 동안 쓸 힘을 주니까요.", "because|energy|healthy|strong|focus|think", "Exactly."),
+  S("What can you do tonight so this doesn't happen again?", "다시 이런 일이 없도록 오늘 밤 뭘 할 수 있을까?", "I can go to bed early and eat a good breakfast tomorrow.", "일찍 자고 내일 아침을 잘 먹을 수 있어요.", "can|will|go|bed|early|sleep|eat|breakfast", "That's a great plan."),
+  S("How are you feeling now after resting?", "쉬고 나니 지금은 어때?", "I feel much better now. Can I go back to class?", "훨씬 나아요. 교실로 돌아가도 돼요?", "feel|better|good|okay|can|go|back|class|still", "Yes, you can. Take it easy.")
+ ], end:"Take care of yourself. Come back anytime you need help."}
+}}
+];
+
+const DEFAULT_WORDS = `apple / 사과 / I eat an apple every day.
+library / 도서관 / I go to the library on Sunday.
+brave / 용감한 / The firefighter is brave.`;
+
+const PRAISE = {
+  3:[['Excellent!','완벽해요! 🎉'],['Perfect!','최고예요! 🎉'],['Wow, amazing!','와, 대단해요! 🎉']],
+  2:[['Great job!','아주 잘했어요! 👍'],['Very good!','정말 좋아요! 👍']],
+  1:[['Good try! One more time?','좋은 시도예요! 한 번 더 해볼까요?']],
+  0:[["Nice try! Let's listen and try again.",'괜찮아요! 다시 듣고 해봐요 💪']]
+};
+const MODE = {repeat:'따라 말하기', role:'상황극', words:'단어장'};
+
+/* ================= 저장소 ================= */
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem('bella_'+k); return v?JSON.parse(v):d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem('bella_'+k, JSON.stringify(v)); }catch(e){} }
+};
+let settings = Object.assign({name:'', voiceURI:'', rate:0.85, wait:3}, store.get('settings', {}));
+function saveSettings(){ store.set('settings', settings); }
+
+const $ = s => document.querySelector(s);
+function esc(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function rand(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+/* ================= 음성 합성 (TTS) ================= */
+let voices = [];
+function loadVoices(){
+  if(!('speechSynthesis' in window)) return;
+  voices = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+  const sel = $('#setVoice');
+  const cur = pickVoice();
+  sel.innerHTML = voices.map(v => `<option value="${esc(v.voiceURI)}">${esc(v.name)} (${esc(v.lang)})</option>`).join('');
+  if(cur) sel.value = cur.voiceURI;
+}
+function pickVoice(){
+  if(!voices.length) return null;
+  if(settings.voiceURI){ const v = voices.find(x => x.voiceURI === settings.voiceURI); if(v) return v; }
+  const us = voices.filter(v => /en[-_]US/i.test(v.lang));
+  return us.find(v => /google/i.test(v.name)) || us.find(v => /natural|aria|jenny/i.test(v.name)) || us[0] || voices[0];
+}
+let speakToken = 0;
+function speak(text, rate, fromSlow){
+  if(!fromSlow) speakToken++;
+  return new Promise(resolve => {
+    if(!('speechSynthesis' in window)){ resolve(); return; }
+    if(speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    const v = pickVoice();
+    if(v){ u.voice = v; u.lang = v.lang; } else { u.lang = 'en-US'; }
+    u.rate = rate || settings.rate;
+    let done = false;
+    const fin = () => { if(!done){ done = true; resolve(); } };
+    u.onend = fin; u.onerror = fin;
+    window._bellaUtter = u;              // 크롬에서 onend 누락 방지
+    speechSynthesis.speak(u);
+    setTimeout(fin, 4000 + text.length * 150);
+  });
+}
+
+/* ================= 음성 인식 (STT) =================
+   - 연속 듣기 모드: 말하다 잠깐 멈춰도 끊지 않음
+   - 마지막 소리 후 settings.wait 초 동안 조용하면 종료 (또는 ⏹ 버튼)
+   - 브라우저가 스스로 끊으면(안드로이드) 자동으로 다시 이어서 들음 */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, listening = false, stopReq = false;
+function isListening(){ return listening; }
+function stopListening(){ stopReq = true; if(rec) try{ rec.stop(); }catch(e){} }
+function mergeSeg(segs){
+  const out = [];
+  segs.forEach(s => {
+    s = (s || '').trim(); if(!s) return;
+    const prev = out.length ? out[out.length-1].toLowerCase() : null;
+    const ns = s.toLowerCase();
+    if(prev && ns.startsWith(prev)) out[out.length-1] = s;   // 안드로이드 중복 결과 정리
+    else if(prev && prev.startsWith(ns)) { /* 이미 포함됨 */ }
+    else out.push(s);
+  });
+  return out.join(' ').replace(/\s+/g, ' ').trim();
+}
+function listen(onInterim){
+  return new Promise(resolve => {
+    if(!SR){ resolve({alts:[], error:'unsupported'}); return; }
+    speakToken++;
+    if('speechSynthesis' in window) speechSynthesis.cancel();
+    const waitMs = Math.round((settings.wait || 3) * 1000);
+    const startT = Date.now();
+    let acc = [], curFinals = [], curInterim = '', lastAlts = [];
+    let error = null, timer = null, finished = false;
+    stopReq = false; listening = true;
+    const arm = ms => { clearTimeout(timer); timer = setTimeout(stopListening, ms); };
+    const allText = () => mergeSeg(acc.concat(curFinals, curInterim ? [curInterim] : []));
+    const maxT = setTimeout(stopListening, 40000);
+    function finish(){
+      if(finished) return; finished = true;
+      clearTimeout(timer); clearTimeout(maxT); listening = false; rec = null;
+      const text = mergeSeg(acc);
+      let alts = text ? [text] : [];
+      if(text && lastAlts.length > 1 && acc[acc.length-1] === lastAlts[0])
+        alts = lastAlts.map(a => mergeSeg(acc.slice(0, -1).concat([a])));
+      resolve({alts, error: alts.length ? null : (error || 'no-speech')});
+    }
+    function startOne(){
+      curFinals = []; curInterim = '';
+      const r = new SR(); rec = r;
+      r.lang = 'en-US'; r.interimResults = true; r.maxAlternatives = 5; r.continuous = true;
+      r.onresult = e => {
+        curFinals = []; curInterim = '';
+        for(let i = 0; i < e.results.length; i++){
+          const x = e.results[i];
+          if(x.isFinal){
+            curFinals.push(x[0].transcript.trim());
+            if(i === e.results.length - 1) lastAlts = Array.from(x).map(a => a.transcript.trim()).filter(Boolean);
+          } else curInterim += x[0].transcript;
+        }
+        curInterim = curInterim.trim();
+        if(onInterim) onInterim(allText());
+        arm(waitMs);
+      };
+      r.onerror = e => {
+        if(e.error !== 'no-speech' && e.error !== 'aborted') error = e.error;
+        if(['not-allowed','service-not-allowed','audio-capture','network'].includes(e.error)) stopReq = true;
+      };
+      r.onend = () => {
+        acc = acc.concat(curFinals, curInterim ? [curInterim] : []);
+        curFinals = []; curInterim = '';
+        if(!stopReq && !error && Date.now() - startT < 40000){
+          try{ startOne(); return; }catch(e){}
+        }
+        finish();
+      };
+      try{ r.start(); }catch(e){ error = error || 'aborted'; finish(); }
+    }
+    arm(8000);            // 첫 마디를 기다리는 최대 시간
+    startOne();
+  });
+}
+function errMsg(e){
+  return ({
+    'no-speech':'목소리가 안 들렸어요. 조금 더 크게 말해볼까요? 🙂',
+    'not-allowed':'마이크 권한이 필요해요. 주소창 왼쪽 아이콘에서 마이크를 허용해 주세요.',
+    'service-not-allowed':'마이크 권한이 필요해요. 주소창 왼쪽 아이콘에서 마이크를 허용해 주세요.',
+    'audio-capture':'마이크를 찾을 수 없어요. 마이크 연결을 확인해 주세요.',
+    'network':'인터넷 연결을 확인해 주세요. (음성 인식에 인터넷이 필요해요)',
+    'aborted':'멈췄어요. 다시 눌러주세요.',
+    'unsupported':'이 브라우저는 음성 인식이 안 돼요. 크롬으로 열어주세요.'
+  })[e] || ('다시 해볼까요? (' + e + ')');
+}
+function setMic(btn, label, on, text){
+  btn.classList.toggle('listening', on);
+  btn.textContent = on ? '⏹' : '🎤';
+  if(label) label.textContent = on ? '듣고 있어요... 천천히 말해도 돼요. 다 말했으면 ⏹' : text;
+}
+
+/* ================= 채점 ================= */
+const NUM = {'0':'zero','1':'one','2':'two','3':'three','4':'four','5':'five','6':'six','7':'seven','8':'eight','9':'nine','10':'ten','11':'eleven','12':'twelve','13':'thirteen','14':'fourteen','15':'fifteen','16':'sixteen','17':'seventeen','18':'eighteen','19':'nineteen','20':'twenty'};
+const CONTR = {"i'm":'i am',"you're":'you are',"it's":'it is',"that's":'that is',"what's":'what is',"don't":'do not',"doesn't":'does not',"isn't":'is not',"aren't":'are not',"can't":'can not',"cannot":'can not',"i'd":'i would',"let's":'let us',"where's":'where is',"he's":'he is',"she's":'she is',"we're":'we are',"they're":'they are',"i'll":'i will',"there's":'there is',"ok":'okay',"haven't":'have not',"hasn't":'has not',"didn't":'did not',"wasn't":'was not',"weren't":'were not',"won't":'will not',"wouldn't":'would not',"couldn't":'could not',"shouldn't":'should not',"i've":'i have',"you'll":'you will',"we'll":'we will',"it'll":'it will',"they'll":'they will',"he'll":'he will',"she'll":'she will',"you'd":'you would',"we're":'we are'};
+function norm(s){
+  const words = String(s).toLowerCase().replace(/[’`]/g, "'").replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(Boolean);
+  const out = [];
+  words.forEach(w => {
+    if(CONTR[w]) out.push(...CONTR[w].split(' '));
+    else if(NUM[w]) out.push(NUM[w]);
+    else { const x = w.replace(/'/g, ''); if(x) out.push(x); }
+  });
+  return out;
+}
+function compare(target, said){
+  const words = target.split(/\s+/).filter(Boolean);
+  const toks = [];
+  words.forEach((w, idx) => norm(w).forEach(t => toks.push({t, o:idx})));
+  const s = norm(said);
+  const n = toks.length, m = s.length;
+  const dp = Array.from({length:n+1}, () => new Array(m+1).fill(0));
+  for(let a = n-1; a >= 0; a--) for(let b = m-1; b >= 0; b--)
+    dp[a][b] = toks[a].t === s[b] ? dp[a+1][b+1] + 1 : Math.max(dp[a+1][b], dp[a][b+1]);
+  const matched = new Array(n).fill(false);
+  let a = 0, b = 0;
+  while(a < n && b < m){
+    if(toks[a].t === s[b]){ matched[a] = true; a++; b++; }
+    else if(dp[a+1][b] >= dp[a][b+1]) a++;
+    else b++;
+  }
+  const wordOk = words.map((w, idx) => {
+    const mine = []; toks.forEach((x, k) => { if(x.o === idx) mine.push(k); });
+    return mine.length === 0 ? true : mine.every(k => matched[k]);
+  });
+  return {score: n ? matched.filter(Boolean).length / n : 0, wordOk};
+}
+function starsFor(sc){ return sc >= 0.9 ? 3 : sc >= 0.7 ? 2 : sc >= 0.4 ? 1 : 0; }
+function kwHit(said, kw){
+  if(!kw || !kw.length) return true;
+  const s = ' ' + norm(said).join(' ') + ' ';
+  return kw.some(k => s.includes(' ' + norm(k).join(' ') + ' '));
+}
+
+/* ================= 기록·별 ================= */
+function addLog(entry){
+  const log = store.get('log', []);
+  log.push(Object.assign({t: Date.now()}, entry));
+  if(log.length > 2000) log.splice(0, log.length - 2000);
+  store.set('log', log);
+}
+function dailyCount(key, inc){
+  const d = store.get('daily', {}); const today = dayKey(Date.now());
+  if(d.day !== today){ d.day = today; d.c = {}; }
+  if(inc){ d.c[key] = (d.c[key] || 0) + (inc === true ? 1 : inc); store.set('daily', d); }
+  return d.c[key] || 0;
+}
+function balance(){ return store.get('stars', 0) - store.get('spent', 0); }
+function addStars(n){
+  store.set('stars', store.get('stars', 0) + n);
+  if(n > 0){ dailyCount('earned', n); avatarCheer('+' + n + ' ⭐'); }
+  showStars();
+}
+function showStars(){ $('#starTotal').textContent = '⭐ ' + balance(); if(typeof refreshSideInfo === 'function') refreshSideInfo(); }
+function celebrate(ch){ const c = $('#celebrate'); c.textContent = ch || '🎉'; c.classList.add('show'); setTimeout(() => c.classList.remove('show'), 900); }
+function dayKey(t){ const d = new Date(t); return d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate(); }
+function fmt(t){ const d = new Date(t); return (d.getMonth()+1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
+
+/* ================= 꾸미기 (그림 아바타) =================
+   avatar 폴더의 그림 파일을 씀. 파일이 있는 아이템만 상점에 보임. */
+const AV = 'avatar/';
+const CATALOG = [
+  {id:'outfit01', cat:'outfit', name:'캐주얼 데일리', price:0},
+  {id:'outfit02', cat:'outfit', name:'스쿨룩', price:200},
+  {id:'outfit03', cat:'outfit', name:'요정 코디', price:400},
+  {id:'outfit04', cat:'outfit', name:'운동 코디', price:200},
+  {id:'outfit05', cat:'outfit', name:'파티 드레스', price:600},
+  {id:'outfit06', cat:'outfit', name:'우주비행사', price:600},
+  {id:'outfit07', cat:'outfit', name:'레인 코디', price:250},
+  {id:'outfit08', cat:'outfit', name:'겨울 코디', price:250},
+  {id:'outfit09', cat:'outfit', name:'스트릿 코디', price:300},
+  {id:'outfit10', cat:'outfit', name:'교복+가디건', price:300},
+  {id:'pet01', cat:'pet', name:'하얀 토끼', price:150},
+  {id:'pet02', cat:'pet', name:'회색 고양이', price:150},
+  {id:'pet03', cat:'pet', name:'갈색 강아지', price:150},
+  {id:'pet04', cat:'pet', name:'고글 펭귄', price:250},
+  {id:'pet05', cat:'pet', name:'하얀 푸들', price:200},
+  {id:'pet06', cat:'pet', name:'아기 사슴', price:250},
+  {id:'pet07', cat:'pet', name:'아기 여우', price:250},
+  {id:'pet08', cat:'pet', name:'아기 판다', price:300},
+  {id:'pet09', cat:'pet', name:'아기 유니콘', price:500},
+  {id:'pet10', cat:'pet', name:'아기 드래곤', price:500},
+  {id:'bg01', cat:'bg', name:'파스텔 보라', price:0},
+  {id:'bg02', cat:'bg', name:'내 방', price:100},
+  {id:'bg03', cat:'bg', name:'공원', price:100},
+  {id:'bg04', cat:'bg', name:'벚꽃길', price:150},
+  {id:'bg05', cat:'bg', name:'바닷가', price:150},
+  {id:'bg06', cat:'bg', name:'놀이공원', price:200},
+  {id:'bg07', cat:'bg', name:'아이돌 무대', price:300},
+  {id:'bg08', cat:'bg', name:'성', price:250},
+  {id:'bg09', cat:'bg', name:'우주', price:300},
+  {id:'bg10', cat:'bg', name:'눈 오는 마을', price:200}
+];
+const CAT_BY_ID = {}; CATALOG.forEach(i => { CAT_BY_ID[i.id] = i; });
+const CATS = [['outfit','👗 코디'],['pet','🐰 펫'],['bg','🏞️ 배경']];
+const OPTIONAL = ['pet'];
+const DEFAULT_EQ = {outfit:'outfit01', pet:null, bg:'bg01'};
+const available = new Set();
+let catalogReady = null;
+function checkCatalog(){
+  if(catalogReady) return catalogReady;
+  catalogReady = Promise.all(CATALOG.map(i => new Promise(res => {
+    const im = new Image();
+    im.onload = () => { available.add(i.id); res(); };
+    im.onerror = () => res();
+    im.src = AV + i.id + '_th.webp';
+  })));
+  return catalogReady;
+}
+let owned = new Set(store.get('owned2', []));
+CATALOG.filter(i => i.price === 0).forEach(i => owned.add(i.id));
+let equipped = Object.assign({}, DEFAULT_EQ, store.get('equipped2', {}));
+let shopCat = 'outfit', preview = null;   // preview: 상점에서 눌러 본 아이템 id
+function saveShop(){ store.set('owned2', Array.from(owned)); store.set('equipped2', equipped); }
+function stageHTML(eq){
+  return (eq.bg ? `<img class="lay bg" src="${AV}${eq.bg}.webp" alt="">` : '') +
+         `<img class="lay ch" src="${AV}${eq.outfit}.webp" alt="">` +
+         (eq.pet ? `<img class="lay pet" src="${AV}${eq.pet}.webp" alt="">` : '');
+}
+function refreshHeadAvatar(){
+  $('#headAvatar').innerHTML = `<img src="${AV}${equipped.outfit}_face.webp" alt="">`;
+  const side = $('#sideStage'); if(side) side.innerHTML = stageHTML(equipped);
+}
+function equip(it){
+  equipped[it.cat] = it.id; saveShop(); refreshHeadAvatar(); renderShop();
+}
+function itemCard(i, tag, sel){
+  return `<div class="item ${i.cat}${sel ? ' sel' : ''}" data-id="${i.id}"><img src="${AV}${i.id}_th.webp" alt=""><div>${esc(i.name)}</div>${tag}</div>`;
+}
+async function renderShop(){
+  await checkCatalog();
+  $('#avatarBig').innerHTML = stageHTML(equipped);
+  $('#balanceBig').textContent = balance();
+  // 내 옷장 (산 것)
+  let wh = '';
+  CATS.forEach(([c, n]) => {
+    const mine = CATALOG.filter(i => i.cat === c && owned.has(i.id) && available.has(i.id));
+    let cards = mine.map(i => itemCard(i, equipped[c] === i.id ? '<div class="p own">입는 중</div>' : '<div class="p own">입기</div>', equipped[c] === i.id)).join('');
+    if(OPTIONAL.includes(c) && mine.length) cards = `<div class="item none${!equipped[c] ? ' sel' : ''}" data-none="${c}">🚫<span>펫 없음</span></div>` + cards;
+    wh += `<div class="wh-cat">${n}</div>` + (cards ? `<div class="grid small-grid">${cards}</div>` : '<p class="small">아직 없어요. 상점에서 사 보세요!</p>');
+  });
+  $('#wardrobe').innerHTML = wh;
+  // 상점 (안 산 것)
+  $('#shopCats').innerHTML = CATS.map(([c, n]) => `<button class="chip${c === shopCat ? ' on' : ''}" data-c="${c}">${n}</button>`).join('');
+  const items = CATALOG.filter(i => i.cat === shopCat && available.has(i.id) && !owned.has(i.id)).sort((a, b) => a.price - b.price);
+  $('#shopGrid').innerHTML = items.length
+    ? items.map(i => itemCard(i, `<div class="p">⭐ ${i.price}</div>`, preview === i.id)).join('')
+    : '<p class="small">이 종류는 다 샀어요! 새 아이템을 기다려 주세요 🎁</p>';
+  renderPreview();
+}
+function renderPreview(){
+  const box = $('#previewBox'), act = $('#shopAction');
+  if(!preview || owned.has(preview)){
+    box.innerHTML = '<div class="pv-empty">👀<br>상점에서 아이템을 누르면<br>여기서 입어 볼 수 있어요</div>';
+    act.innerHTML = ''; return;
+  }
+  const it = CAT_BY_ID[preview], bal = balance();
+  box.innerHTML = stageHTML(Object.assign({}, equipped, {[it.cat]: it.id}));
+  if(bal >= it.price){
+    act.innerHTML = `<div class="nm">${esc(it.name)}</div><button class="btn main" id="shopDo">⭐ ${it.price}개로 사기</button>`;
+    $('#shopDo').onclick = () => {
+      if(balance() < it.price) return;
+      store.set('spent', store.get('spent', 0) + it.price);
+      owned.add(it.id); preview = null; showStars();
+      equip(it);
+      celebrate('💖'); avatarCheer('💖');
+      speak(it.cat === 'pet' ? 'Say hello to your new friend!' : 'Wow! You look so pretty!');
+    };
+  } else {
+    act.innerHTML = `<div class="nm">${esc(it.name)} · ⭐ ${it.price}</div><p class="small">별이 ${it.price - bal}개 더 필요해요.<br>말하기 연습으로 모아 봐요! 💪</p>`;
+  }
+}
+$('#shopCats').onclick = e => { const b = e.target.closest('.chip'); if(!b) return; shopCat = b.dataset.c; preview = null; renderShop(); };
+$('#shopGrid').onclick = e => {
+  const c = e.target.closest('.item'); if(!c) return;
+  preview = c.dataset.id; renderShop();
+};
+$('#wardrobe').onclick = e => {
+  const c = e.target.closest('.item'); if(!c) return;
+  if(c.dataset.none){ equipped[c.dataset.none] = null; saveShop(); refreshHeadAvatar(); renderShop(); return; }
+  const it = CAT_BY_ID[c.dataset.id]; if(!it || equipped[it.cat] === it.id) return;
+  equip(it); speak('You look great!');
+};
+/* 공부 화면 왼쪽 아바타: 별 받으면 반응 */
+function avatarCheer(ch){
+  const st = $('#sideStage'); if(!st) return;
+  st.classList.remove('hop'); void st.offsetWidth; st.classList.add('hop');
+  const f = document.createElement('div'); f.className = 'floaty'; f.textContent = ch;
+  $('#side').appendChild(f); setTimeout(() => f.remove(), 1200);
+}
+function refreshSideInfo(){
+  const t = $('#sideToday'); if(t) t.textContent = dailyCount('earned');
+  const b = $('#sideBal'); if(b) b.textContent = balance();
+}
+
+/* ================= 따라 말하기 카드 (공통) ================= */
+function makeDeck(container, items, mode){
+  let i = 0;
+  container.innerHTML = `
+  <div class="card">
+    <div class="progress"></div>
+    <div class="target"></div>
+    <div class="ko"></div>
+    <div class="row"><button class="btn blue b-listen">🔊 듣기</button><button class="btn b-slow">🐢 천천히</button></div>
+    <button class="mic">🎤</button>
+    <div class="micLabel">눌러서 따라 말하기</div>
+    <div class="said"></div>
+    <div class="stars"></div>
+    <div class="feedback"></div>
+    <div class="row"><button class="btn b-prev">◀ 이전</button><button class="btn main b-next">다음 ▶</button></div>
+  </div>`;
+  const q = s => container.querySelector(s);
+  function render(){
+    if(!items.length){ q('.target').textContent = '연습할 문장이 없어요'; return; }
+    const it = items[i];
+    q('.progress').textContent = (i+1) + ' / ' + items.length;
+    q('.target').innerHTML = it.en.split(/\s+/).map(w => '<span>' + esc(w) + '</span>').join(' ');
+    q('.ko').textContent = it.ko || '';
+    q('.said').textContent = ''; q('.stars').textContent = ''; q('.feedback').textContent = '';
+    q('.b-prev').disabled = i === 0;
+    q('.b-next').textContent = i === items.length - 1 ? '처음부터 ↺' : '다음 ▶';
+  }
+  q('.b-listen').onclick = () => items[i] && speak(items[i].en);
+  q('.b-slow').onclick = () => items[i] && speak(items[i].en, 0.6);
+  q('.b-prev').onclick = () => { if(i > 0){ i--; render(); speak(items[i].en); } };
+  q('.b-next').onclick = () => { if(!items.length) return; i = (i+1) % items.length; render(); speak(items[i].en); };
+  const mic = q('.mic'), label = q('.micLabel');
+  mic.onclick = async () => {
+    if(isListening()){ stopListening(); return; }
+    const it = items[i]; if(!it) return;
+    render();
+    q('.said').textContent = '듣고 있어요...';
+    setMic(mic, label, true);
+    const r = await listen(t => { q('.said').textContent = t; });
+    setMic(mic, label, false, '눌러서 따라 말하기');
+    if(!r.alts.length){ q('.said').textContent = errMsg(r.error || 'no-speech'); return; }
+    let best = null;
+    r.alts.forEach(a => { const c = compare(it.en, a); if(!best || c.score > best.score) best = Object.assign(c, {said:a}); });
+    const spans = q('.target').querySelectorAll('span');
+    best.wordOk.forEach((ok, k) => { if(spans[k]) spans[k].className = ok ? 'ok' : 'miss'; });
+    q('.said').textContent = '🗣️ ' + best.said;
+    const st = starsFor(best.score);
+    q('.stars').textContent = st ? '⭐'.repeat(st) : '💪';
+    const fb = rand(PRAISE[st]);
+    let got = 0;
+    if(st){
+      const key = 'r:' + it.en;
+      if(dailyCount(key) < 3){ dailyCount(key, true); got = st; }
+    }
+    q('.feedback').innerHTML = esc(fb[1]) + (st && !got ? '<div class="small">이 문장은 오늘 별을 다 받았어요. 다음 문장으로 가 볼까요?</div>' : '');
+    addLog({mode, target: it.en, said: best.said, score: Math.round(best.score * 100), stars: got});
+    if(got) addStars(got);
+    if(st === 3) celebrate();
+    speak(fb[0], 0.95);
+  };
+  render();
+  return { setItems(n){ items = n; i = 0; render(); } };
+}
+
+/* ================= 따라 말하기 탭 ================= */
+const toItems = arr => arr.map(x => ({en: x[0], ko: x[1]}));
+const repeatDeck = makeDeck($('#repeatDeck'), toItems(SETS[0].items), 'repeat');
+$('#setChips').innerHTML = SETS.map((s, k) => `<button class="chip${k===0?' on':''}" data-k="${k}">${s.name}</button>`).join('');
+$('#setChips').onclick = e => {
+  const b = e.target.closest('.chip'); if(!b) return;
+  document.querySelectorAll('#setChips .chip').forEach(c => c.classList.toggle('on', c === b));
+  repeatDeck.setItems(toItems(SETS[+b.dataset.k].items));
+};
+
+/* ================= 상황극 탭 =================
+   초급: 글자 보임, 천천히 / 중급: 소리만, 조금 빠르게 / 고급: 소리만, 보통 속도
+   답이 안 맞거나 잘못 들리면 다시 묻기 (2번까지), 세 번째엔 예시 답을 알려주고 넘어감 */
+const LEVELS = {
+  1:{name:'🌱 초급', rate:0.72, minWords:1, showText:true,  max:3, bonus:3, desc:'토비 말이 글자로 보이고, 천천히 말해요.'},
+  2:{name:'🌿 중급', rate:0.88, minWords:2, showText:false, max:4, bonus:5, desc:'글자 없이 소리만 들려요. 문장으로 대답해 봐요.'},
+  3:{name:'🌳 고급', rate:1.0,  minWords:3, showText:false, max:5, bonus:8, desc:'원어민처럼 보통 속도로 말해요. 길게 대답해 봐요.'}
+};
+let roleLevel = store.get('roleLevel', 1);
+if(!LEVELS[roleLevel]) roleLevel = 1;
+const chat = $('#chat');
+let roleState = null;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function speakSlow(text){
+  const my = ++speakToken;
+  const words = text.replace(/___/g, '').split(/\s+/).filter(Boolean);
+  for(const w of words){
+    if(my !== speakToken) return;
+    await speak(w, 0.75, true);
+    await sleep(160);
+  }
+}
+function addBubble(cls, html){
+  const d = document.createElement('div'); d.className = 'bubble ' + cls; d.innerHTML = html;
+  chat.appendChild(d); chat.scrollTop = chat.scrollHeight; return d;
+}
+function tobiSay(en, ko){
+  const LV = LEVELS[roleState.lv];
+  roleState.lastTobi = en;
+  roleState.script.push({who:'tobi', en, ko});
+  let html;
+  if(LV.showText){
+    html = '🦊 ' + esc(en) + ' <button class="replay" title="다시 듣기">🔊</button><button class="replay slow" title="또박또박">🐢</button>' + (ko ? '<small class="koline">👀 뜻 보기</small>' : '');
+  } else {
+    html = '🦊 ' + (ko ? '<span class="listen-only">잘 듣고 대답해요</span> ' : '') + '<button class="replay" title="다시 듣기">🔊</button><button class="replay slow" title="또박또박">🐢</button>';
+  }
+  const d = addBubble('tobi', html);
+  d.querySelector('.replay').onclick = () => speak(en, LV.rate);
+  d.querySelector('.slow').onclick = () => speakSlow(en);
+  const kl = d.querySelector('.koline');
+  if(kl) kl.onclick = () => { kl.textContent = ko; };
+  return speak(en, LV.rate);
+}
+function renderRoleLevels(){
+  $('#roleLevels').innerHTML = Object.entries(LEVELS).map(([k, L]) => `<button class="chip${+k === roleLevel ? ' on' : ''}" data-lv="${k}">${L.name}</button>`).join('');
+  $('#roleLevelDesc').textContent = LEVELS[roleLevel].desc;
+}
+function renderRoleList(){
+  $('#roleList').innerHTML = ROLES.map((r, k) => `<button class="chip" data-k="${k}">${r.name}</button>`).join('');
+}
+$('#roleLevels').onclick = e => {
+  const b = e.target.closest('.chip'); if(!b) return;
+  roleLevel = +b.dataset.lv; store.set('roleLevel', roleLevel);
+  renderRoleLevels();
+  if(roleState && !roleState.done) startRole(roleState.sc);   // 같은 상황을 새 단계로 다시 시작
+};
+$('#roleList').onclick = e => {
+  const b = e.target.closest('.chip'); if(!b) return;
+  document.querySelectorAll('#roleList .chip').forEach(c => c.classList.toggle('on', c === b));
+  startRole(ROLES[+b.dataset.k]);
+};
+function startRole(sc){
+  const data = sc.lv[roleLevel];
+  roleState = {sc, lv: roleLevel, steps: data.steps, end: data.end, step:0, tries:0, pushed:false, hintLv:0, stars:0, lastTobi:'', busy:false, done:false, script:[]};
+  chat.innerHTML = '';
+  $('#roleBox').style.display = 'block';
+  addBubble('hint', `${LEVELS[roleLevel].name} · ${esc(sc.name)}<small>${esc(LEVELS[roleLevel].desc)}</small>`);
+  tobiSay(data.steps[0].q, data.steps[0].ko);
+}
+function stepKey(){ return 'p:' + roleState.sc.id + ':' + roleState.lv + ':' + roleState.step; }
+function awardStep(base){
+  if(base <= 0) return 0;
+  if(dailyCount(stepKey()) >= 2){ roleState.capped = true; return 0; }
+  dailyCount(stepKey(), true);
+  roleState.stars += base; addStars(base);
+  return base;
+}
+async function nextStep(){
+  roleState.step++; roleState.tries = 0; roleState.pushed = false; roleState.hintLv = 0;
+  if(roleState.step >= roleState.steps.length){
+    roleState.done = true;
+    const LV = LEVELS[roleState.lv];
+    const bkey = 'b:' + roleState.sc.id + ':' + roleState.lv;
+    let bonus = 0;
+    if(dailyCount(bkey) < 2){ dailyCount(bkey, true); bonus = LV.bonus; roleState.stars += bonus; addStars(bonus); }
+    await tobiSay(roleState.end, '');
+    let msg = '🎉 대화 완료! 받은 별 ⭐ ' + roleState.stars + '개' + (bonus ? ` (완주 보너스 ${bonus}개 포함)` : '');
+    if(roleState.capped) msg += '<small>이 대화는 오늘 별을 다 받았어요. 다른 상황이나 다른 단계에 도전해 봐요!</small>';
+    const d = addBubble('hint', msg + '<div class="row"><button class="btn main b-again">다시 하기</button><button class="btn b-script">📜 대화 다시 보기</button></div>');
+    d.querySelector('.b-again').onclick = () => startRole(roleState.sc);
+    d.querySelector('.b-script').onclick = () => {
+      const lines = roleState.script.map(s => s.who === 'tobi'
+        ? '🦊 ' + esc(s.en) + (s.ko ? '<small>' + esc(s.ko) + '</small>' : '')
+        : '🗣️ ' + esc(s.en)).join('<br>');
+      addBubble('hint', '<b>📜 대화 대본</b><br>' + lines);
+    };
+    celebrate();
+    return;
+  }
+  const nx = roleState.steps[roleState.step];
+  await tobiSay(nx.q, nx.ko);
+}
+async function onFail(step, heardNothing){
+  roleState.tries++;
+  const LV = LEVELS[roleState.lv];
+  if(roleState.tries === 1){
+    addBubble('hint', heardNothing ? '🙂 목소리가 안 들렸어요. 다시 한 번 말해 볼까요?' : '🙂 토비가 잘 못 알아들었어요. 다시 천천히 또박또박 말해 볼까요?');
+    const pre = heardNothing ? "I couldn't hear you." : rand(["Sorry, I didn't catch that.", "Hmm, I'm not sure I understood."]);
+    await tobiSay(pre + ' ' + step.q, step.ko);
+  } else if(roleState.tries === 2){
+    addBubble('hint', '💡 이렇게 말해 보세요: <b>' + esc(step.hint) + '</b><small>' + esc(step.hko) + '</small>');
+    await speak('You can say, ' + step.hint.split(' / ')[0].replace(/___/g, ''), LV.rate);
+    await tobiSay("Now you try! " + step.q, step.ko);
+  } else {
+    addBubble('hint', '👍 괜찮아요! 다음에 다시 해 봐요. 예시 답: <b>' + esc(step.hint) + '</b>');
+    await speak("That's okay! Let's keep going.", LV.rate);
+    await nextStep();
+  }
+}
+const roleMic = $('#roleMic'), roleMicLabel = $('#roleMicLabel');
+roleMic.onclick = async () => {
+  if(!roleState || roleState.done) return;
+  if(isListening()){ stopListening(); return; }
+  if(roleState.busy){ speakToken++; speechSynthesis.cancel(); return; }   // 토비 말 건너뛰기
+  roleState.busy = true;
+  try{
+    const LV = LEVELS[roleState.lv];
+    const step = roleState.steps[roleState.step];
+    setMic(roleMic, roleMicLabel, true);
+    const live = addBubble('me', '...');
+    const r = await listen(t => { live.textContent = t || '...'; chat.scrollTop = chat.scrollHeight; });
+    setMic(roleMic, roleMicLabel, false, '눌러서 대답하기');
+    const said = r.alts[0] || '';
+    if(!said.trim()){
+      live.remove();
+      if(r.error && r.error !== 'no-speech'){ addBubble('hint', esc(errMsg(r.error))); return; }
+      await onFail(step, true);
+      return;
+    }
+    live.textContent = '🗣️ ' + said;
+    roleState.script.push({who:'me', en: said});
+    const words = norm(said).length;
+    const hit = r.alts.some(a => kwHit(a, step.kw));
+    if(hit && words < LV.minWords && !roleState.pushed){
+      roleState.pushed = true;
+      addBubble('hint', '💪 좋아요! 이번엔 문장으로 길게 말해 볼까요?<small>예: ' + esc(step.hint) + '</small>');
+      await tobiSay('Good! Can you say it in a full sentence?', '좋아! 문장으로 말해 줄래?');
+      return;
+    }
+    if(hit){
+      let base = Math.max(1, LV.max - roleState.tries - (roleState.pushed ? 1 : 0));
+      if(words >= LV.minWords + 3) base = Math.min(LV.max, base + 1);
+      const got = awardStep(base);
+      addLog({mode:'role', target: step.q, said, score: null, stars: got});
+      await tobiSay(rand(['', 'Nice! ', 'Great! ']) + step.ok, '');
+      await nextStep();
+    } else {
+      addLog({mode:'role', target: step.q, said, score: null, stars: 0});
+      await onFail(step, false);
+    }
+  } finally {
+    if(roleState) roleState.busy = false;
+  }
+};
+$('#roleHint').onclick = () => {
+  if(!roleState || roleState.done) return;
+  const step = roleState.steps[roleState.step];
+  const LV = LEVELS[roleState.lv];
+  if(!LV.showText && roleState.hintLv === 0){
+    roleState.hintLv = 1;
+    addBubble('hint', '👀 토비가 한 말의 뜻: ' + esc(step.ko) + '<small>한 번 더 누르면 대답 예시가 나와요</small>');
+    return;
+  }
+  roleState.hintLv = 2;
+  addBubble('hint', '💡 ' + esc(step.hint) + '<small>' + esc(step.hko) + '</small>');
+  speak(step.hint.split(' / ')[0].replace(/___/g, ''), Math.min(LV.rate, 0.85));
+};
+$('#roleReplay').onclick = () => roleState && speak(roleState.lastTobi, LEVELS[roleState.lv].rate);
+$('#roleSlow').onclick = () => roleState && speakSlow(roleState.lastTobi);
+renderRoleLevels();
+renderRoleList();
+
+/* ================= 단어장 탭 ================= */
+function parseWords(txt){
+  const items = [];
+  txt.split('\n').forEach(line => {
+    const p = line.split(/\s*[\/|]\s*/).map(x => x.trim());
+    if(!p[0]) return;
+    items.push({en: p[0], ko: p[1] || ''});
+    if(p[2]) items.push({en: p[2], ko: '📘 예문' + (p[1] ? ' (' + p[1] + ')' : '')});
+  });
+  return items;
+}
+const savedWords = store.get('words', DEFAULT_WORDS);
+$('#wordInput').value = savedWords;
+const wordDeck = makeDeck($('#wordDeck'), parseWords(savedWords), 'words');
+$('#wordSave').onclick = () => {
+  const v = $('#wordInput').value;
+  store.set('words', v);
+  wordDeck.setItems(parseWords(v));
+  $('#wordDeck').scrollIntoView({behavior:'smooth'});
+};
+
+/* ================= 기록 탭 ================= */
+function renderRecord(){
+  const log = store.get('log', []);
+  const today = dayKey(Date.now());
+  const todayLog = log.filter(x => dayKey(x.t) === today);
+  const days = new Set(log.map(x => dayKey(x.t)));
+  let streak = 0; const d = new Date();
+  if(!days.has(dayKey(d.getTime()))) d.setDate(d.getDate() - 1);
+  while(days.has(dayKey(d.getTime()))){ streak++; d.setDate(d.getDate() - 1); }
+  $('#statBox').innerHTML =
+    '<div><b>' + todayLog.length + '</b>오늘 말한 횟수</div>' +
+    '<div><b>' + todayLog.reduce((a, x) => a + (x.stars || 0), 0) + '</b>오늘 받은 별</div>' +
+    '<div><b>' + streak + '</b>연속 연습 일수</div>' +
+    '<div><b>' + store.get('stars', 0) + '</b>지금까지 모은 별</div>';
+  const agg = {};
+  log.filter(x => x.mode !== 'role' && x.score != null).forEach(x => { (agg[x.target] = agg[x.target] || []).push(x.score); });
+  const weak = Object.entries(agg).map(([t, a]) => ({t, avg: a.reduce((p, c) => p + c, 0) / a.length, n: a.length}))
+    .filter(x => x.avg < 80).sort((a, b) => a.avg - b.avg).slice(0, 5);
+  $('#weakBox').innerHTML = weak.length
+    ? weak.map(w => '<div class="item">' + esc(w.t) + ' <span class="t">평균 ' + Math.round(w.avg) + '% · ' + w.n + '회</span></div>').join('')
+    : '<p class="small">아직 없어요</p>';
+  $('#logBox').innerHTML = log.slice(-50).reverse().map(x =>
+    '<div class="item"><div class="t">' + fmt(x.t) + ' · ' + (MODE[x.mode] || x.mode) + (x.score != null ? ' · ' + x.score + '%' : '') + ' · ' + '⭐'.repeat(x.stars || 0) + '</div>' +
+    (x.mode === 'role' ? '🦊 ' : '목표: ') + esc(x.target) + '<br>🗣️ ' + esc(x.said) + '</div>'
+  ).join('') || '<p class="small">아직 기록이 없어요</p>';
+}
+$('#logReset').onclick = () => {
+  if(confirm('말하기 기록과 별을 모두 지울까요? (산 아이템은 그대로 남아요)')){
+    store.set('log', []); store.set('stars', 0); store.set('spent', 0); showStars(); renderRecord();
+  }
+};
+
+/* ================= 설정 탭 ================= */
+$('#setName').value = settings.name;
+$('#setName').onchange = e => { settings.name = e.target.value.trim(); saveSettings(); };
+$('#setRate').value = settings.rate;
+$('#rateVal').textContent = settings.rate;
+$('#setRate').oninput = e => { settings.rate = +e.target.value; $('#rateVal').textContent = settings.rate; saveSettings(); };
+$('#setWait').value = settings.wait;
+$('#waitVal').textContent = settings.wait;
+$('#setWait').oninput = e => { settings.wait = +e.target.value; $('#waitVal').textContent = settings.wait; saveSettings(); };
+$('#setVoice').onchange = e => { settings.voiceURI = e.target.value; saveSettings(); };
+$('#voiceTest').onclick = () => speak('Hi' + (settings.name ? ' ' + settings.name : '') + "! I'm Tobi. Let's speak English together!");
+const testMic = $('#testMic');
+testMic.onclick = async () => {
+  if(isListening()){ stopListening(); return; }
+  $('#testSaid').textContent = '듣고 있어요...';
+  setMic(testMic, null, true);
+  const r = await listen(t => { $('#testSaid').textContent = t; });
+  setMic(testMic, null, false);
+  $('#testSaid').textContent = r.alts.length ? '🗣️ ' + r.alts.join('  /  ') : errMsg(r.error || 'no-speech');
+};
+
+/* ================= 탭 전환·초기화 ================= */
+function showTab(name){
+  if(isListening()) stopListening();
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x.dataset.tab === name));
+  document.querySelectorAll('main section').forEach(s => s.classList.toggle('on', s.id === name));
+  if(name === 'record') renderRecord();
+  $('#layout').classList.toggle('study', ['repeat','role','words'].includes(name));
+  if(name === 'dress'){ preview = null; shopCat = shopCat || 'outfit'; renderShop(); }
+}
+$('#tabs').onclick = e => { const b = e.target.closest('button'); if(b) showTab(b.dataset.tab); };
+$('#headAvatar').onclick = () => showTab('dress');
+$('#sideStage').onclick = () => showTab('dress');
+if('speechSynthesis' in window){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+refreshHeadAvatar();
+showStars();
+const warn = [];
+if(!SR) warn.push('이 브라우저는 음성 인식을 지원하지 않아요. <b>크롬</b>으로 열어주세요.');
+if(location.protocol === 'file:') warn.push('파일을 직접 열면 마이크가 동작하지 않을 수 있어요. 바탕화면의 Bella English 아이콘으로 열어주세요.');
+if(warn.length){ $('#warn').innerHTML = warn.join('<br>'); $('#warn').style.display = 'block'; }
+if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
