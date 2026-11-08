@@ -99,6 +99,27 @@ code{background:#f4f4f4;padding:1px 5px;border-radius:4px;}
   .sideInfo{background:#fff;border-radius:16px;padding:12px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.06);}
   .floaty{left:50%;top:40%;font-size:26px;}
 }
+/* 단어장 */
+.va-steps{display:flex;gap:10px;}
+.va-box{flex:1;border:2px solid #f3d3df;border-radius:16px;padding:10px;text-align:center;background:#fff;}
+.va-box.active{border-color:var(--main);box-shadow:0 0 0 3px rgba(255,122,168,.2);}
+.va-label{font-size:13px;color:var(--sub);}
+.va-word{font-size:26px;font-weight:700;min-height:38px;margin:4px 0;word-break:break-all;}
+.va-alts{font-size:12px;color:var(--sub);min-height:18px;}
+.va-alts .chip{padding:3px 10px;font-size:13px;}
+.mic.small-mic{width:64px;height:64px;font-size:28px;margin:8px auto 2px;}
+.va-msg{text-align:center;margin-top:12px;font-size:15px;min-height:22px;}
+.wg{border-top:1px solid #f3e6ec;padding:10px 0;}
+.wg:first-child{border-top:none;}
+.wg-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+.wg-head .btn{margin-left:auto;padding:8px 12px;font-size:14px;}
+.wg-list{display:flex;flex-direction:column;gap:4px;}
+.wi{display:flex;align-items:center;gap:8px;background:#fff7fa;border-radius:10px;padding:6px 10px;}
+.wi-en{font-weight:700;font-size:16px;}
+.wi-ko{color:var(--sub);flex:1;}
+.wi-btn{border:none;background:none;font-size:16px;cursor:pointer;padding:2px 4px;}
+.kbd-add{margin-top:12px;font-size:14px;}
+.kbd-add summary{cursor:pointer;color:var(--sub);}
 /* 꾸미기 */
 .lbl{font-weight:700;margin:4px 0 8px;}
 .dress-top{display:flex;flex-direction:column;gap:0;}
@@ -174,13 +195,42 @@ code{background:#f4f4f4;padding:1px 5px;border-radius:4px;}
   </section>
 
   <section id="words">
-    <div class="card">
-      <b>학원 단어 넣기</b>
-      <p class="small">한 줄에 하나씩 입력: <code>영어 / 뜻 / 예문(없어도 됨)</code></p>
-      <textarea id="wordInput"></textarea>
-      <div class="row"><button class="btn main" id="wordSave">저장하고 연습 시작</button></div>
+    <div class="card" id="voiceAdd">
+      <div class="lbl">🎤 말로 단어 넣기</div>
+      <p class="small">영어 단어를 말하고, 이어서 뜻을 한국어로 말하면 단어장에 들어가요.</p>
+      <div class="va-steps">
+        <div class="va-box" id="vaEnBox">
+          <div class="va-label">1️⃣ 영어 단어</div>
+          <div class="va-word" id="vaEn">—</div>
+          <div class="va-alts" id="vaAlts"></div>
+          <button class="mic small-mic" id="vaEnMic">🎤</button>
+        </div>
+        <div class="va-box" id="vaKoBox">
+          <div class="va-label">2️⃣ 한국어 뜻</div>
+          <div class="va-word" id="vaKo">—</div>
+          <button class="mic small-mic" id="vaKoMic">🎤</button>
+        </div>
+      </div>
+      <div class="va-msg" id="vaMsg">🎤 1번 마이크를 누르고 영어 단어를 말해 주세요</div>
+      <div class="row" id="vaBtns" style="display:none">
+        <button class="btn main" id="vaOk">✅ 확인</button>
+        <button class="btn" id="vaRetry">🔄 다시</button>
+      </div>
     </div>
-    <div id="wordDeck"></div>
+    <div class="card">
+      <div class="lbl">📒 내 단어장</div>
+      <div id="wordGroups"></div>
+      <details class="kbd-add">
+        <summary>⌨️ 키보드로 넣기 (부모님용)</summary>
+        <p class="small">한 줄에 하나씩: <code>영어 / 뜻 / 예문(없어도 됨)</code></p>
+        <textarea id="wordInput" placeholder="apple / 사과 / I eat an apple every day."></textarea>
+        <div class="row"><button class="btn main" id="wordSave">오늘 단어에 추가</button></div>
+      </details>
+    </div>
+    <div id="wordDeckWrap" style="display:none">
+      <div class="lbl" id="wordDeckTitle"></div>
+      <div id="wordDeck"></div>
+    </div>
   </section>
 
   <section id="dress">
@@ -231,7 +281,7 @@ code{background:#f4f4f4;padding:1px 5px;border-radius:4px;}
       <div class="said" id="testSaid">눌러서 아무 영어나 말해보세요</div>
     </div>
     <p class="small">크롬 브라우저에서 사용하세요. 음성 인식은 인터넷 연결이 필요합니다. 기록은 이 기기의 브라우저에만 저장됩니다.</p>
-    <p class="small" style="text-align:center;margin-top:20px">Bella English · 버전 2026-11-08</p>
+    <p class="small" style="text-align:center;margin-top:20px">Bella English · 버전 2026-11-08.2</p>
   </section>
 </main>
 </div>
@@ -631,12 +681,13 @@ function mergeSeg(segs){
   });
   return out.join(' ').replace(/\s+/g, ' ').trim();
 }
-function listen(onInterim){
+function listen(onInterim, opts){
+  opts = opts || {};
   return new Promise(resolve => {
     if(!SR){ resolve({alts:[], error:'unsupported'}); return; }
     speakToken++;
     if('speechSynthesis' in window) speechSynthesis.cancel();
-    const waitMs = Math.round((settings.wait || 3) * 1000);
+    const waitMs = Math.round((opts.wait || settings.wait || 3) * 1000);
     const startT = Date.now();
     let acc = [], curFinals = [], curInterim = '', lastAlts = [];
     let error = null, timer = null, finished = false;
@@ -656,7 +707,7 @@ function listen(onInterim){
     function startOne(){
       curFinals = []; curInterim = '';
       const r = new SR(); rec = r;
-      r.lang = 'en-US'; r.interimResults = true; r.maxAlternatives = 5; r.continuous = true;
+      r.lang = opts.lang || 'en-US'; r.interimResults = true; r.maxAlternatives = 5; r.continuous = !opts.single;
       r.onresult = e => {
         curFinals = []; curInterim = '';
         for(let i = 0; i < e.results.length; i++){
@@ -677,7 +728,7 @@ function listen(onInterim){
       r.onend = () => {
         acc = acc.concat(curFinals, curInterim ? [curInterim] : []);
         curFinals = []; curInterim = '';
-        if(!stopReq && !error && Date.now() - startT < 40000){
+        if(!opts.single && !stopReq && !error && Date.now() - startT < 40000){
           try{ startOne(); return; }catch(e){}
         }
         finish();
@@ -1165,26 +1216,161 @@ $('#roleSlow').onclick = () => roleState && speakSlow(roleState.lastTobi);
 renderRoleLevels();
 renderRoleList();
 
-/* ================= 단어장 탭 ================= */
+/* ================= 단어장 탭 =================
+   단어는 {id, en, ko, ex, day} 목록으로 저장. 날짜별로 묶어서 보여줌.
+   말로 넣기: 영어(en-US 인식) → 한국어 뜻(ko-KR 인식) → 확인/다시 */
 function parseWords(txt){
-  const items = [];
+  const out = [];
   txt.split('\n').forEach(line => {
     const p = line.split(/\s*[\/|]\s*/).map(x => x.trim());
-    if(!p[0]) return;
-    items.push({en: p[0], ko: p[1] || ''});
-    if(p[2]) items.push({en: p[2], ko: '📘 예문' + (p[1] ? ' (' + p[1] + ')' : '')});
+    if(p[0]) out.push({en: p[0], ko: p[1] || '', ex: p[2] || ''});
+  });
+  return out;
+}
+function todayLabel(){ const d = new Date(); return (d.getMonth()+1) + '월 ' + d.getDate() + '일'; }
+function dayOrder(t){ return t; }
+let wordList = store.get('wordList', null);
+if(!wordList){
+  // 예전 방식(글자로 저장된 단어장) 옮기기
+  const old = store.get('words', DEFAULT_WORDS);
+  const now = Date.now();
+  wordList = parseWords(old).map((w, k) => Object.assign(w, {id: now + k, day: dayKey(now), t: now}));
+  store.set('wordList', wordList);
+}
+function saveWords(){ store.set('wordList', wordList); }
+function addWord(en, ko, ex){
+  en = en.trim(); ko = (ko || '').trim();
+  const today = dayKey(Date.now());
+  const dup = wordList.find(w => w.en.toLowerCase() === en.toLowerCase() && w.day === today);
+  if(dup){ dup.ko = ko || dup.ko; if(ex) dup.ex = ex; }
+  else wordList.push({id: Date.now() + Math.random(), en, ko, ex: ex || '', day: today, t: Date.now()});
+  saveWords(); renderWordGroups();
+}
+function groupLabel(day, t){
+  if(day === dayKey(Date.now())) return '오늘 (' + todayLabel() + ')';
+  const d = new Date(t); return (d.getMonth()+1) + '월 ' + d.getDate() + '일';
+}
+function deckItems(words){
+  const items = [];
+  words.forEach(w => {
+    items.push({en: w.en, ko: w.ko});
+    if(w.ex) items.push({en: w.ex, ko: '📘 예문' + (w.ko ? ' (' + w.ko + ')' : '')});
   });
   return items;
 }
-const savedWords = store.get('words', DEFAULT_WORDS);
-$('#wordInput').value = savedWords;
-const wordDeck = makeDeck($('#wordDeck'), parseWords(savedWords), 'words');
-$('#wordSave').onclick = () => {
-  const v = $('#wordInput').value;
-  store.set('words', v);
-  wordDeck.setItems(parseWords(v));
-  $('#wordDeck').scrollIntoView({behavior:'smooth'});
+let wordDeck = null;
+function startWordPractice(day){
+  const words = wordList.filter(w => w.day === day);
+  if(!words.length) return;
+  $('#wordDeckWrap').style.display = 'block';
+  $('#wordDeckTitle').textContent = '📖 ' + groupLabel(day, words[0].t) + ' 단어 따라 말하기';
+  if(!wordDeck) wordDeck = makeDeck($('#wordDeck'), deckItems(words), 'words');
+  else wordDeck.setItems(deckItems(words));
+  $('#wordDeckWrap').scrollIntoView({behavior:'smooth'});
+  speak(words[0].en);
+}
+function renderWordGroups(){
+  const groups = {};
+  wordList.forEach(w => { (groups[w.day] = groups[w.day] || []).push(w); });
+  const days = Object.keys(groups).sort((a, b) => groups[b][0].t - groups[a][0].t);
+  $('#wordGroups').innerHTML = days.length ? days.map(day => {
+    const ws = groups[day];
+    return `<div class="wg">
+      <div class="wg-head"><b>${esc(groupLabel(day, ws[0].t))}</b> <span class="small">${ws.length}개</span>
+        <button class="btn main wg-practice" data-day="${esc(day)}">📖 이 단어로 따라 말하기</button></div>
+      <div class="wg-list">${ws.map(w => `<div class="wi" data-id="${w.id}">
+        <span class="wi-en">${esc(w.en)}</span><span class="wi-ko">${esc(w.ko || '')}</span>
+        <button class="wi-btn wi-say" title="듣기">🔊</button><button class="wi-btn wi-del" title="지우기">🗑</button></div>`).join('')}</div>
+    </div>`;
+  }).join('') : '<p class="small">아직 단어가 없어요. 위에서 말로 넣어 보세요!</p>';
+}
+$('#wordGroups').onclick = e => {
+  const pr = e.target.closest('.wg-practice'); if(pr){ startWordPractice(pr.dataset.day); return; }
+  const row = e.target.closest('.wi'); if(!row) return;
+  const w = wordList.find(x => String(x.id) === row.dataset.id); if(!w) return;
+  if(e.target.closest('.wi-say')) speak(w.en, 0.8);
+  if(e.target.closest('.wi-del')){
+    if(confirm(`"${w.en}" 단어를 지울까요?`)){ wordList = wordList.filter(x => x !== w); saveWords(); renderWordGroups(); }
+  }
 };
+$('#wordSave').onclick = () => {
+  const v = $('#wordInput').value; if(!v.trim()) return;
+  parseWords(v).forEach(w => addWord(w.en, w.ko, w.ex));
+  $('#wordInput').value = '';
+};
+
+/* ---- 말로 단어 넣기 ---- */
+const va = {en: '', ko: '', step: 'en'};
+const HANGUL = /[ㄱ-힝]/;
+function vaMsg(t){ $('#vaMsg').innerHTML = t; }
+function vaRender(){
+  $('#vaEn').textContent = va.en || '—';
+  $('#vaKo').textContent = va.ko || '—';
+  $('#vaEnBox').classList.toggle('active', va.step === 'en');
+  $('#vaKoBox').classList.toggle('active', va.step === 'ko');
+  $('#vaBtns').style.display = va.en && va.ko ? 'flex' : 'none';
+}
+function vaReset(){ va.en = ''; va.ko = ''; va.step = 'en'; $('#vaAlts').innerHTML = ''; vaRender(); }
+function cleanEn(s){ return s.toLowerCase().replace(/[^a-z' -]/g, ' ').replace(/\s+/g, ' ').trim(); }
+function cleanKo(s){ return s.replace(/[.,!?~"']/g, '').replace(/\s+/g, ' ').trim(); }
+async function vaListenEn(){
+  if(isListening()){ stopListening(); return; }
+  const mic = $('#vaEnMic');
+  va.step = 'en'; vaRender();
+  vaMsg('듣고 있어요... 영어 단어를 말해 주세요');
+  setMic(mic, null, true);
+  const r = await listen(t => { $('#vaEn').textContent = t || '...'; }, {lang: 'en-US', wait: 2.5, single: true});
+  setMic(mic, null, false);
+  const raw = r.alts.join(' ');
+  if(!r.alts.length){ va.en = ''; vaRender(); vaMsg(r.error && r.error !== 'no-speech' ? esc(errMsg(r.error)) : '🙂 잘 안 들렸어요. 1번 🎤를 누르고 다시 말해 주세요'); return; }
+  if(HANGUL.test(raw) && !r.alts.some(a => !HANGUL.test(a))){ va.en = ''; vaRender(); vaMsg('🙂 영어로 말해 주세요. 1번 🎤를 다시 눌러요'); return; }
+  const cands = [];
+  r.alts.map(cleanEn).forEach(c => { if(c && !cands.includes(c) && c.split(' ').length <= 3) cands.push(c); });
+  // 두 단어 이상이 붙어 들어오면(예: 뜻까지 이어서 말함) 첫 단어도 선택지로
+  r.alts.map(cleanEn).forEach(c => { const ws = c.split(' '); if(ws.length === 2 && !cands.includes(ws[0])) cands.push(ws[0]); });
+  if(!cands.length){ va.en = ''; vaRender(); vaMsg('🙂 단어 하나만 말해 주세요. 1번 🎤를 다시 눌러요'); return; }
+  va.en = cands[0];
+  $('#vaAlts').innerHTML = cands.length > 1 ? '혹시 이 단어? ' + cands.slice(1, 4).map(c => `<button class="chip va-alt">${esc(c)}</button>`).join(' ') : '';
+  vaRender();
+  await speak(va.en, 0.8);
+  if(va.ko){ vaMsg('맞으면 ✅ 확인을 눌러요'); return; }
+  vaListenKo();
+}
+async function vaListenKo(){
+  if(isListening()){ stopListening(); return; }
+  if(!va.en){ vaMsg('🙂 먼저 1번 🎤로 영어 단어를 말해 주세요'); return; }
+  const mic = $('#vaKoMic');
+  va.step = 'ko'; vaRender();
+  vaMsg('듣고 있어요... 뜻을 한국어로 말해 주세요');
+  setMic(mic, null, true);
+  const r = await listen(t => { $('#vaKo').textContent = t || '...'; }, {lang: 'ko-KR', wait: 2.5, single: true});
+  setMic(mic, null, false);
+  const pick = r.alts.map(cleanKo).find(a => a && HANGUL.test(a) && a.length <= 15);
+  if(!pick){
+    va.ko = ''; vaRender();
+    vaMsg(r.alts.length ? '🙂 한국어 뜻을 짧게 말해 주세요. 2번 🎤를 다시 눌러요' : (r.error && r.error !== 'no-speech' ? esc(errMsg(r.error)) : '🙂 잘 안 들렸어요. 2번 🎤를 누르고 다시 말해 주세요'));
+    return;
+  }
+  va.ko = pick; va.step = ''; vaRender();
+  vaMsg(`<b>${esc(va.en)}</b> = <b>${esc(va.ko)}</b> 맞나요? 맞으면 ✅ 확인, 틀리면 🔄 다시<br><span class="small">영어나 뜻 한쪽만 틀렸으면 그쪽 🎤만 다시 눌러도 돼요</span>`);
+}
+$('#vaEnMic').onclick = vaListenEn;
+$('#vaKoMic').onclick = vaListenKo;
+$('#vaAlts').onclick = e => {
+  const b = e.target.closest('.va-alt'); if(!b) return;
+  const prev = va.en; va.en = b.textContent; b.textContent = prev; vaRender(); speak(va.en, 0.8);
+};
+$('#vaOk').onclick = () => {
+  if(!va.en || !va.ko) return;
+  addWord(va.en, va.ko, '');
+  celebrate('📒');
+  vaMsg(`✅ <b>${esc(va.en)}</b> 넣었어요! 다음 단어도 1번 🎤를 눌러 말해 보세요`);
+  vaReset_keepMsg();
+};
+function vaReset_keepMsg(){ const m = $('#vaMsg').innerHTML; vaReset(); $('#vaMsg').innerHTML = m; }
+$('#vaRetry').onclick = () => { vaReset(); vaMsg('🎤 1번 마이크를 누르고 영어 단어를 다시 말해 주세요'); };
+renderWordGroups();
+vaRender();
 
 /* ================= 기록 탭 ================= */
 function renderRecord(){
