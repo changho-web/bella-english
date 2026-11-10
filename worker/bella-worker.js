@@ -4,14 +4,14 @@
    앱(탭) → 이 서버 → Claude API.  API 키는 이 서버에만 있고 앱에는 없음.
 
    [Cloudflare에 넣는 방법]
-   1) Workers & Pages → 만들기 → Worker → "Hello World" 로 만들고 이름: bella-tobi
-   2) 코드 편집 → 이 파일 내용 전체를 붙여넣기 → 배포(Deploy)
-   3) 설정 → 변수 및 비밀(Variables and Secrets) → "비밀(Secret)"으로 추가
+   1) Workers & Pages → Create application → Start with Hello World! → 이름 bella-tobi → Deploy
+   2) Edit code → 원래 코드를 지우고 이 파일 내용 전체를 붙여넣기 → Deploy
+   3) Settings → Variables and Secrets → Add → Type: Secret 으로 추가
         ANTHROPIC_API_KEY : Claude 콘솔에서 받은 API 키 (sk-ant-...)
         FAMILY_CODE       : 앱에 넣을 가족 코드 (예: 영어+숫자 8자 이상)
         PARENT_CODE       : (선택) 부모용 기록 보기 코드. 없으면 FAMILY_CODE 사용
-   4) (권장) 저장소 → KV → 네임스페이스 만들기(이름 bella) →
-      Worker 설정 → 바인딩 → KV 추가, 변수 이름: BELLA_KV
+   4) (권장) Workers KV → Create instance → 이름 bella →
+      bella-tobi Worker → Bindings → Add binding → KV namespace, Variable name: BELLA_KV
         - 있으면: 서버에서도 하루 60번 제한 + 부모님이 어디서나 대화 기록 확인 (/parent)
         - 없으면: 제한은 탭에서만, 기록도 탭 안에만 저장
    5) 주소(https://bella-tobi.○○○.workers.dev)와 가족 코드를 앱 설정 → "AI 토비 연결"에 입력
