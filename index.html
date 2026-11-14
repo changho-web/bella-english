@@ -374,7 +374,7 @@ html.adult #headAvatar{font-size:26px;}
     <div class="card">
       <label for="setName" id="setNameLbl">아이 이름 (영어)</label>
       <input type="text" id="setName" placeholder="예: Bella">
-      <label for="setVoice">토비 목소리</label>
+      <label for="setVoice">기기 목소리 (서버 목소리를 안 쓸 때·단어·문장 읽기)</label>
       <select id="setVoice"></select>
       <label for="setRate">말하기 속도: <span id="rateVal"></span></label>
       <input type="range" id="setRate" min="0.6" max="1.1" step="0.05" style="width:100%">
@@ -382,6 +382,23 @@ html.adult #headAvatar{font-size:26px;}
       <input type="range" id="setWait" min="1.5" max="6" step="0.5" style="width:100%">
       <p class="small">아이가 말하다 멈춘 뒤 이 시간 동안 조용하면 대답이 끝난 걸로 봐요. 자주 끊기면 늘려 주세요.</p>
       <div class="row"><button class="btn blue" id="voiceTest">🔊 목소리 들어보기</button></div>
+    </div>
+    <div class="card" id="ttsCard">
+      <b>🔊 토비 목소리 (사람 같은 목소리)</b>
+      <p class="small" id="ttsLocked">AI 토비를 연결하면 서버의 자연스러운 목소리를 쓸 수 있어요.</p>
+      <div id="ttsArea">
+        <label for="setTtsMode">어디에 쓸까요?</label>
+        <select id="setTtsMode">
+          <option value="all">📜 대본 토비 + 🤖 AI 토비</option>
+          <option value="ai">🤖 AI 토비만</option>
+          <option value="off">쓰지 않기 (기기 목소리)</option>
+        </select>
+        <label for="setTtsVoice">목소리 고르기</label>
+        <select id="setTtsVoice"></select>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:10px"><input type="checkbox" id="setTtsTone" style="width:auto"> 🎈 톤 높이기 (더 어린 느낌, 말이 조금 빨라져요)</label>
+        <div class="row"><button class="btn blue" id="ttsTest">▶ 이 목소리 들어보기</button></div>
+        <p class="small" id="ttsMsg">진짜 아이 목소리는 없어서, 젊고 밝은 여자 목소리 중에서 골라요. 하루 무료 양(토비 말 50~100번쯤)을 다 쓰면 그날은 기기 목소리로 읽어요.</p>
+      </div>
     </div>
     <div class="card">
       <b>마이크 테스트</b>
@@ -402,7 +419,7 @@ html.adult #headAvatar{font-size:26px;}
       </details>
     </div>
     <p class="small">크롬 브라우저에서 사용하세요. 음성 인식은 인터넷 연결이 필요합니다. 기록은 이 기기의 브라우저에 사람별로 저장됩니다. (AI 토비 대화는 연결한 서버에도 저장될 수 있어요)</p>
-    <p class="small" style="text-align:center;margin-top:20px">Bella English · 버전 2026-11-13</p>
+    <p class="small" style="text-align:center;margin-top:20px">Bella English · 버전 2026-11-15</p>
   </section>
 </main>
 </div>
@@ -895,6 +912,66 @@ function speak(text, rate, fromSlow){
     speechSynthesis.speak(u);
     setTimeout(fin, 4000 + text.length * 150);
   });
+}
+
+/* ================= 🔊 서버 목소리 (사람 같은 목소리) =================
+   토비 말만 서버(Cloudflare Workers AI · Deepgram Aura)로 읽음. 하루 무료 양을 넘거나 오류면 기기 목소리로.
+   a1: = Aura-1(무료 양으로 더 많이), a2: = Aura-2(더 자연스러움) */
+const TTS_VOICES = [
+  ['a1:stella', 'Stella · 여자 (밝고 활발)'], ['a2:luna', 'Luna · 여자 (친근)'], ['a2:thalia', 'Thalia · 여자 (명랑)'],
+  ['a2:amalthea', 'Amalthea · 여자 (젊은)'], ['a2:andromeda', 'Andromeda · 여자 (편안)'], ['a1:luna', 'Luna (가벼운 버전) · 여자'],
+  ['a2:asteria', 'Asteria · 여자 (또렷)'], ['a2:helena', 'Helena · 여자 (다정)'], ['a2:athena', 'Athena · 여자 (차분)'],
+  ['a2:apollo', 'Apollo · 남자 (편안)'], ['a2:arcas', 'Arcas · 남자 (부드러움)'], ['a2:orion', 'Orion · 남자 (차분)']
+];
+if(!settings.ttsMode) settings.ttsMode = ADULT ? 'ai' : 'all';            // all = 대본 토비도, ai = AI 토비만, off
+if(!settings.ttsVoice) settings.ttsVoice = ADULT ? 'a2:asteria' : 'a1:stella';
+const ttsCache = new Map();
+let ttsNote = '';
+function ttsOn(where){
+  if(!(settings.aiUrl && settings.aiCode) || settings.ttsMode === 'off') return false;
+  if(lsGet('bella_ttsOff', '') === dayKey(Date.now())) return false;                    // 오늘 무료 양을 다 씀
+  return settings.ttsMode === 'all' || where === 'ai';
+}
+function speakTobi(text, rate, where){
+  if(!ttsOn(where)) return speak(text, rate);
+  const tok = ++speakToken;
+  if('speechSynthesis' in window) speechSynthesis.cancel();
+  return serverSpeak(text, rate, tok, settings.ttsVoice, !!settings.ttsTone).catch(e => {
+    if(tok !== speakToken) return;
+    if(e && e.kind === 'tts_limit'){ lsSet('bella_ttsOff', dayKey(Date.now())); ttsNote = '오늘 서버 목소리 무료 양을 다 써서 기기 목소리로 읽어요.'; }
+    return speak(text, rate);
+  });
+}
+async function ttsFetch(text, voice){
+  const key = voice + '|' + text;
+  if(ttsCache.has(key)) return ttsCache.get(key);
+  const ctl = new AbortController(); const tm = setTimeout(() => ctl.abort(), 15000);
+  try{
+    const res = await fetch(settings.aiUrl.replace(/\/+$/, '') + '/tts', {method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({code: settings.aiCode, who: PROFILE, text, voice}), signal: ctl.signal});
+    if(!res.ok){ let d = null; try{ d = await res.json(); }catch(e){} const err = new Error('tts'); err.kind = (d && d.error) || 'tts'; throw err; }
+    const url = URL.createObjectURL(await res.blob());
+    ttsCache.set(key, url);
+    if(ttsCache.size > 80){ const k = ttsCache.keys().next().value; URL.revokeObjectURL(ttsCache.get(k)); ttsCache.delete(k); }
+    return url;
+  }finally{ clearTimeout(tm); }
+}
+async function serverSpeak(text, rate, tok, voice, tone){
+  const url = await ttsFetch(text, voice);
+  if(tok !== speakToken) return;
+  const a = new Audio(url);
+  if(tone){ a.preservesPitch = false; a.playbackRate = 1.12; }                 // 🎈 톤 높이기 (조금 빨라짐)
+  else a.playbackRate = Math.max(0.75, Math.min(1.1, rate || settings.rate));
+  let failed = false;
+  await new Promise(resolve => {
+    let done = false;
+    const fin = () => { if(!done){ done = true; clearInterval(iv); resolve(); } };
+    const iv = setInterval(() => { if(tok !== speakToken){ a.pause(); fin(); } }, 120);   // 다른 소리·마이크가 시작되면 멈춤
+    a.onended = fin; a.onerror = () => { failed = true; fin(); };
+    setTimeout(fin, 5000 + text.length * 150);                                   // 끝 신호가 안 와도 멈추지 않게
+    a.play().catch(() => { failed = true; fin(); });
+  });
+  if(failed){ const e = new Error('play'); e.kind = 'play'; throw e; }        // 재생이 막히면 기기 목소리로
 }
 
 /* ================= 음성 인식 (STT) =================
@@ -1400,11 +1477,12 @@ function foxBubble(box, en, ko, LV){
     html = '🦊 ' + (ko ? '<span class="listen-only">잘 듣고 대답해요</span> ' : '') + '<button class="replay" title="다시 듣기">🔊</button><button class="replay slow" title="또박또박">🐢</button>';
   }
   const d = addBubble('tobi', html, box);
-  d.querySelector('.replay').onclick = () => speak(en, LV.rate);
+  const where = box === chat ? 'script' : 'ai';
+  d.querySelector('.replay').onclick = () => speakTobi(en, LV.rate, where);
   d.querySelector('.slow').onclick = () => speakSlow(en);
   const kl = d.querySelector('.koline');
   if(kl) kl.onclick = () => { kl.textContent = ko; };
-  return speak(en, LV.rate);
+  return speakTobi(en, LV.rate, where);
 }
 function renderRoleLevels(){
   $('#roleLevels').innerHTML = Object.entries(LEVELS).map(([k, L]) => `<button class="chip${+k === roleLevel ? ' on' : ''}" data-lv="${k}">${L.name}</button>`).join('');
@@ -1547,7 +1625,7 @@ $('#roleHint').onclick = () => {
   addBubble('hint', '💡 ' + esc(step.hint) + '<small>' + esc(step.hko) + '</small>');
   speak(step.hint.split(' / ')[0].replace(/___/g, ''), Math.min(LV.rate, 0.85));
 };
-$('#roleReplay').onclick = () => roleState && speak(roleState.lastTobi, LEVELS[roleState.lv].rate);
+$('#roleReplay').onclick = () => roleState && speakTobi(roleState.lastTobi, LEVELS[roleState.lv].rate, 'script');
 $('#roleSlow').onclick = () => roleState && speakSlow(roleState.lastTobi);
 renderRoleLevels();
 renderRoleList();
@@ -1871,7 +1949,7 @@ $('#aiHint').onclick = () => {
   addBubble('hint', '💡 ' + esc(L.hint) + '<small>' + esc(L.hint_ko || '') + '</small>', aiChat);
   speak(ttsText(L.hint), Math.min(LV.rate, 0.85));
 };
-$('#aiReplay').onclick = () => aiState && aiState.lastEn && speak(ttsText(aiState.lastEn), LEVELS[aiState.lv].rate);
+$('#aiReplay').onclick = () => aiState && aiState.lastEn && speakTobi(ttsText(aiState.lastEn), LEVELS[aiState.lv].rate, 'ai');
 $('#aiSlow').onclick = () => aiState && aiState.lastEn && speakSlow(ttsText(aiState.lastEn));
 $('#aiEnd').onclick = () => {
   const st = aiState; if(!st || st.done || st.waiting) return;
@@ -2209,7 +2287,7 @@ $('#whoClose').onclick = () => { $('#whoMenu').style.display = 'none'; };
 $('#whoMenu').onclick = e => { if(e.target.id === 'whoMenu') $('#whoMenu').style.display = 'none'; };
 /* AI 토비 연결 (부모님용) */
 function aiSettingsChanged(){
-  saveSettings(); aiSetState();
+  saveSettings(); aiSetState(); if(typeof renderTts === 'function') renderTts();
   setRoleMode(aiReady() ? roleMode : 'script');
   renderWordGroups(); renderMyMake();
 }
@@ -2247,6 +2325,31 @@ $('#aiSetup').ontoggle = () => {
   $('#aiUsage').innerHTML = usageText();
 };
 aiSetState();
+/* 🔊 서버 목소리 설정 (사람별) */
+$('#setTtsVoice').innerHTML = TTS_VOICES.map(([v, n]) => `<option value="${v}">${n}</option>`).join('');
+function renderTts(){
+  const ai = aiReady();
+  $('#ttsLocked').style.display = ai ? 'none' : 'block';
+  $('#ttsArea').style.display = ai ? 'block' : 'none';
+  $('#setTtsMode').value = settings.ttsMode; $('#setTtsVoice').value = settings.ttsVoice; $('#setTtsTone').checked = !!settings.ttsTone;
+  if(ttsNote) $('#ttsMsg').textContent = ttsNote;
+}
+$('#setTtsMode').onchange = e => { settings.ttsMode = e.target.value; saveSettings(); };
+$('#setTtsVoice').onchange = e => { settings.ttsVoice = e.target.value; saveSettings(); $('#ttsTest').click(); };
+$('#setTtsTone').onchange = e => { settings.ttsTone = e.target.checked; saveSettings(); $('#ttsTest').click(); };
+$('#ttsTest').onclick = async () => {
+  const msg = $('#ttsMsg'); msg.textContent = '불러오는 중...';
+  const tok = ++speakToken;
+  try{
+    await serverSpeak(ADULT ? "Hello! I'm Tobi. Shall we practice English together today?" : "Hi! I'm Tobi. Do you want to be my friend? Let's talk in English!",
+      settings.rate, tok, settings.ttsVoice, !!settings.ttsTone);
+    msg.textContent = '✅ 서버 목소리예요. 마음에 드는 목소리를 골라 주세요.';
+  }catch(e){
+    msg.textContent = '❌ ' + ({no_tts:'서버에 Workers AI 연결(Bindings → Workers AI, 이름 AI)이 필요해요.', tts_limit:'오늘 무료 양을 다 썼어요. 내일 다시 들어볼 수 있어요.',
+      code:'가족 코드를 확인해 주세요.', play:'소리를 재생하지 못했어요. 화면을 한 번 누르고 다시 해 주세요.'}[e.kind] || '서버 목소리를 불러오지 못했어요 (' + e.kind + ').');
+  }
+};
+renderTts();
 $('#voiceTest').onclick = () => speak('Hi' + (settings.name ? ' ' + settings.name : '') + "! I'm Tobi. Let's speak English together!");
 const testMic = $('#testMic');
 testMic.onclick = async () => {

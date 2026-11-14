@@ -15,6 +15,8 @@
         Text    CREDIT_DATE       : (선택) 충전한 날짜, 예: 2026-12-01 (다시 충전하면 두 값을 바꿈)
    4) (권장) Workers KV → Create instance → 이름 bella →
       bella-tobi Worker → Bindings → Add binding → KV namespace, Variable name: BELLA_KV
+   4-1) (사람 같은 목소리) bella-tobi Worker → Bindings → Add binding → Workers AI, Variable name: AI
+        - Cloudflare 무료 양(하루 10,000 뉴런) 안에서 토비 목소리를 만들고, 넘으면 앱이 기기 목소리로 바꿈
         - 있으면: 서버에서도 횟수 제한 + 사용 금액 계산 + 어디서나 대화 기록 확인 (/parent)
         - 없으면: 제한은 기기에서만, 기록도 기기 안에만 저장
    5) 주소(https://bella-tobi.○○○.workers.dev)와 가족 코드를 앱 설정 → "AI 토비 연결"에 입력
@@ -27,6 +29,11 @@ const DAILY_MAX = 500;      // 가족 전체 하루 대답 최대 (안전 상한
 const EXTRA_LIMIT = 300;    // 가족 전체 하루 대화 시작·요약·한국어 도우미·예문 수
 const PRICE_IN = 0.10, PRICE_OUT = 0.50;   // 100만 토큰당 달러 (Claude Haiku 5.5)
 const KEEP_DAYS = 400;      // 서버 기록 보관 일수 (충전 금액 유효기간 1년 + 여유)
+const TTS_DAILY_NEURONS = 9500;   // 하루 목소리 만들기 상한 (Workers AI 무료 10,000 뉴런 안쪽)
+const TTS_MODELS = {
+  a1: {model: '@cf/deepgram/aura-1', npc: 1.364, voices: ['angus', 'asteria', 'arcas', 'orion', 'orpheus', 'athena', 'luna', 'zeus', 'perseus', 'helios', 'hera', 'stella']},
+  a2: {model: '@cf/deepgram/aura-2-en', npc: 2.728, voices: ['amalthea', 'andromeda', 'apollo', 'arcas', 'aries', 'asteria', 'athena', 'atlas', 'aurora', 'callista', 'cora', 'cordelia', 'delia', 'draco', 'electra', 'harmonia', 'helena', 'hera', 'hermes', 'hyperion', 'iris', 'janus', 'juno', 'jupiter', 'luna', 'mars', 'minerva', 'neptune', 'odysseus', 'ophelia', 'orion', 'orpheus', 'pandora', 'phoebe', 'pluto', 'saturn', 'thalia', 'theia', 'vesta', 'zeus']}
+};
 const ORIGINS = ['https://changho-web.github.io', 'http://localhost:8517', 'http://127.0.0.1:8517'];
 
 const WHO = {kid: {ko: '👧 딸', adult: false}, dad: {ko: '👨 아빠', adult: true}, mom: {ko: '👩 엄마', adult: true}};
@@ -233,6 +240,7 @@ export default {
         case '/translate': return await translate(ctx);
         case '/examples': return await examples(ctx);
         case '/extend': return await extend(ctx);
+        case '/tts': return await tts(ctx);
       }
       return json({error: 'not_found'}, 404, cors);
     } catch (e) {
@@ -401,7 +409,37 @@ async function ping(ctx) {
       {type: 'object', additionalProperties: false, properties: {ok: {type: 'boolean'}}, required: ['ok']}, 300);
     if (rec) await saveDay(env, rec);
   }
-  return json(Object.assign({ok: true, model: env.MODEL || DEFAULT_MODEL, kv: !!env.BELLA_KV, usage: usage(rec, env)}, counts(rec, ctx.who, L)), 200, ctx.cors);
+  const t = env.BELLA_KV ? await env.BELLA_KV.get('tts:' + kstDay(), 'json') : null;
+  return json(Object.assign({ok: true, model: env.MODEL || DEFAULT_MODEL, kv: !!env.BELLA_KV, usage: usage(rec, env),
+    tts: {on: !!env.AI, used: t ? Math.round(t.n) : 0, budget: num(env.TTS_DAILY_NEURONS, TTS_DAILY_NEURONS)}}, counts(rec, ctx.who, L)), 200, ctx.cors);
+}
+
+/* 🔊 토비 목소리: Workers AI(Deepgram Aura)로 mp3를 만들어 돌려줌. 하루 상한을 넘으면 tts_limit → 앱이 기기 목소리로 */
+async function tts(ctx) {
+  const {b, env, cors} = ctx;
+  if (!env.AI) return json({error: 'no_tts'}, 503, cors);
+  const text = str(b.text, 500);
+  if (!text) return json({error: 'bad_request'}, 400, cors);
+  const [m, sp] = String(b.voice || 'a2:luna').split(':');
+  const T = TTS_MODELS[m] || TTS_MODELS.a2;
+  const speaker = T.voices.includes(sp) ? sp : T.voices.includes('luna') ? 'luna' : T.voices[0];
+  const need = text.length * T.npc, budget = num(env.TTS_DAILY_NEURONS, TTS_DAILY_NEURONS);
+  const key = 'tts:' + kstDay();
+  const used = env.BELLA_KV ? ((await env.BELLA_KV.get(key, 'json')) || {n: 0}).n : 0;
+  if (used + need > budget) return json({error: 'tts_limit'}, 429, cors);
+  let out;
+  try { out = await env.AI.run(T.model, {text, speaker, encoding: 'mp3'}, {returnRawResponse: true}); }
+  catch (e) {
+    const msg = String((e && e.message) || e);
+    return json({error: /limit|quota|neuron|exceed|429|capacity/i.test(msg) ? 'tts_limit' : 'tts', detail: msg.slice(0, 200)}, 429, cors);
+  }
+  let body = null;
+  if (out instanceof Response) { if (!out.ok) return json({error: 'tts', detail: 'HTTP ' + out.status}, 502, cors); body = out.body; }
+  else if (out instanceof ReadableStream || out instanceof ArrayBuffer || ArrayBuffer.isView(out)) body = out;
+  else if (out && typeof out.audio === 'string') body = Uint8Array.from(atob(out.audio), c => c.charCodeAt(0));
+  if (!body) return json({error: 'tts', detail: 'no audio'}, 502, cors);
+  if (env.BELLA_KV) { try { await env.BELLA_KV.put(key, JSON.stringify({n: used + need}), {expirationTtl: 3 * 86400}); } catch (e) {} }
+  return new Response(body, {headers: Object.assign({'content-type': 'audio/mpeg', 'cache-control': 'no-store'}, cors)});
 }
 
 async function chat(ctx) {
