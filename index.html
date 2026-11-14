@@ -374,7 +374,7 @@ html.adult #headAvatar{font-size:26px;}
     <div class="card">
       <label for="setName" id="setNameLbl">아이 이름 (영어)</label>
       <input type="text" id="setName" placeholder="예: Bella">
-      <label for="setVoice">기기 목소리 (서버 목소리를 안 쓸 때·단어·문장 읽기)</label>
+      <label for="setVoice">기기 목소리 (미국 영어) — 서버 목소리를 다 썼거나 안 될 때, 단어·문장 읽기</label>
       <select id="setVoice"></select>
       <label for="setRate">말하기 속도: <span id="rateVal"></span></label>
       <input type="range" id="setRate" min="0.6" max="1.1" step="0.05" style="width:100%">
@@ -397,7 +397,7 @@ html.adult #headAvatar{font-size:26px;}
         <select id="setTtsVoice"></select>
         <label style="display:flex;align-items:center;gap:8px;margin-top:10px"><input type="checkbox" id="setTtsTone" style="width:auto"> 🎈 톤 높이기 (더 어린 느낌, 말이 조금 빨라져요)</label>
         <div class="row"><button class="btn blue" id="ttsTest">▶ 이 목소리 들어보기</button></div>
-        <p class="small" id="ttsMsg">진짜 아이 목소리는 없어서, 젊고 밝은 여자 목소리 중에서 골라요. 하루 무료 양(토비 말 50~100번쯤)을 다 쓰면 그날은 기기 목소리로 읽어요.</p>
+        <p class="small" id="ttsMsg">모두 미국 영어 목소리예요. 진짜 아이 목소리는 없어서 젊고 밝은 여자 목소리 중에서 골라요. 하루 무료 양(토비 말 50~100번쯤)을 다 쓰거나 연결이 안 되면 위의 기기 목소리로 자동으로 바뀌어요.</p>
       </div>
     </div>
     <div class="card">
@@ -883,8 +883,9 @@ function rand(a){ return a[Math.floor(Math.random()*a.length)]; }
 let voices = [];
 function loadVoices(){
   if(!('speechSynthesis' in window)) return;
-  voices = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('en'))
-    .sort((a, b) => (/en[-_]US/i.test(b.lang) ? 1 : 0) - (/en[-_]US/i.test(a.lang) ? 1 : 0));   // 미국 영어 먼저
+  const en = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('en'));
+  const us = en.filter(v => /en[-_]US/i.test(v.lang));
+  voices = us.length ? us : en;                                       // 미국 영어 목소리만 (없으면 다른 영어)
   const sel = $('#setVoice');
   const cur = pickVoice();
   sel.innerHTML = voices.map(v => `<option value="${esc(v.voiceURI)}">${esc(v.name)} (${esc(v.lang)})</option>`).join('');
@@ -919,10 +920,10 @@ function speak(text, rate, fromSlow){
    토비 말만 서버(Cloudflare Workers AI · Deepgram Aura)로 읽음. 하루 무료 양을 넘거나 오류면 기기 목소리로.
    a1: = Aura-1(무료 양으로 더 많이), a2: = Aura-2(더 자연스러움) */
 const TTS_VOICES = [   // 모두 미국 영어 목소리
-  ['a1:stella', 'Stella · 여자 (밝고 활발)'], ['a2:luna', 'Luna · 여자 (친근)'], ['a2:thalia', 'Thalia · 여자 (명랑)'],
-  ['a2:cora', 'Cora · 여자'], ['a2:andromeda', 'Andromeda · 여자 (편안)'], ['a1:luna', 'Luna (가벼운 버전) · 여자'],
-  ['a2:asteria', 'Asteria · 여자 (또렷)'], ['a2:helena', 'Helena · 여자 (다정)'], ['a2:callista', 'Callista · 여자'],
-  ['a2:apollo', 'Apollo · 남자 (편안)'], ['a2:arcas', 'Arcas · 남자 (부드러움)'], ['a2:aries', 'Aries · 남자 (따뜻)']
+  ['a1:stella', 'Stella · 미국 · 여자 (밝고 활발)'], ['a2:luna', 'Luna · 미국 · 여자 (부드러움)'], ['a2:thalia', 'Thalia · 미국 · 여자 (명랑)'],
+  ['a2:cora', 'Cora · 미국 · 여자'], ['a2:andromeda', 'Andromeda · 미국 · 여자 (편안)'], ['a1:luna', 'Luna (가벼운 버전) · 미국 · 여자'],
+  ['a2:asteria', 'Asteria · 미국 · 여자 (또렷)'], ['a2:helena', 'Helena · 미국 · 여자 (다정)'], ['a2:callista', 'Callista · 미국 · 여자'],
+  ['a2:apollo', 'Apollo · 미국 · 남자 (편안)'], ['a2:arcas', 'Arcas · 미국 · 남자 (부드러움)'], ['a2:aries', 'Aries · 미국 · 남자 (따뜻)']
 ];
 if(!settings.ttsMode) settings.ttsMode = ADULT ? 'ai' : 'all';            // all = 대본 토비도, ai = AI 토비만, off
 if(!settings.ttsVoice || !TTS_VOICES.some(v => v[0] === settings.ttsVoice)) settings.ttsVoice = ADULT ? 'a2:asteria' : 'a1:stella';
