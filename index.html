@@ -397,7 +397,7 @@ html.adult #headAvatar{font-size:26px;}
         <select id="setTtsVoice"></select>
         <label style="display:flex;align-items:center;gap:8px;margin-top:10px"><input type="checkbox" id="setTtsTone" style="width:auto"> 🎈 톤 높이기 (더 어린 느낌, 말이 조금 빨라져요)</label>
         <div class="row"><button class="btn blue" id="ttsTest">▶ 이 목소리 들어보기</button></div>
-        <p class="small" id="ttsMsg">모두 미국 영어 목소리예요. 진짜 아이 목소리는 없어서 젊고 밝은 여자 목소리 중에서 골라요. 하루 무료 양(토비 말 50~100번쯤)을 다 쓰거나 연결이 안 되면 위의 기기 목소리로 자동으로 바뀌어요.</p>
+        <p class="small" id="ttsMsg">모두 미국 영어 목소리예요. Ana는 여자아이 목소리예요 (Azure 연결이 없으면 Stella로 읽어요). 하루 무료 양(토비 말 50~100번쯤)을 다 쓰거나 연결이 안 되면 위의 기기 목소리로 자동으로 바뀌어요.</p>
       </div>
     </div>
     <div class="card">
@@ -920,13 +920,15 @@ function speak(text, rate, fromSlow){
    토비 말만 서버(Cloudflare Workers AI · Deepgram Aura)로 읽음. 하루 무료 양을 넘거나 오류면 기기 목소리로.
    a1: = Aura-1(무료 양으로 더 많이), a2: = Aura-2(더 자연스러움) */
 const TTS_VOICES = [   // 모두 미국 영어 목소리
+  ['az:ana', 'Ana · 미국 · 여자아이 (Azure, 아이 목소리)'],
   ['a1:stella', 'Stella · 미국 · 여자 (밝고 활발)'], ['a2:luna', 'Luna · 미국 · 여자 (부드러움)'], ['a2:thalia', 'Thalia · 미국 · 여자 (명랑)'],
   ['a2:cora', 'Cora · 미국 · 여자'], ['a2:andromeda', 'Andromeda · 미국 · 여자 (편안)'], ['a1:luna', 'Luna (가벼운 버전) · 미국 · 여자'],
   ['a2:asteria', 'Asteria · 미국 · 여자 (또렷)'], ['a2:helena', 'Helena · 미국 · 여자 (다정)'], ['a2:callista', 'Callista · 미국 · 여자'],
   ['a2:apollo', 'Apollo · 미국 · 남자 (편안)'], ['a2:arcas', 'Arcas · 미국 · 남자 (부드러움)'], ['a2:aries', 'Aries · 미국 · 남자 (따뜻)']
 ];
 if(!settings.ttsMode) settings.ttsMode = ADULT ? 'ai' : 'all';            // all = 대본 토비도, ai = AI 토비만, off
-if(!settings.ttsVoice || !TTS_VOICES.some(v => v[0] === settings.ttsVoice)) settings.ttsVoice = ADULT ? 'a2:asteria' : 'a1:stella';
+if(!settings.ttsVoice || !TTS_VOICES.some(v => v[0] === settings.ttsVoice)) settings.ttsVoice = ADULT ? 'a2:asteria' : 'az:ana';
+if(!ADULT && !settings.ttsAna){ settings.ttsVoice = 'az:ana'; settings.ttsAna = 1; }            // 딸은 여자아이 목소리로 한 번 바꿈
 const ttsCache = new Map();
 let ttsNote = '';
 function ttsOn(where){

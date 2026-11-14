@@ -17,6 +17,9 @@
       bella-tobi Worker → Bindings → Add binding → KV namespace, Variable name: BELLA_KV
    4-1) (사람 같은 목소리) bella-tobi Worker → Bindings → Add binding → Workers AI, Variable name: AI
         - Cloudflare 무료 양(하루 10,000 뉴런) 안에서 토비 목소리를 만들고, 넘으면 앱이 기기 목소리로 바꿈
+   4-2) (여자아이 목소리 Ana) Azure Speech(무료 F0)의 키와 지역을 Secret으로 추가
+        AZURE_SPEECH_KEY : 키 1,  AZURE_SPEECH_REGION : 지역 (예: koreacentral)
+        - 없거나 안 되면 자동으로 Cloudflare 목소리(Stella)로 읽음
         - 있으면: 서버에서도 횟수 제한 + 사용 금액 계산 + 어디서나 대화 기록 확인 (/parent)
         - 없으면: 제한은 기기에서만, 기록도 기기 안에만 저장
    5) 주소(https://bella-tobi.○○○.workers.dev)와 가족 코드를 앱 설정 → "AI 토비 연결"에 입력
@@ -411,15 +414,37 @@ async function ping(ctx) {
   }
   const t = env.BELLA_KV ? await env.BELLA_KV.get('tts:' + kstDay(), 'json') : null;
   return json(Object.assign({ok: true, model: env.MODEL || DEFAULT_MODEL, kv: !!env.BELLA_KV, usage: usage(rec, env),
-    tts: {on: !!env.AI, used: t ? Math.round(t.n) : 0, budget: num(env.TTS_DAILY_NEURONS, TTS_DAILY_NEURONS)}}, counts(rec, ctx.who, L)), 200, ctx.cors);
+    tts: {on: !!env.AI, azure: !!(env.AZURE_SPEECH_KEY && env.AZURE_SPEECH_REGION), used: t ? Math.round(t.n) : 0, budget: num(env.TTS_DAILY_NEURONS, TTS_DAILY_NEURONS)}}, counts(rec, ctx.who, L)), 200, ctx.cors);
+}
+
+const AZ_VOICES = {ana: 'en-US-AnaNeural'};
+async function azureTts(env, text, id) {
+  if (!env.AZURE_SPEECH_KEY || !env.AZURE_SPEECH_REGION) return null;
+  const name = AZ_VOICES[id] || AZ_VOICES.ana;
+  const esc = t => t.replace(/[<>&'"]/g, c => ({'<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;'}[c]));
+  try {
+    const r = await fetch('https://' + String(env.AZURE_SPEECH_REGION).trim() + '.tts.speech.microsoft.com/cognitiveservices/v1', {
+      method: 'POST',
+      headers: {'Ocp-Apim-Subscription-Key': String(env.AZURE_SPEECH_KEY).trim(), 'Content-Type': 'application/ssml+xml',
+        'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3', 'User-Agent': 'bella-english'},
+      body: `<speak version="1.0" xml:lang="en-US"><voice name="${name}">${esc(text)}</voice></speak>`
+    });
+    if (!r.ok) return null;
+    return await r.arrayBuffer();
+  } catch (e) { return null; }
 }
 
 /* 🔊 토비 목소리: Workers AI(Deepgram Aura)로 mp3를 만들어 돌려줌. 하루 상한을 넘으면 tts_limit → 앱이 기기 목소리로 */
 async function tts(ctx) {
   const {b, env, cors} = ctx;
-  if (!env.AI) return json({error: 'no_tts'}, 503, cors);
   const text = str(b.text, 500);
   if (!text) return json({error: 'bad_request'}, 400, cors);
+  if (String(b.voice || '').startsWith('az:')) {                 // Azure 여자아이 목소리 (Ana)
+    const r = await azureTts(env, text, b.voice.slice(3));
+    if (r) return new Response(r, {headers: Object.assign({'content-type': 'audio/mpeg', 'cache-control': 'no-store'}, cors)});
+    b.voice = 'a1:stella';                                       // Azure가 안 되면 Stella로
+  }
+  if (!env.AI) return json({error: 'no_tts'}, 503, cors);
   const [m, sp] = String(b.voice || 'a2:luna').split(':');
   const T = TTS_MODELS[m] || TTS_MODELS.a2;
   const speaker = T.voices.includes(sp) ? sp : T.voices.includes('luna') ? 'luna' : T.voices[0];
