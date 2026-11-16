@@ -63,7 +63,7 @@ input[type=text],select{width:100%;padding:10px;font-size:16px;border-radius:10p
 .stat div{background:#fff0f5;border-radius:14px;padding:12px;text-align:center;font-size:14px;}
 .stat b{display:block;font-size:26px;color:var(--main-d);}
 .log{font-size:14px;}
-.log .item{border-bottom:1px solid #f0f0f0;padding:8px 0;}
+.log .item{border:none;border-bottom:1px solid #f0f0f0;border-radius:0;padding:8px 0;background:none;text-align:left;cursor:default;font-size:14px;}
 .log .t{color:var(--sub);font-size:12px;}
 .warn{background:#ffecec;color:#b00020;padding:12px;border-radius:12px;margin-bottom:12px;display:none;font-size:14px;}
 .celebrate{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) scale(0);font-size:90px;pointer-events:none;transition:transform .3s;z-index:10;}
@@ -192,6 +192,98 @@ html.adult #headAvatar{font-size:26px;}
   .dress-top{display:grid;grid-template-columns:300px 1fr;gap:16px;}
   .dress-top .card{margin-bottom:14px;}
 }
+/* ================= 🎨 그림 탭 ================= */
+html.adult #tabs button[data-tab=draw]{display:none;}
+.dr-menu{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:14px;}
+.dr-card{border:none;background:#fff;border-radius:18px;padding:16px 12px;box-shadow:0 2px 10px rgba(0,0,0,.06);cursor:pointer;text-align:center;font-size:17px;color:var(--text);font-family:inherit;}
+.dr-card .ic{display:block;font-size:40px;margin-bottom:4px;}
+.dr-card small{display:block;color:var(--sub);font-size:13px;margin-top:4px;}
+.dr-card.soon{opacity:.5;cursor:default;}
+.dr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;}
+.dr-grid > p{grid-column:1/-1;}
+.dr-th{border:2px solid #f3d3df;border-radius:14px;background:#fff;padding:4px;cursor:pointer;text-align:center;font-size:12px;color:var(--sub);font-family:inherit;}
+.dr-th img{width:100%;aspect-ratio:1;object-fit:contain;border-radius:10px;background:#fff;display:block;}
+.dr-th b{display:block;color:var(--text);font-size:13px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-l{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+.row-l .chips{margin:0;}
+.sheet{z-index:50;}
+.sheet .who-box{max-width:440px;max-height:92vh;overflow-y:auto;}
+.sheet .who-item:disabled{opacity:.45;cursor:default;}
+.sheet .dr-grid{margin-bottom:10px;}
+/* 전체 화면 (자르기·테두리·그림판) */
+.ovl{position:fixed;inset:0;z-index:30;background:#fdf8fb;display:flex;flex-direction:column;user-select:none;-webkit-user-select:none;}
+.ovl-top,.ovl-bot{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 10px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.06);flex-wrap:wrap;}
+.ovl-bot{justify-content:center;box-shadow:0 -1px 6px rgba(0,0,0,.06);}
+.ovl .btn{padding:10px 14px;}
+.crop-area{flex:1;position:relative;overflow:hidden;touch-action:none;}
+.crop-area canvas{position:absolute;}
+.crop-box{position:absolute;border:3px solid var(--main);box-shadow:0 0 0 9999px rgba(0,0,0,.45);touch-action:none;cursor:move;}
+.crop-box i{position:absolute;width:36px;height:36px;background:#fff;border:3px solid var(--main);border-radius:50%;}
+.crop-box i[data-h=nw]{left:-20px;top:-20px}.crop-box i[data-h=ne]{right:-20px;top:-20px}.crop-box i[data-h=sw]{left:-20px;bottom:-20px}.crop-box i[data-h=se]{right:-20px;bottom:-20px}
+.out-area{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:10px;background:#efe7ec;}
+.out-area canvas{max-width:100%;max-height:100%;background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.15);}
+/* 그림판 */
+.ed-top{display:flex;gap:6px;align-items:center;padding:6px 8px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.06);flex-wrap:wrap;}
+.ed-tools{display:flex;gap:4px;}
+.ed-tools button{border:2px solid #f0dbe4;background:#fff;border-radius:12px;padding:3px 8px;font-size:22px;cursor:pointer;line-height:1.1;font-family:inherit;}
+.ed-tools button small{display:block;font-size:11px;color:var(--sub);}
+.ed-tools button.on{border-color:var(--main);background:#fff0f6;}
+.ed-sizes{display:flex;gap:4px;align-items:center;}
+.ed-sizes button{width:42px;height:42px;display:flex;align-items:center;justify-content:center;padding:0;border:2px solid #f0dbe4;background:#fff;border-radius:12px;cursor:pointer;}
+.ed-sizes button.on{border-color:var(--main);background:#fff0f6;}
+.ed-sizes i{display:block;border-radius:50%;background:#444;}
+.ed-sp{flex:1;}
+.ed-top .btn{padding:9px 12px;}
+.ed-sub{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:5px 10px;font-size:14px;background:#fffafc;border-bottom:1px solid #f6e8ee;}
+.ed-sub label{display:flex;align-items:center;gap:4px;margin:0;font-weight:400;}
+.ed-sub input[type=range]{width:110px;}
+.tg{border:2px solid #f0dbe4;background:#fff;border-radius:20px;padding:5px 10px;font-size:14px;cursor:pointer;font-family:inherit;color:var(--text);}
+.tg.on{border-color:var(--main);background:var(--main);color:#fff;}
+.ed-stage{flex:1;position:relative;overflow:hidden;touch-action:none;background:#efe7ec;}
+.ed-paper{position:absolute;left:0;top:0;transform-origin:0 0;background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.15);}
+.ed-paper canvas{position:absolute;left:0;top:0;width:100%;height:100%;}
+.ed-pal{display:flex;gap:7px;padding:8px 10px;background:#fff;overflow-x:auto;align-items:center;box-shadow:0 -1px 6px rgba(0,0,0,.06);}
+.sw{flex:none;width:38px;height:38px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #c8c8c8;cursor:pointer;padding:0;}
+.sw.on{box-shadow:0 0 0 3px var(--main);transform:scale(1.12);}
+.pal-name{flex:none;min-width:92px;font-size:14px;font-weight:700;color:var(--main-d);text-align:center;line-height:1.2;}
+.pal-name small{display:block;font-weight:400;color:var(--sub);}
+.ed-mission{display:flex;gap:8px;align-items:center;padding:6px 10px;background:#fff1e6;font-size:18px;flex-wrap:wrap;}
+.ed-mission .m-txt{flex:1;min-width:200px;}
+.ed-mission .m-txt small{display:block;font-size:13px;color:var(--sub);}
+.ed-mission .btn{padding:7px 11px;font-size:14px;}
+.dot{display:inline-block;width:24px;height:24px;border-radius:50%;vertical-align:middle;border:2px solid #fff;box-shadow:0 0 0 1px #aaa;margin:0 4px;}
+.loading-ovl{position:fixed;inset:0;z-index:60;background:rgba(255,255,255,.88);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:18px;gap:10px;text-align:center;padding:20px;}
+.loading-ovl .big{font-size:64px;animation:hop 1s infinite;}
+/* 그림 이야기 */
+.tk-top{display:flex;gap:14px;align-items:flex-start;}
+.tk-top img{width:150px;max-height:200px;object-fit:contain;border-radius:12px;background:#fff;border:1px solid #f0e0e8;flex:none;}
+.tk-words{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.wcard{border:2px solid #ffd2a8;background:#fff8f0;border-radius:12px;padding:5px 9px;cursor:pointer;font-size:15px;text-align:center;font-family:inherit;color:var(--text);}
+.wcard .e{font-size:22px;display:block;line-height:1.2;}
+.wcard small{display:block;color:var(--sub);font-size:12px;}
+.bubble.frame{background:#f3f0ff;align-self:flex-start;border:1px dashed #9b8cf0;font-size:19px;}
+.bubble.frame small{font-size:13px;}
+.choices{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+.choices .chip{font-size:16px;}
+.choices .chip small{color:var(--sub);font-size:12px;margin-left:2px;}
+.tk-confirm{background:#fff;border:2px solid var(--main);border-radius:16px;padding:12px;margin-top:10px;}
+.tk-confirm .heard{font-size:22px;font-weight:700;margin:4px 0 8px;word-break:break-word;}
+.tk-confirm input{width:100%;font-size:18px;padding:10px;border-radius:10px;border:1px solid #ddd;margin-top:8px;}
+.tk-confirm .row{margin-top:8px;}
+@media (max-width:520px){ .tk-top img{width:110px;} }
+/* 그림책 */
+.pg-img{width:100%;max-height:52vh;object-fit:contain;border-radius:14px;background:#fff;display:block;}
+.pg-title{font-size:24px;font-weight:700;text-align:center;margin:10px 0 2px;}
+.pg-sent{display:flex;align-items:center;gap:6px;border-top:1px solid #f6e8ee;padding:10px 0;flex-wrap:wrap;}
+.pg-sent .tx{flex:1;min-width:200px;font-size:21px;line-height:1.4;}
+.pg-sent .tx small{display:block;font-size:14px;color:var(--sub);cursor:pointer;}
+.pg-sent .tx span.ok{color:var(--green);} .pg-sent .tx span.miss{color:var(--miss);text-decoration:underline wavy;}
+.pg-sent .tx.hidden .en{color:transparent;text-shadow:0 0 12px rgba(0,0,0,.5);}
+.pg-sent .st{font-size:20px;min-width:26px;text-align:center;}
+.pg-sent .btn{padding:8px 12px;font-size:15px;}
+.pg-sent .btn.rec{background:#ffecec;}
+.pg-sent .btn.rec.on{background:#ff4d4d;color:#fff;}
+.pg-msg{text-align:center;min-height:24px;margin-top:8px;font-size:16px;}
 </style>
 </head>
 <body>
@@ -211,6 +303,7 @@ html.adult #headAvatar{font-size:26px;}
   <button data-tab="repeat" class="on">따라 말하기</button>
   <button data-tab="role">상황극</button>
   <button data-tab="words">단어장</button>
+  <button data-tab="draw">그림 🎨</button>
   <button data-tab="dress">꾸미기 👗</button>
   <button data-tab="record">기록</button>
   <button data-tab="settings">설정</button>
@@ -335,6 +428,60 @@ html.adult #headAvatar{font-size:26px;}
     </div>
   </section>
 
+  <section id="draw">
+    <div id="drHome">
+      <div class="dr-menu">
+        <button class="dr-card" data-go="talk"><span class="ic">🗣️</span><b>그림 이야기</b><small>내 그림을 토비에게 소개해요</small></button>
+        <button class="dr-card" data-go="trace"><span class="ic">✏️</span><b>따라 그리기</b><small>사진 위에 따라 그려요</small></button>
+        <button class="dr-card" data-go="color"><span class="ic">🖍️</span><b>색칠하기</b><small>토비의 영어 색칠 미션</small></button>
+        <button class="dr-card" data-go="free"><span class="ic">🎨</span><b>자유 그리기</b><small>빈 도화지에 그려요</small></button>
+        <button class="dr-card" data-go="book"><span class="ic">📖</span><b>내 그림책</b><small id="bookCount">내 그림과 문장</small></button>
+        <button class="dr-card soon" disabled><span class="ic">🎬</span><b>4컷 만화</b><small>곧 열려요!</small></button>
+      </div>
+      <div class="card">
+        <div class="lbl">🖼️ 내 그림 <span class="small">(눌러서 이어 그리기·이야기하기)</span></div>
+        <div class="dr-grid" id="workGrid"></div>
+      </div>
+    </div>
+
+    <div id="drTalk" style="display:none">
+      <div class="row-l"><button class="btn" id="tkBack">◀ 그림 메뉴</button><div class="chips" id="tkLevels"></div></div>
+      <div class="card tk-top"><img id="tkImg" alt=""><div style="flex:1;min-width:0"><div class="lbl" id="tkTitle"></div><div class="tk-words" id="tkWords"></div></div></div>
+      <div class="card">
+        <div class="chat" id="tkChat"></div>
+        <div class="tk-confirm" id="tkConfirm" style="display:none"></div>
+        <div id="tkCtrls" style="display:none">
+          <button class="mic" id="tkMic">🎤</button>
+          <div class="micLabel" id="tkMicLabel">눌러서 대답하기</div>
+          <div class="row">
+            <button class="btn" id="tkHint">💡 힌트</button>
+            <button class="btn" id="tkKo">🇰🇷 한국어로</button>
+            <button class="btn" id="tkReplay">🔊 다시 듣기</button>
+            <button class="btn" id="tkSlow">🐢 또박또박</button>
+            <button class="btn" id="tkEnd">🏁 끝내기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="drBook" style="display:none">
+      <div class="row-l"><button class="btn" id="bkBack">◀ 그림 메뉴</button><b>📖 내 그림책</b></div>
+      <div class="card"><div class="dr-grid" id="bookGrid"></div></div>
+    </div>
+
+    <div id="drPage" style="display:none">
+      <div class="row-l"><button class="btn" id="pgBack">◀ 내 그림책</button><b id="pgHead"></b></div>
+      <div class="card">
+        <img class="pg-img" id="pgImg" alt="">
+        <div class="pg-title" id="pgTitle"></div>
+        <div class="small" id="pgTitleKo" style="text-align:center"></div>
+        <div id="pgSents"></div>
+        <div class="pg-msg" id="pgMsg"></div>
+        <div class="row" id="pgBtns"></div>
+      </div>
+    </div>
+  </section>
+
   <section id="dress">
     <div class="dress-top">
       <div class="card dress-me">
@@ -361,6 +508,7 @@ html.adult #headAvatar{font-size:26px;}
     <div class="card"><div class="stat" id="statBox"></div></div>
     <div class="card"><b>어려워한 문장</b> <span class="small">(따라 말하기 평균 80% 미만)</span><div class="log" id="weakBox"></div></div>
     <div class="card" id="aiLogCard" style="display:none"><b>🤖 AI 토비 대화</b> <span class="small">(눌러서 대화 보기)</span><div class="log ai-log" id="aiLogBox"></div></div>
+    <div class="card" id="hardCard" style="display:none"><b>🎨 그림 이야기에서 어려웠던 질문</b> <span class="small">(3번 해도 대답하기 어려웠던 질문)</span><div class="log" id="hardBox"></div></div>
     <div class="card"><b>최근에 말한 문장</b><div class="log" id="logBox"></div></div>
     <div class="row"><button class="btn" id="logReset">기록 지우기</button></div>
   </section>
@@ -419,9 +567,39 @@ html.adult #headAvatar{font-size:26px;}
       </details>
     </div>
     <p class="small">크롬 브라우저에서 사용하세요. 음성 인식은 인터넷 연결이 필요합니다. 기록은 이 기기의 브라우저에 사람별로 저장됩니다. (AI 토비 대화는 연결한 서버에도 저장될 수 있어요)</p>
-    <p class="small" style="text-align:center;margin-top:20px">Bella English · 버전 2026-11-15</p>
+    <p class="small" style="text-align:center;margin-top:20px">Bella English · 버전 2026-11-16</p>
   </section>
 </main>
+</div>
+<div id="cropView" class="ovl" style="display:none">
+  <div class="ovl-top"><button class="btn" id="cropCancel">✖ 취소</button><b>✂️ 그림 부분만 남겨요</b><button class="btn main" id="cropOk">✅ 다 했어요</button></div>
+  <div class="crop-area" id="cropArea"><canvas id="cropCv"></canvas><div class="crop-box" id="cropBox"><i data-h="nw"></i><i data-h="ne"></i><i data-h="sw"></i><i data-h="se"></i></div></div>
+  <div class="ovl-bot"><button class="btn" id="cropRot">↻ 돌리기</button><button class="btn" id="cropAll">⬜ 전체</button><span class="small">동그라미를 끌어서 크기를 바꿔요</span></div>
+</div>
+<div id="outView" class="ovl" style="display:none">
+  <div class="ovl-top"><button class="btn" id="outCancel">✖ 취소</button><b>🖍️ 색칠할 테두리</b><button class="btn main" id="outOk">✅ 이걸로 칠하기</button></div>
+  <div class="out-area"><canvas id="outCv"></canvas></div>
+  <div class="ovl-bot"><span>선 많이</span><input type="range" id="outThr" min="8" max="90" step="2" value="34" style="width:220px"><span>선 적게</span></div>
+</div>
+<div id="editor" class="ovl" style="display:none">
+  <div class="ed-top">
+    <button class="btn" id="edClose" title="저장하고 나가기">✖</button>
+    <div class="ed-tools" id="edTools">
+      <button data-t="pen">✏️<small>펜</small></button>
+      <button data-t="brush">🖌️<small>붓</small></button>
+      <button data-t="fill">🪣<small>채우기</small></button>
+      <button data-t="eraser">🧽<small>지우개</small></button>
+    </div>
+    <div class="ed-sizes" id="edSizes"></div>
+    <div class="ed-sp"></div>
+    <button class="btn" id="edUndo" title="되돌리기">↶</button>
+    <button class="btn" id="edRedo" title="다시 하기">↷</button>
+    <button class="btn main" id="edDone">✅ 완성</button>
+  </div>
+  <div class="ed-sub" id="edSub"></div>
+  <div class="ed-mission" id="edMission" style="display:none"></div>
+  <div class="ed-stage" id="edStage"><div class="ed-paper" id="edPaper"><canvas id="cvBg"></canvas><canvas id="cvColor"></canvas><canvas id="cvPrev"></canvas><canvas id="cvLine"></canvas></div></div>
+  <div class="ed-pal" id="edPal"></div>
 </div>
 <div class="celebrate" id="celebrate">🎉</div>
 
@@ -2223,6 +2401,1340 @@ $('#vaRetry').onclick = () => { vaReset(); vaMsg('🎤 1번 마이크를 누르�
 renderWordGroups();
 vaRender();
 
+/* ================= 🎨 그림 탭 =================
+   그림 이야기 · 따라 그리기 · 색칠하기 · 자유 그리기 · 내 그림책
+   - 그림은 이 기기(IndexedDB)에만 사람별로 저장. 서버에는 그림 이야기 때 한 번 보내고 저장하지 않음
+   - 모든 메뉴에 듣기·말하기가 들어감 (색칠 = 영어 색 이름 듣기, 다 그리면 토비랑 이야기 → 그림책 읽기) */
+AI_NAME.picture = '🎨 그림 이야기';
+MODE.pic = '그림 이야기'; MODE.book = '그림책 읽기'; MODE.color = '색칠 미션';
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* ---------- 저장소 (IndexedDB: works = 그림판 그림, pages = 그림책) ---------- */
+const DB = (() => {
+  let p = null;
+  function open(){
+    if(p) return p;
+    p = new Promise((res, rej) => {
+      const r = indexedDB.open('bella_draw', 1);
+      r.onupgradeneeded = () => { const d = r.result; d.createObjectStore('works', {keyPath:'id'}); d.createObjectStore('pages', {keyPath:'id'}); };
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => { p = null; rej(r.error); };
+    });
+    return p;
+  }
+  async function tx(name, mode, fn){
+    const d = await open();
+    return new Promise((res, rej) => {
+      const t = d.transaction(name, mode); const q = fn(t.objectStore(name));
+      t.oncomplete = () => res(q ? q.result : undefined); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+    });
+  }
+  return {
+    put: (n, v) => tx(n, 'readwrite', s => s.put(v)),
+    get: (n, id) => tx(n, 'readonly', s => s.get(id)),
+    del: (n, id) => tx(n, 'readwrite', s => s.delete(id)),
+    mine: async n => ((await tx(n, 'readonly', s => s.getAll())) || []).filter(x => x.who === PROFILE).sort((a, b) => b.t - a.t)
+  };
+})();
+if(!ADULT && navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});   // 그림이 지워지지 않게
+
+/* ---------- 그림 도우미 ---------- */
+function mkCanvas(w, h){ const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function fitSize(w, h, max){ const s = Math.min(1, max / Math.max(w, h)); return [Math.max(1, Math.round(w * s)), Math.max(1, Math.round(h * s))]; }
+function canvasBlob(c, type, q){ return new Promise(r => c.toBlob(r, type || 'image/png', q)); }
+async function blobBitmap(b){
+  try{ return await createImageBitmap(b, {imageOrientation: 'from-image'}); }
+  catch(e){ return await createImageBitmap(b); }
+}
+function whiteCopy(src, max){                   // 흰 바탕에 그려서 크기 줄이기
+  const [w, h] = fitSize(src.width, src.height, max);
+  const c = mkCanvas(w, h), x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(src, 0, 0, w, h);
+  return c;
+}
+async function jpegOf(src, max, q){ return canvasBlob(whiteCopy(src, max), 'image/jpeg', q || 0.86); }
+function blobB64(b){ return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1]); r.onerror = rej; r.readAsDataURL(b); }); }
+function imgUrl(el, blob){                      // <img>에 그림 넣기 (예전 주소는 정리)
+  if(el._url) URL.revokeObjectURL(el._url);
+  el._url = blob ? URL.createObjectURL(blob) : '';
+  el.src = el._url;
+}
+function hexRgb(h){ const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function loading(text){
+  const d = document.createElement('div'); d.className = 'loading-ovl';
+  d.innerHTML = '<div class="big">🦊</div><div>' + text + '</div>';
+  document.body.appendChild(d);
+  return () => d.remove();
+}
+/* 아래에서 고르는 창: items = [{ic, t, s, v, off}] → 고른 v (닫으면 null) */
+function sheet(title, items, note, extraHTML){
+  return new Promise(res => {
+    const w = document.createElement('div'); w.className = 'who-menu sheet';
+    w.innerHTML = '<div class="who-box"><div class="lbl">' + title + '</div>' + (extraHTML || '') +
+      items.map((it, k) => `<button class="who-item" data-k="${k}"${it.off ? ' disabled' : ''}><span class="ic">${it.ic}</span><span>${esc(it.t)}` +
+        (it.s ? '<br><span class="small">' + esc(it.s) + '</span>' : '') + '</span></button>').join('') +
+      (note ? '<p class="small">' + note + '</p>' : '') + '<div class="row"><button class="btn sh-x">닫기</button></div></div>';
+    document.body.appendChild(w);
+    const done = v => { w.remove(); res(v); };
+    w.onclick = e => {
+      if(e.target === w || e.target.closest('.sh-x')) return done(null);
+      const b = e.target.closest('[data-k]'); if(b && !b.disabled) return done(items[+b.dataset.k] ? items[+b.dataset.k].v : b.dataset.v);
+      const g = e.target.closest('[data-v]'); if(g) return done(g.dataset.v);
+    };
+  });
+}
+const fileIn = document.createElement('input');
+fileIn.type = 'file'; fileIn.accept = 'image/*';
+function pickFile(camera){
+  return new Promise(res => {
+    fileIn.value = '';
+    if(camera) fileIn.setAttribute('capture', 'environment'); else fileIn.removeAttribute('capture');
+    fileIn.onchange = () => res(fileIn.files[0] || null);
+    fileIn.click();
+  });
+}
+/* 내 그림에서 고르기 */
+async function pickWork(title){
+  const works = await DB.mine('works').catch(() => []);
+  if(!works.length){ alert('아직 이 앱에서 그린 그림이 없어요. 먼저 그려 봐요!'); return null; }
+  const urls = [];
+  const grid = '<div class="dr-grid">' + works.slice(0, 24).map(w => {
+    const u = URL.createObjectURL(w.thumb); urls.push(u);
+    return `<button class="dr-th" data-v="${w.id}"><img src="${u}" alt=""><b>${esc(w.title || WORK_NAME[w.mode] || '그림')}</b>${fmt(w.t)}</button>`;
+  }).join('') + '</div>';
+  const id = await sheet(title || '🎨 내 그림 고르기', [], '', grid);
+  urls.forEach(u => URL.revokeObjectURL(u));
+  return id ? works.find(w => w.id === id) : null;
+}
+/* 카메라·갤러리 → 자르기 → 캔버스 */
+async function getPhoto(how){
+  const f = await pickFile(how === 'cam');
+  if(!f) return null;
+  return cropImage(f);
+}
+
+/* ---------- ✂️ 자르기·돌리기 ---------- */
+function cropImage(file){
+  return new Promise(async res => {
+    let bmp;
+    try{ bmp = await blobBitmap(file); }catch(e){ alert('그림을 열 수 없어요. 다른 그림을 골라 주세요.'); res(null); return; }
+    const ov = $('#cropView'), area = $('#cropArea'), cv = $('#cropCv'), box = $('#cropBox');
+    let rot = 0, src = null, D = null, r = null, drag = null;
+    function makeSrc(){
+      const w = rot % 2 ? bmp.height : bmp.width, h = rot % 2 ? bmp.width : bmp.height;
+      const [sw, sh] = fitSize(w, h, 2000);
+      src = mkCanvas(sw, sh);
+      const x = src.getContext('2d');
+      x.fillStyle = '#fff'; x.fillRect(0, 0, sw, sh);
+      x.translate(sw / 2, sh / 2); x.rotate(rot * Math.PI / 2);
+      const dw = rot % 2 ? sh : sw, dh = rot % 2 ? sw : sh;
+      x.drawImage(bmp, -dw / 2, -dh / 2, dw, dh);
+    }
+    function layout(){
+      const A = area.getBoundingClientRect();
+      const s = Math.min((A.width - 50) / src.width, (A.height - 50) / src.height);
+      const w = src.width * s, h = src.height * s;
+      const [cw, ch] = fitSize(src.width, src.height, 1400);
+      cv.width = cw; cv.height = ch; cv.getContext('2d').drawImage(src, 0, 0, cw, ch);
+      D = {w, h, l: (A.width - w) / 2, t: (A.height - h) / 2, s};
+      Object.assign(cv.style, {width: w + 'px', height: h + 'px', left: D.l + 'px', top: D.t + 'px'});
+      r = {x: 0, y: 0, w, h}; draw();
+    }
+    function draw(){ Object.assign(box.style, {left: (D.l + r.x) + 'px', top: (D.t + r.y) + 'px', width: r.w + 'px', height: r.h + 'px'}); }
+    box.onpointerdown = e => { e.preventDefault(); box.setPointerCapture(e.pointerId); drag = {h: e.target.dataset.h || 'move', x: e.clientX, y: e.clientY, o: Object.assign({}, r)}; };
+    box.onpointermove = e => {
+      if(!drag) return;
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y, o = drag.o, M = 50;
+      let {x, y, w, h} = o;
+      if(drag.h === 'move'){ x = clamp(o.x + dx, 0, D.w - o.w); y = clamp(o.y + dy, 0, D.h - o.h); }
+      else {
+        if(drag.h.includes('w')){ x = clamp(o.x + dx, 0, o.x + o.w - M); w = o.x + o.w - x; }
+        if(drag.h.includes('e')) w = clamp(o.w + dx, M, D.w - o.x);
+        if(drag.h.includes('n')){ y = clamp(o.y + dy, 0, o.y + o.h - M); h = o.y + o.h - y; }
+        if(drag.h.includes('s')) h = clamp(o.h + dy, M, D.h - o.y);
+      }
+      r = {x, y, w, h}; draw();
+    };
+    box.onpointerup = box.onpointercancel = () => { drag = null; };
+    const close = v => { ov.style.display = 'none'; window.removeEventListener('resize', layout); res(v); };
+    $('#cropRot').onclick = () => { rot = (rot + 1) % 4; makeSrc(); layout(); };
+    $('#cropAll').onclick = () => { r = {x: 0, y: 0, w: D.w, h: D.h}; draw(); };
+    $('#cropCancel').onclick = () => close(null);
+    $('#cropOk').onclick = () => {
+      const k = 1 / D.s, sx = r.x * k, sy = r.y * k, sw = r.w * k, sh = r.h * k;
+      const [ow, oh] = fitSize(sw, sh, 1600);
+      const out = mkCanvas(ow, oh), x = out.getContext('2d');
+      x.fillStyle = '#fff'; x.fillRect(0, 0, ow, oh);
+      x.drawImage(src, sx, sy, sw, sh, 0, 0, ow, oh);
+      close(out);
+    };
+    ov.style.display = 'flex';
+    makeSrc();
+    requestAnimationFrame(layout);
+    window.addEventListener('resize', layout);
+  });
+}
+
+/* ---------- 🖍 사진 → 색칠 테두리 (연필 스케치 방식) ---------- */
+function boxBlur(a, w, h, r){
+  const t = new Float32Array(w * h), o = new Float32Array(w * h), n = 2 * r + 1;
+  for(let y = 0; y < h; y++){
+    const row = y * w; let s = 0;
+    for(let x = -r; x <= r; x++) s += a[row + clamp(x, 0, w - 1)];
+    for(let x = 0; x < w; x++){ t[row + x] = s / n; s += a[row + Math.min(w - 1, x + r + 1)] - a[row + Math.max(0, x - r)]; }
+  }
+  for(let x = 0; x < w; x++){
+    let s = 0;
+    for(let y = -r; y <= r; y++) s += t[clamp(y, 0, h - 1) * w + x];
+    for(let y = 0; y < h; y++){ o[y * w + x] = s / n; s += t[Math.min(h - 1, y + r + 1) * w + x] - t[Math.max(0, y - r) * w + x]; }
+  }
+  return o;
+}
+function sketchDark(src){                        // 0(배경) ~ 255(진한 선)
+  const w = src.width, h = src.height, d = src.getContext('2d').getImageData(0, 0, w, h).data;
+  const g = new Float32Array(w * h), inv = new Float32Array(w * h);
+  for(let i = 0; i < w * h; i++){ const v = 0.299 * d[i * 4] + 0.587 * d[i * 4 + 1] + 0.114 * d[i * 4 + 2]; g[i] = v; inv[i] = 255 - v; }
+  const r = Math.max(2, Math.round(Math.max(w, h) / 300));
+  const b = boxBlur(boxBlur(inv, w, h, r), w, h, r);
+  const dark = new Uint8ClampedArray(w * h);
+  for(let i = 0; i < w * h; i++){ const dodge = Math.min(255, g[i] * 255 / (256 - b[i])); dark[i] = 255 - dodge; }
+  return {w, h, dark};
+}
+function darkToLines(S, thr){
+  const c = mkCanvas(S.w, S.h), x = c.getContext('2d'), im = x.createImageData(S.w, S.h), d = im.data;
+  for(let i = 0; i < S.w * S.h; i++){
+    const v = S.dark[i], a = v <= thr ? 0 : Math.min(255, (v - thr) * 6);
+    d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = 30; d[i * 4 + 3] = a;
+  }
+  x.putImageData(im, 0, 0);
+  return c;
+}
+function outlineFromPhoto(photo){
+  return new Promise(res => {
+    const src = whiteCopy(photo, 1200), S = sketchDark(src);
+    const cv = $('#outCv'), thrIn = $('#outThr'), ov = $('#outView');
+    let lines = null;
+    function show(){
+      lines = darkToLines(S, +thrIn.value);
+      cv.width = S.w; cv.height = S.h;
+      const x = cv.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, S.w, S.h); x.drawImage(lines, 0, 0);
+    }
+    thrIn.oninput = show;
+    const close = v => { ov.style.display = 'none'; res(v); };
+    $('#outCancel').onclick = () => close(null);
+    $('#outOk').onclick = () => close(lines);
+    ov.style.display = 'flex';
+    show();
+  });
+}
+/* AI 밑그림(흰 바탕 검은 선) → 투명 바탕 선 */
+async function lineArtFrom(blob){
+  const bmp = await blobBitmap(blob);
+  const [w, h] = fitSize(bmp.width, bmp.height, 1200);
+  const c = mkCanvas(w, h), x = c.getContext('2d', {willReadFrequently: true});
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h); x.drawImage(bmp, 0, 0, w, h);
+  const im = x.getImageData(0, 0, w, h), d = im.data;
+  for(let i = 0; i < d.length; i += 4){
+    const l = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    d[i] = d[i + 1] = d[i + 2] = 30; d[i + 3] = l < 110 ? 255 : l > 200 ? 0 : Math.round((200 - l) / 90 * 255);
+  }
+  x.putImageData(im, 0, 0);
+  return c;
+}
+
+/* ---------- 🖌 그림판 ----------
+   층: 바탕(사진, 따라 그리기용) / 색칠 / (붓 미리보기) / 선  — 선이 맨 위라 색칠해도 테두리가 안 지워짐
+   S펜 = 그리기, 손가락 = 확대·이동 (✋ 손가락으로도 그리기를 켜면 한 손가락은 그리기) */
+const PAL = [
+  ['black','#222222','검정'], ['white','#ffffff','하양'], ['gray','#a0a0a0','회색'], ['red','#ff4b4b','빨강'], ['coral','#ff7f6e','산호색'],
+  ['orange','#ff9a3c','주황'], ['yellow','#ffd93b','노랑'], ['gold','#e6b422','금색'], ['light green','#a8e063','연두'], ['green','#3cba54','초록'],
+  ['dark green','#1e7a3c','진초록'], ['mint','#9ef0d0','민트'], ['turquoise','#2ec4b6','청록'], ['sky blue','#7fd3ff','하늘색'], ['blue','#3d8bff','파랑'],
+  ['navy','#1f3a93','남색'], ['lavender','#c9a7f5','연보라'], ['purple','#9b59d0','보라'], ['pink','#ff8fc0','분홍'], ['hot pink','#ff3d8b','진분홍'],
+  ['peach','#ffc8a2','살구색'], ['beige','#f3e0c0','베이지'], ['light brown','#d2a679','연갈색'], ['brown','#9c6b3f','갈색']
+];
+const PAL_BY = {}; PAL.forEach(p => { PAL_BY[p[0]] = p; });
+const SIZES = {pen: [3, 7, 14], brush: [16, 34, 64], eraser: [16, 34, 64]};
+const WORK_NAME = {trace: '따라 그리기', color: '색칠', free: '자유 그리기'};
+const cvBg = $('#cvBg'), cvColor = $('#cvColor'), cvPrev = $('#cvPrev'), cvLine = $('#cvLine');
+const bgX = cvBg.getContext('2d'), colorX = cvColor.getContext('2d', {willReadFrequently: true}),
+  prevX = cvPrev.getContext('2d'), lineX = cvLine.getContext('2d', {willReadFrequently: true});
+const edStage = $('#edStage'), edPaper = $('#edPaper');
+const ED = {open: false, W: 0, H: 0, mode: 'free', work: null, tool: 'pen', size: {pen: 1, brush: 1, eraser: 1}, color: 'black',
+  clip: true, eraseLine: false, bgBlob: null, bgOn: true, bgAlpha: 0.45, penOnly: settings.penOnly !== false,
+  undo: [], redo: [], dirty: false, lineVer: 0, walls: null, wallsVer: -1, view: {s: 1, x: 0, y: 0, base: 1},
+  parts: [], missionOn: false, mission: null, mDone: 0, resolve: null};
+
+function ctxOf(layer){ return layer === 'line' ? lineX : colorX; }
+function pushUndo(layer){
+  ED.undo.push({layer, im: ctxOf(layer).getImageData(0, 0, ED.W, ED.H)});
+  if(ED.undo.length > 12) ED.undo.shift();
+  ED.redo = [];
+  edBtns();
+}
+function edBtns(){ $('#edUndo').disabled = !ED.undo.length; $('#edRedo').disabled = !ED.redo.length; }
+function undoRedo(from, to){
+  const u = from.pop(); if(!u) return;
+  const x = ctxOf(u.layer);
+  to.push({layer: u.layer, im: x.getImageData(0, 0, ED.W, ED.H)});
+  x.putImageData(u.im, 0, 0);
+  if(u.layer === 'line') ED.lineVer++;
+  ED.dirty = true; edBtns();
+}
+$('#edUndo').onclick = () => undoRedo(ED.undo, ED.redo);
+$('#edRedo').onclick = () => undoRedo(ED.redo, ED.undo);
+
+/* 열기: opts = {mode, work} 또는 {mode, W, H, bg(캔버스), line(캔버스)} → 닫히면 {action, work} */
+async function openEditor(opts){
+  const w = opts.work;
+  ED.mode = w ? w.mode : opts.mode;
+  ED.work = w || null;
+  let W = opts.W || 1200, H = opts.H || 900;
+  if(w){ W = w.W; H = w.H; }
+  else if(opts.bg){ [W, H] = fitSize(opts.bg.width, opts.bg.height, 1200); }
+  else if(opts.line){ W = opts.line.width; H = opts.line.height; }
+  ED.W = W; ED.H = H;
+  [cvBg, cvColor, cvPrev, cvLine].forEach(c => { c.width = W; c.height = H; });
+  ED.bgBlob = null; ED.bgOn = true; ED.bgAlpha = 0.45; ED.parts = [];
+  if(w){
+    if(w.bg){ bgX.drawImage(await blobBitmap(w.bg), 0, 0, W, H); ED.bgBlob = w.bg; }
+    if(w.color) colorX.drawImage(await blobBitmap(w.color), 0, 0, W, H);
+    if(w.line) lineX.drawImage(await blobBitmap(w.line), 0, 0, W, H);
+    ED.bgAlpha = w.bgAlpha || 0.45; ED.parts = w.parts || [];
+  } else {
+    if(opts.bg){ bgX.drawImage(opts.bg, 0, 0, W, H); ED.bgBlob = await jpegOf(opts.bg, 1200, 0.85); }
+    if(opts.line) lineX.drawImage(opts.line, 0, 0, W, H);
+  }
+  cvBg.style.display = ED.bgBlob ? 'block' : 'none';
+  ED.undo = []; ED.redo = []; ED.dirty = !w; ED.lineVer++; ED.walls = null;
+  ED.tool = ED.mode === 'color' ? 'fill' : 'pen';
+  ED.color = ED.mode === 'color' ? 'pink' : 'black';
+  ED.missionOn = ED.mode === 'color' && !ADULT; ED.mission = null; ED.mDone = 0;
+  ED.open = true;
+  $('#editor').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  renderTools(); renderPal(); renderSub(); edBtns(); applyBg();
+  requestAnimationFrame(fitView);
+  if(ED.mode === 'color') missionInit();
+  else $('#edMission').style.display = 'none';
+  return new Promise(res => { ED.resolve = res; });
+}
+function fitView(){
+  const R = edStage.getBoundingClientRect();
+  const base = Math.min((R.width - 24) / ED.W, (R.height - 24) / ED.H);
+  ED.view = {base, s: 1, x: (R.width - ED.W * base) / 2, y: (R.height - ED.H * base) / 2};
+  edPaper.style.width = ED.W * base + 'px'; edPaper.style.height = ED.H * base + 'px';
+  applyView();
+}
+function applyView(){
+  const v = ED.view, R = edStage.getBoundingClientRect(), pw = ED.W * v.base * v.s, ph = ED.H * v.base * v.s;
+  v.x = clamp(v.x, 80 - pw, R.width - 80); v.y = clamp(v.y, 80 - ph, R.height - 80);   // 종이를 잃어버리지 않게
+  edPaper.style.transform = `translate(${v.x}px,${v.y}px) scale(${v.s})`;
+}
+window.addEventListener('resize', () => { if(ED.open) fitView(); });
+if(window.ResizeObserver) new ResizeObserver(() => { if(ED.open){ if(ED.view.s === 1) fitView(); else applyView(); } }).observe(edStage);   // 미션 줄이 생겨도 종이가 안 잘리게
+function applyBg(){ cvBg.style.opacity = ED.bgAlpha; cvBg.style.visibility = ED.bgOn ? 'visible' : 'hidden'; }
+
+function renderTools(){
+  document.querySelectorAll('#edTools button').forEach(b => b.classList.toggle('on', b.dataset.t === ED.tool));
+  const sz = SIZES[ED.tool];
+  $('#edSizes').innerHTML = sz ? sz.map((s, k) => `<button data-k="${k}" class="${ED.size[ED.tool] === k ? 'on' : ''}"><i style="width:${[6, 12, 22][k]}px;height:${[6, 12, 22][k]}px"></i></button>`).join('') : '';
+}
+$('#edTools').onclick = e => { const b = e.target.closest('button'); if(!b) return; ED.tool = b.dataset.t; renderTools(); renderSub(); };
+$('#edSizes').onclick = e => { const b = e.target.closest('button'); if(!b) return; ED.size[ED.tool] = +b.dataset.k; renderTools(); };
+function renderPal(){
+  const p = PAL_BY[ED.color];
+  $('#edPal').innerHTML = `<div class="pal-name">${esc(p[0])}<small>${p[2]}</small></div>` +
+    PAL.map(c => `<button class="sw${c[0] === ED.color ? ' on' : ''}" data-c="${c[0]}" style="background:${c[1]}" title="${c[0]}"></button>`).join('');
+}
+$('#edPal').onclick = e => {
+  const b = e.target.closest('.sw'); if(!b) return;
+  ED.color = b.dataset.c; renderPal();
+  if(ED.tool === 'eraser'){ ED.tool = ED.mode === 'color' ? 'fill' : 'pen'; renderTools(); renderSub(); }
+  if(!ADULT) speak(ED.color, 0.85);                         // 색 이름을 영어로 들려줌
+};
+function renderSub(){
+  const h = [];
+  if(ED.tool === 'brush') h.push(`<button class="tg${ED.clip ? ' on' : ''}" data-s="clip">🛡 선 밖으로 안 나가기</button>`);
+  if(ED.tool === 'eraser') h.push(`<button class="tg${!ED.eraseLine ? ' on' : ''}" data-s="eColor">🎨 색 지우기</button><button class="tg${ED.eraseLine ? ' on' : ''}" data-s="eLine">✏️ 선 지우기</button>`);
+  if(ED.tool === 'fill') h.push('<span class="small">🪣 칸을 누르면 한 번에 칠해져요</span>');
+  if(ED.bgBlob) h.push(`<button class="tg${ED.bgOn ? ' on' : ''}" data-s="bg">👁 사진 보기</button><label>흐리게<input type="range" id="edBgA" min="0.1" max="0.9" step="0.05" value="${ED.bgAlpha}">진하게</label>`);
+  if(ED.mode === 'color' && !ADULT) h.push(`<button class="tg${ED.missionOn ? ' on' : ''}" data-s="mission">🎯 영어 미션</button>`);
+  h.push(`<button class="tg${!ED.penOnly ? ' on' : ''}" data-s="finger">✋ 손가락으로도 그리기</button>`, '<button class="tg" data-s="fit">🔍 맞추기</button>');
+  $('#edSub').innerHTML = h.join('');
+  const a = $('#edBgA'); if(a) a.oninput = e => { ED.bgAlpha = +e.target.value; applyBg(); };
+}
+$('#edSub').onclick = e => {
+  const b = e.target.closest('[data-s]'); if(!b) return;
+  const s = b.dataset.s;
+  if(s === 'clip') ED.clip = !ED.clip;
+  if(s === 'eColor') ED.eraseLine = false;
+  if(s === 'eLine') ED.eraseLine = true;
+  if(s === 'bg'){ ED.bgOn = !ED.bgOn; applyBg(); }
+  if(s === 'finger'){ ED.penOnly = !ED.penOnly; settings.penOnly = ED.penOnly; saveSettings(); }
+  if(s === 'fit') fitView();
+  if(s === 'mission'){ ED.missionOn = !ED.missionOn; if(ED.missionOn) missionNext(); else $('#edMission').style.display = 'none'; }
+  renderSub();
+};
+
+/* ---------- 손가락·펜 ---------- */
+const touches = new Map();
+let stroke = null, nav = null;
+edStage.addEventListener('contextmenu', e => e.preventDefault());
+edStage.onpointerdown = e => {
+  e.preventDefault();
+  try{ edStage.setPointerCapture(e.pointerId); }catch(err){}
+  if(e.pointerType === 'touch'){
+    touches.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if(stroke && stroke.touch) cancelStroke();
+    if(ED.penOnly || touches.size >= 2){ startNav(); return; }
+  }
+  if(stroke) return;
+  if(e.button > 0 && e.pointerType === 'mouse') return;
+  startStroke(e);
+};
+edStage.onpointermove = e => {
+  if(e.pointerType === 'touch' && touches.has(e.pointerId)){
+    touches.set(e.pointerId, {x: e.clientX, y: e.clientY});
+    if(nav){ moveNav(); return; }
+  }
+  if(stroke && stroke.id === e.pointerId){
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    (evs.length ? evs : [e]).forEach(moveStroke);
+    if(stroke.mask) showMasked();
+  }
+};
+edStage.onpointerup = edStage.onpointercancel = e => {
+  if(e.pointerType === 'touch'){ touches.delete(e.pointerId); if(nav){ if(touches.size) startNav(); else nav = null; } }
+  if(stroke && stroke.id === e.pointerId) endStroke(e.type === 'pointercancel');
+};
+edStage.addEventListener('wheel', e => {                  // 노트북: 마우스 휠로 확대
+  e.preventDefault();
+  const R = edStage.getBoundingClientRect(), v = ED.view, s = clamp(v.s * (e.deltaY < 0 ? 1.15 : 1 / 1.15), 1, 8);
+  const px = e.clientX - R.left, py = e.clientY - R.top;
+  v.x = px - (px - v.x) * s / v.s; v.y = py - (py - v.y) * s / v.s; v.s = s; applyView();
+}, {passive: false});
+function startNav(){ nav = {a: Array.from(touches.values()).map(p => Object.assign({}, p)), v: Object.assign({}, ED.view)}; }
+function moveNav(){
+  const a = Array.from(touches.values()), R = edStage.getBoundingClientRect(), v0 = nav.v, v = ED.view;
+  if(a.length >= 2 && nav.a.length >= 2){
+    const c0 = {x: (nav.a[0].x + nav.a[1].x) / 2 - R.left, y: (nav.a[0].y + nav.a[1].y) / 2 - R.top};
+    const c1 = {x: (a[0].x + a[1].x) / 2 - R.left, y: (a[0].y + a[1].y) / 2 - R.top};
+    const d0 = Math.hypot(nav.a[0].x - nav.a[1].x, nav.a[0].y - nav.a[1].y) || 1, d1 = Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
+    const s = clamp(v0.s * d1 / d0, 1, 8);
+    v.x = c1.x - (c0.x - v0.x) * s / v0.s; v.y = c1.y - (c0.y - v0.y) * s / v0.s; v.s = s;
+  } else if(a.length === 1 && nav.a.length === 1){ v.x = v0.x + a[0].x - nav.a[0].x; v.y = v0.y + a[0].y - nav.a[0].y; }
+  applyView();
+}
+function workPt(e){
+  const r = cvLine.getBoundingClientRect();
+  return {x: (e.clientX - r.left) * ED.W / r.width, y: (e.clientY - r.top) * ED.H / r.height, p: e.pointerType === 'pen' ? (e.pressure || 0.5) : 0.5, pen: e.pointerType === 'pen'};
+}
+function strokeCtx(){ return stroke.cv ? stroke.cv.getContext('2d') : ctxOf(stroke.layer); }
+function widthAt(p){ return stroke.t === 'pen' && p.pen ? stroke.size * (0.35 + p.p * 1.3) : stroke.size; }
+function startStroke(e){
+  const p = workPt(e);
+  if(ED.tool === 'fill'){ doFill(p); return; }
+  const t = ED.tool, layer = t === 'pen' || (t === 'eraser' && ED.eraseLine) ? 'line' : 'color';
+  pushUndo(layer);
+  stroke = {id: e.pointerId, touch: e.pointerType === 'touch', t, layer, last: p, mid: p, size: SIZES[t][ED.size[t]]};
+  if(t === 'brush' && ED.clip){
+    const reg = computeRegion(p);
+    if(reg){ stroke.mask = regionCanvas(reg); stroke.cv = mkCanvas(ED.W, ED.H); }
+  }
+  const x = strokeCtx();
+  x.save();
+  x.globalCompositeOperation = t === 'eraser' ? 'destination-out' : 'source-over';
+  x.strokeStyle = x.fillStyle = PAL_BY[ED.color][1];
+  x.lineCap = 'round'; x.lineJoin = 'round';
+  x.beginPath(); x.arc(p.x, p.y, widthAt(p) / 2, 0, Math.PI * 2); x.fill();
+  if(stroke.mask) showMasked();
+}
+function moveStroke(e){
+  const p = workPt(e), x = strokeCtx();
+  const m = {x: (stroke.last.x + p.x) / 2, y: (stroke.last.y + p.y) / 2};
+  x.lineWidth = widthAt(p);
+  x.beginPath(); x.moveTo(stroke.mid.x, stroke.mid.y); x.quadraticCurveTo(stroke.last.x, stroke.last.y, m.x, m.y); x.stroke();
+  stroke.mid = m; stroke.last = p;
+}
+function showMasked(){
+  prevX.clearRect(0, 0, ED.W, ED.H);
+  prevX.globalCompositeOperation = 'source-over'; prevX.drawImage(stroke.cv, 0, 0);
+  prevX.globalCompositeOperation = 'destination-in'; prevX.drawImage(stroke.mask, 0, 0);
+  prevX.globalCompositeOperation = 'source-over';
+}
+function endStroke(cancel){
+  const s = stroke;
+  if(cancel){ cancelStroke(); return; }
+  const x = strokeCtx();
+  x.beginPath(); x.moveTo(s.mid.x, s.mid.y); x.lineTo(s.last.x, s.last.y); x.stroke();
+  x.restore();
+  if(s.mask){ showMasked(); colorX.drawImage(cvPrev, 0, 0); prevX.clearRect(0, 0, ED.W, ED.H); }
+  if(s.layer === 'line') ED.lineVer++;
+  stroke = null; ED.dirty = true;
+  if(s.t === 'brush') missionCheck(ED.color);
+}
+function cancelStroke(){
+  if(!stroke) return;
+  try{ strokeCtx().restore(); }catch(e){}
+  prevX.clearRect(0, 0, ED.W, ED.H);
+  const u = ED.undo.pop(); if(u) ctxOf(u.layer).putImageData(u.im, 0, 0);
+  stroke = null; edBtns();
+}
+
+/* ---------- 🪣 채우기 (선으로 막힌 칸 찾기) ---------- */
+function dilate(src, W, H, times, only){
+  let a = src;
+  for(let t = 0; t < times; t++){
+    const b = new Uint8Array(a);
+    for(let y = 0; y < H; y++){
+      const row = y * W;
+      for(let x = 0; x < W; x++){
+        const i = row + x;
+        if(a[i] || (only && !only[i])) continue;
+        if((x > 0 && a[i - 1]) || (x < W - 1 && a[i + 1]) || (y > 0 && a[i - W]) || (y < H - 1 && a[i + W])) b[i] = 1;
+      }
+    }
+    a = b;
+  }
+  return a;
+}
+function getWalls(){
+  if(ED.walls && ED.wallsVer === ED.lineVer) return ED.walls;
+  const W = ED.W, H = ED.H, d = lineX.getImageData(0, 0, W, H).data, w = new Uint8Array(W * H);
+  for(let i = 0; i < W * H; i++) w[i] = d[i * 4 + 3] > 80 ? 1 : 0;
+  ED.walls = dilate(w, W, H, 2);                 // 선의 작은 틈 막기
+  ED.wallsVer = ED.lineVer;
+  return ED.walls;
+}
+function computeRegion(p){
+  const W = ED.W, H = ED.H, walls = getWalls();
+  let sx = Math.round(p.x), sy = Math.round(p.y);
+  if(sx < 0 || sy < 0 || sx >= W || sy >= H) return null;
+  if(walls[sy * W + sx]){                       // 선 위를 눌렀으면 가까운 빈 칸
+    let ok = false;
+    for(let r = 1; r <= 10 && !ok; r++) for(let dy = -r; dy <= r && !ok; dy++) for(let dx = -r; dx <= r; dx++){
+      const x = sx + dx, y = sy + dy;
+      if(x >= 0 && y >= 0 && x < W && y < H && !walls[y * W + x]){ sx = x; sy = y; ok = true; break; }
+    }
+    if(!ok) return null;
+  }
+  const reg = new Uint8Array(W * H), st = [sx, sy];
+  while(st.length){
+    const y = st.pop(); let x = st.pop(), i = y * W + x;
+    if(reg[i]) continue;
+    while(x > 0 && !walls[i - 1] && !reg[i - 1]){ x--; i--; }
+    let up = false, dn = false;
+    while(x < W && !walls[i] && !reg[i]){
+      reg[i] = 1;
+      if(y > 0){ const j = i - W; if(!walls[j] && !reg[j]){ if(!up){ st.push(x, y - 1); up = true; } } else up = false; }
+      if(y < H - 1){ const j = i + W; if(!walls[j] && !reg[j]){ if(!dn){ st.push(x, y + 1); dn = true; } } else dn = false; }
+      x++; i++;
+    }
+  }
+  return dilate(reg, W, H, 4, walls);           // 선 밑까지 칠해서 하얀 틈이 안 보이게
+}
+function regionCanvas(reg){
+  const c = mkCanvas(ED.W, ED.H), x = c.getContext('2d'), im = x.createImageData(ED.W, ED.H), d = im.data;
+  for(let i = 0; i < reg.length; i++) if(reg[i]) d[i * 4 + 3] = 255;
+  x.putImageData(im, 0, 0);
+  return c;
+}
+function doFill(p){
+  const reg = computeRegion(p);
+  if(!reg) return;
+  pushUndo('color');
+  const [r, g, b] = hexRgb(PAL_BY[ED.color][1]);
+  const im = colorX.getImageData(0, 0, ED.W, ED.H), d = im.data;
+  for(let i = 0; i < reg.length; i++) if(reg[i]){ const k = i * 4; d[k] = r; d[k + 1] = g; d[k + 2] = b; d[k + 3] = 255; }
+  colorX.putImageData(im, 0, 0);
+  ED.dirty = true;
+  missionCheck(ED.color);
+}
+
+/* ---------- 저장·닫기 ---------- */
+function composite(max){                         // 흰 종이 + 색칠 + 선 (따라 그리기 사진은 빼고)
+  const [w, h] = fitSize(ED.W, ED.H, max);
+  const c = mkCanvas(w, h), x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
+  x.drawImage(cvColor, 0, 0, w, h); x.drawImage(cvLine, 0, 0, w, h);
+  return c;
+}
+async function saveWork(){
+  const rec = ED.work || {id: 'w' + Date.now().toString(36), who: PROFILE, t0: Date.now(), title: ''};
+  Object.assign(rec, {t: Date.now(), mode: ED.mode, W: ED.W, H: ED.H, bg: ED.bgBlob, bgAlpha: ED.bgAlpha, parts: ED.parts,
+    line: await canvasBlob(cvLine), color: await canvasBlob(cvColor), thumb: await jpegOf(composite(360), 360, 0.8)});
+  await DB.put('works', rec);
+  ED.work = rec; ED.dirty = false;
+  return rec;
+}
+async function closeEditor(action){
+  let work = ED.work;
+  if(ED.dirty || !work){
+    const stop = loading('저장하고 있어요...');
+    try{ work = await saveWork(); }catch(e){ stop(); alert('저장하지 못했어요. 기기 저장 공간을 확인해 주세요.'); return; }
+    stop();
+  }
+  if(isListening()) stopListening();
+  speakToken++; if('speechSynthesis' in window) speechSynthesis.cancel();
+  ED.open = false; stroke = null; nav = null; touches.clear();
+  $('#editor').style.display = 'none';
+  document.body.style.overflow = '';
+  const r = ED.resolve; ED.resolve = null;
+  if(r) r({action, work, img: action === 'talk' ? composite(1400) : null});
+}
+$('#edClose').onclick = () => closeEditor('close');
+$('#edDone').onclick = async () => {
+  const v = await sheet('✅ 다 그렸어요!', [
+    {ic: '🦊', t: '토비랑 이야기하기', s: '그림을 영어로 소개하고 그림책 한 장을 만들어요', v: 'talk', off: !aiReady()},
+    {ic: '💾', t: '저장하고 나가기', v: 'close'},
+    {ic: '✏️', t: '계속 그리기', v: 'more'}
+  ], aiReady() ? '' : '🔒 토비랑 이야기하기는 AI 토비가 연결되면 할 수 있어요.');
+  if(v === 'talk' || v === 'close') closeEditor(v);
+};
+
+/* ---------- 🎯 영어 색칠 미션 (듣기) ----------
+   토비가 "Color the hat pink!"라고 말하면 → 그 색으로 칠하기. 맞는지는 고른 색으로 확인 (어디를 칠했는지는 아이를 믿음)
+   다른 색이면 1번째: "Hmm, that's green! Let's try pink." / 2번째부터: 색 이름 옆에 그 색 동그라미 */
+const MISSION_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'brown', 'sky blue', 'light green', 'gray', 'black'];
+function picLevel(){ const v = store.get('picLevel', roleLevel); return LEVELS[v] ? v : 1; }
+async function missionInit(){
+  if(!ED.missionOn){ $('#edMission').style.display = 'none'; return; }
+  if(!ED.parts.length && aiReady()){                     // 밑그림에서 칠할 부분 이름 찾기 (한 번)
+    $('#edMission').style.display = 'flex';
+    $('#edMission').innerHTML = '<div class="m-txt">🦊 토비가 밑그림을 보고 있어요 <span class="dots"><i></i><i></i><i></i></span></div>';
+    try{
+      const img = await jpegOf(composite(768), 768, 0.8);
+      const r = await aiCall('/picture', {image: await blobB64(img), purpose: 'color', level: picLevel()});
+      aiUsageSync(r);
+      if(r.kind === 'picture') ED.parts = (r.words || []).filter(w => w.en && w.en.split(' ').length <= 3);
+    }catch(e){ /* 부분 이름 없이도 미션 가능 */ }
+    if(!ED.open) return;
+  }
+  missionNext();
+}
+function missionNext(){
+  if(!ED.missionOn || !ED.open) return;
+  const prev = ED.mission || {};
+  const color = rand(MISSION_COLORS.filter(c => c !== prev.color));
+  const parts = ED.parts.filter(p => !prev.part || p.en !== prev.part.en);
+  ED.mission = {color, part: parts.length && Math.random() < 0.85 ? rand(parts) : null, tries: 0, showKo: false};
+  renderMission(true);
+}
+function missionEn(m){ return m.part ? `Color the ${m.part.en} ${m.color}!` : `Color something ${m.color}!`; }
+function missionKo(m){ const k = PAL_BY[m.color][2]; return m.part ? `${m.part.ko} → ${k}으로 칠해요` : `아무 곳이나 ${k}으로 칠해요`; }
+function renderMission(say){
+  const m = ED.mission, el = $('#edMission'), LV = LEVELS[picLevel()];
+  if(!m){ el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  const dot = m.tries >= 2 ? `<span class="dot" style="background:${PAL_BY[m.color][1]}"></span>` : '';
+  const txt = LV.showText || m.tries >= 2 ? esc(missionEn(m)).replace(esc(m.color), '<b>' + esc(m.color) + '</b>' + dot) : '잘 듣고 칠해요!' + dot;
+  el.innerHTML = `<div class="m-txt">🦊 ${txt}${m.showKo ? '<small>' + esc(missionKo(m)) + '</small>' : ''}<small>🎯 성공 ${ED.mDone}개</small></div>` +
+    '<button class="btn m-say">🔊</button><button class="btn m-ko">👀 뜻</button><button class="btn m-skip">⏭ 다른 미션</button>';
+  el.querySelector('.m-say').onclick = () => speakTobi(missionEn(m), LV.rate, 'script');
+  el.querySelector('.m-ko').onclick = () => { m.showKo = true; renderMission(false); };
+  el.querySelector('.m-skip').onclick = () => missionNext();
+  if(say) speakTobi(missionEn(m), LV.rate, 'script');
+}
+function missionCheck(color){
+  const m = ED.mission;
+  if(!ED.missionOn || !m || m.done) return;
+  const LV = LEVELS[picLevel()];
+  if(color === m.color){
+    m.done = true; ED.mDone++;
+    let got = 0;
+    if(dailyCount('cm') < 15){ dailyCount('cm', true); got = 1; addStars(1); }
+    addLog({mode: 'color', target: missionEn(m), said: color, score: null, stars: got});
+    $('#edMission').innerHTML = `<div class="m-txt">🦊 ${rand(['Great job!', 'Perfect!', 'Wow, nice!'])} <b>${esc(color)}</b>! ${got ? '⭐+1' : ''}<small>🎯 성공 ${ED.mDone}개</small></div>`;
+    speakTobi(rand(['Great job! ', 'Perfect! ', 'Nice! ']) + color[0].toUpperCase() + color.slice(1) + '!', LV.rate, 'script');
+    if(ED.mDone % 3 === 0) celebrate('🎨');
+    setTimeout(() => { if(ED.mission === m) missionNext(); }, 2600);
+  } else {
+    m.tries++;
+    renderMission(false);
+    speakTobi(`Hmm, that's ${color}! Let's try ${m.color}.`, LV.rate, 'script');
+  }
+}
+
+/* ---------- 🖍 색칠하기: 밑그림 고르기 ---------- */
+const COLOR_TOPICS = [
+  ['🦄', 'unicorn in a flower field', '꽃밭의 유니콘'], ['🐱', 'cute cat with a big bow', '리본 단 고양이'], ['🐶', 'puppy playing with a ball', '공놀이하는 강아지'],
+  ['🧁', 'cupcake shop', '컵케이크 가게'], ['🏰', 'princess castle', '공주님 성'], ['🧜‍♀️', 'mermaid under the sea', '바닷속 인어'],
+  ['🦋', 'butterflies and flowers', '나비와 꽃'], ['🐰', 'bunny picnic', '토끼 소풍'], ['🍦', 'ice cream truck', '아이스크림 트럭'],
+  ['🦕', 'friendly dinosaur', '착한 공룡'], ['🚀', 'rocket in space', '우주 로켓'], ['🐼', 'panda eating bamboo', '대나무 먹는 판다'],
+  ['🎂', 'birthday cake party', '생일 케이크 파티'], ['🏠', 'cozy little house', '아기자기한 집'], ['🐠', 'fish in the ocean', '바닷속 물고기'],
+  ['🦊', 'fox in the forest', '숲속 여우'], ['👗', 'girl in a pretty dress', '예쁜 드레스 입은 소녀'], ['🌈', 'rainbow and clouds', '무지개와 구름'],
+  ['🍓', 'strawberry fairy', '딸기 요정'], ['🐧', 'penguins on ice', '얼음 위 펭귄']
+];
+async function startColor(){
+  const v = await sheet('🖍️ 무엇을 색칠할까요?', [
+    {ic: '🦊', t: '토비가 밑그림 그려 주기', s: '주제를 고르면 새 색칠 그림이 나와요', v: 'ai', off: !aiReady()},
+    {ic: '📷', t: '사진 찍어서 테두리 만들기', s: '예쁜 그림을 찍으면 선만 남겨요', v: 'cam'},
+    {ic: '🖼️', t: '갤러리 그림으로 테두리 만들기', s: 'PENUP 그림도 돼요', v: 'gal'},
+    {ic: '🎨', t: '내 그림 색칠하기', s: '따라 그린 그림, 그리던 그림', v: 'mine'}
+  ], aiReady() ? '' : '🔒 토비 밑그림은 AI 토비가 연결되면 쓸 수 있어요.');
+  if(!v) return;
+  if(v === 'mine'){ const w = await pickWork('🎨 색칠할 그림 고르기'); if(w) editWork(w); return; }
+  if(v === 'cam' || v === 'gal'){
+    const photo = await getPhoto(v); if(!photo) return;
+    const lines = await outlineFromPhoto(photo); if(!lines) return;
+    runEditor({mode: 'color', line: lines});
+    return;
+  }
+  const t = await pickTopic(); if(!t) return;
+  makeColoring(t);
+}
+async function pickTopic(){
+  const items = COLOR_TOPICS.map(t => ({ic: t[0], t: t[2], s: t[1], v: t[1]}));
+  items.unshift({ic: '🎤', t: '영어로 직접 말하기', s: '예: a cat in a hat', v: '_say'});
+  const v = await sheet('🦊 어떤 그림을 그려 줄까요?', items);
+  if(v !== '_say') return v;
+  const stop = loading('🎤 영어로 말해 주세요! (예: a bear with a balloon)');
+  const r = await listen(null, {single: true, wait: 2.5});
+  stop();
+  const said = (r.alts[0] || '').replace(/[^a-zA-Z ,'-]/g, ' ').trim();
+  if(!said){ alert('잘 안 들렸어요. 다시 해 볼까요?'); return null; }
+  return confirm('"' + said + '" 그림을 그려 줄까요?') ? said : null;
+}
+async function makeColoring(topic){
+  const stop = loading('🦊 토비가 <b>' + esc(topic) + '</b> 밑그림을 그리고 있어요...<br><span class="small">10초쯤 걸려요</span>');
+  let blob;
+  try{ blob = await aiBlob('/coloring', {topic}); }
+  catch(e){
+    stop();
+    alert({topic: '그 주제는 그릴 수 없어요. 다른 주제를 골라 볼까요?', img_limit: '오늘은 밑그림을 많이 그렸어요. 내일 또 그려 줄게요!',
+      tts_limit: '오늘 토비 그림 무료 양을 다 썼어요. 내일 또 그려 줄게요!', no_ai: '부모님: 서버에 Workers AI 연결(이름 AI)이 필요해요.'}[e.kind] ||
+      '밑그림을 못 그렸어요. 잠시 후 다시 해 주세요. (' + e.kind + ')');
+    return;
+  }
+  const lines = await lineArtFrom(blob);
+  stop();
+  runEditor({mode: 'color', line: lines});
+}
+async function aiBlob(path, body){                       // 그림을 받아 오는 서버 호출
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000);
+  try{
+    const res = await fetch(settings.aiUrl.replace(/\/+$/, '') + path, {method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(Object.assign({code: settings.aiCode, who: PROFILE}, body)), signal: ctl.signal});
+    if(!res.ok){ let d = null; try{ d = await res.json(); }catch(e){} const err = new Error((d && d.detail) || 'HTTP ' + res.status); err.kind = (d && d.error) || 'http'; throw err; }
+    return await res.blob();
+  }catch(e){ if(!e.kind) e.kind = e.name === 'AbortError' ? 'timeout' : 'network'; throw e; }
+  finally{ clearTimeout(tm); }
+}
+
+/* ---------- 따라 그리기 · 자유 그리기 · 이어 그리기 ---------- */
+async function startTrace(){
+  const v = await sheet('✏️ 무엇을 따라 그릴까요?', [
+    {ic: '📷', t: '카메라로 찍기', s: '예쁜 그림이나 사진을 찍어요', v: 'cam'},
+    {ic: '🖼️', t: '갤러리에서 고르기', v: 'gal'}
+  ], '사진이 흐리게 깔리면 그 위에 테두리를 따라 그려요. 다 그리면 👁 사진 보기를 꺼 봐요!');
+  if(!v) return;
+  const photo = await getPhoto(v); if(!photo) return;
+  runEditor({mode: 'trace', bg: photo});
+}
+function editWork(w){ runEditor({work: w}); }
+async function runEditor(opts){
+  const r = await openEditor(opts);
+  renderDrawHome();
+  if(r.action === 'talk') startTalk(r.img, {short: r.work.mode === 'color', work: r.work});
+}
+
+/* ---------- 🗣 그림 이야기 ----------
+   그림 단어 카드 → 계단식 대화(고르기 → 예/아니오 → 빈칸 → 짧은 질문 → 상상) → 그림책 한 장
+   - 말풍선에 넣기 전에 "토비가 들은 말"을 아이가 확인 (✅ / 🔄 / 비슷한 말 / ✏️ 펜으로 고치기)
+   - 못 하면 질문이 쉬워지고(서버), 선택지 버튼이 나옴. 3번 연속 안 되면 예시 답을 들려주고 다음으로 */
+const tkChat = $('#tkChat'), tkMic = $('#tkMic'), tkMicLabel = $('#tkMicLabel');
+let TK = null;
+function showDr(v){
+  ['home', 'talk', 'book', 'page'].forEach(k => { $('#dr' + k[0].toUpperCase() + k.slice(1)).style.display = k === v ? 'block' : 'none'; });
+  window.scrollTo({top: 0});
+}
+function renderTkLevels(){
+  const lv = TK ? TK.lv : picLevel();
+  $('#tkLevels').innerHTML = Object.entries(LEVELS).map(([k, L]) => `<button class="chip${+k === lv ? ' on' : ''}" data-lv="${k}">${L.name}</button>`).join('');
+}
+$('#tkLevels').onclick = e => {
+  const b = e.target.closest('.chip'); if(!b) return;
+  store.set('picLevel', +b.dataset.lv);
+  if(TK && !TK.done && TK.lv !== +b.dataset.lv){ TK.lv = +b.dataset.lv; addBubble('hint', '이제부터 ' + LEVELS[TK.lv].name + '으로 이야기할게요', tkChat); }
+  renderTkLevels();
+};
+function tkBody(st){ return {sid: st.sid, level: st.lv, info: {title: st.info.title, desc: st.info.desc, words: st.info.words}, history: st.hist, short: st.short}; }
+function tkThinking(){ return addBubble('tobi', '🦊 <span class="dots"><i></i><i></i><i></i></span>', tkChat); }
+function tkHideConfirm(){ $('#tkConfirm').style.display = 'none'; $('#tkConfirm').innerHTML = ''; }
+$('#tkBack').onclick = () => { tkLeave(); showDr('home'); renderDrawHome(); };
+function tkLeave(){
+  if(isListening()) stopListening();
+  speakToken++; if('speechSynthesis' in window) speechSynthesis.cancel();
+  const st = TK;
+  if(st && !st.done){ st.done = true; if(st.turns) saveAISession(st, null); }
+}
+
+async function startTalk(src, opts){
+  opts = opts || {};
+  tkLeave();
+  showDr('talk');
+  const st = TK = {sid: 'p' + Date.now().toString(36), scene: 'picture', lv: picLevel(), t: Date.now(), hist: [], turns: 0, stars: 0, fixes: [],
+    info: null, last: null, hintLv: 0, quiet: 0, fails: 0, busy: false, waiting: false, done: false, short: !!opts.short,
+    workId: opts.work ? opts.work.id : null, img: null};
+  renderTkLevels();
+  tkChat.innerHTML = ''; tkHideConfirm();
+  $('#tkCtrls').style.display = 'none'; $('#tkTitle').textContent = ''; $('#tkWords').innerHTML = '';
+  st.img = await jpegOf(src, 1200, 0.88);                  // 그림책에 들어갈 그림
+  imgUrl($('#tkImg'), st.img);
+  if(!aiReady()){
+    addBubble('hint', '🔒 그림 이야기는 AI 토비가 연결돼야 할 수 있어요. 부모님께 설정 → "🤖 AI 토비 연결"을 부탁해요.', tkChat);
+    return;
+  }
+  const th = addBubble('tobi', '🦊 그림을 보고 있어요 <span class="dots"><i></i><i></i><i></i></span>', tkChat);
+  let r;
+  try{
+    const small = await jpegOf(src, 768, 0.8);
+    r = await aiCallRetry('/picture', {image: await blobB64(small), level: st.lv, purpose: 'talk'});
+  }catch(e){ th.remove(); if(st === TK) tkFail(e); return; }
+  th.remove();
+  if(st !== TK) return;
+  aiUsageSync(r);
+  if(r.kind !== 'picture'){
+    st.done = true;
+    addBubble('hint', r.kind === 'person_photo' ? '🙂 사람 얼굴 사진이네요! 토비는 그림 이야기를 좋아해요. 내가 그린 그림을 보여 줄래요?'
+      : '🙂 이 그림은 이야기하기 어려워요. 다른 그림을 보여 줄래요?', tkChat);
+    speakTobi('Can you show me your drawing?', LEVELS[st.lv].rate, 'ai');
+    return;
+  }
+  st.info = {title: r.title, title_ko: r.title_ko, desc: r.desc, words: r.words || []};
+  $('#tkTitle').textContent = '🖼️ ' + r.title + (r.title_ko ? ' · ' + r.title_ko : '');
+  $('#tkWords').innerHTML = st.info.words.map((w, k) => `<button class="wcard" data-k="${k}"><span class="e">${esc(w.emoji || '🔤')}</span>${esc(w.en)}<small>${esc(w.ko)}</small></button>`).join('');
+  const d = addBubble('hint', '🦊 그림 속 단어예요! 위의 카드를 눌러서 들어 보고, 준비되면 시작해요.<div class="row"><button class="btn main tk-go">🦊 토비랑 이야기 시작!</button></div>', tkChat);
+  speakTobi("Wow, I love your picture! Let's look at the words first.", LEVELS[st.lv].rate, 'ai');
+  d.querySelector('.tk-go').onclick = () => { d.querySelector('.row').remove(); tkBegin(st); };
+}
+$('#tkWords').onclick = e => {
+  const b = e.target.closest('.wcard'); if(!b || !TK || !TK.info) return;
+  const w = TK.info.words[+b.dataset.k]; if(w) speak(w.en, 0.8);
+};
+
+async function tkBegin(st){
+  if(aiLeft() <= 0){ tkAskMore(() => tkBegin(st)); return; }
+  st.busy = st.waiting = true;
+  const th = tkThinking();
+  let r;
+  try{ r = await aiCallRetry('/picchat', tkBody(st)); }
+  catch(e){ th.remove(); st.busy = st.waiting = false; if(st === TK) tkFail(e); return; }
+  th.remove(); st.waiting = false;
+  if(st !== TK){ st.busy = false; return; }
+  aiSync(r);
+  $('#tkCtrls').style.display = 'block';
+  try{ await tkSay(st, r); } finally { st.busy = false; }
+}
+/* 토비 말 + (초급) 문장 틀 */
+function tkSay(st, r){
+  st.last = r; st.hintLv = 0;
+  st.hist.push({w: 't', x: r.reply});
+  const LV = LEVELS[st.lv];
+  const p = foxBubble(tkChat, ttsText(r.reply), r.ko, LV);
+  if(r.frame && LV.showText && !r.end) addBubble('frame', '✍️ ' + esc(r.frame).replace(/___/g, '<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>') + (r.frame_ko ? '<small>' + esc(r.frame_ko) + '</small>' : ''), tkChat);
+  return p;
+}
+function tkChoices(st){
+  const c = st.last && st.last.choices;
+  if(!c || !c.length) return;
+  const d = addBubble('hint', '👇 이 중에서 골라서 말해 봐요! (누르면 들려줘요)<div class="choices">' +
+    c.map((x, k) => `<button class="chip" data-k="${k}">${esc(x.emoji || '')} ${esc(x.en)} <small>${esc(x.ko)}</small></button>`).join('') + '</div>', tkChat);
+  d.querySelector('.choices').onclick = e => {
+    const b = e.target.closest('.chip'); if(!b) return;
+    speak(c[+b.dataset.k].en, 0.8);
+    tkMicLabel.textContent = '🎤를 누르고 "' + c[+b.dataset.k].en + '"라고 말해 봐요!';
+  };
+}
+
+tkMic.onclick = async () => {
+  const st = TK;
+  if(!st || st.done || !st.last) return;
+  if(isListening()){ stopListening(); return; }
+  if(st.busy){ if(!st.waiting){ speakToken++; if('speechSynthesis' in window) speechSynthesis.cancel(); } return; }   // 토비 말 건너뛰기
+  if(aiLeft() <= 0){ tkAskMore(); return; }
+  tkHideConfirm();
+  st.busy = true;
+  try{
+    setMic(tkMic, tkMicLabel, true);
+    const live = addBubble('me', '...', tkChat);
+    const r = await listen(t => { live.textContent = t || '...'; tkChat.scrollTop = tkChat.scrollHeight; });
+    setMic(tkMic, tkMicLabel, false, '눌러서 대답하기');
+    live.remove();
+    if(st !== TK || st.done) return;
+    const alts = [];
+    r.alts.forEach(a => { a = a.trim(); if(a && !alts.some(x => x.toLowerCase() === a.toLowerCase())) alts.push(a); });
+    if(!alts.length){
+      if(r.error && r.error !== 'no-speech'){ addBubble('hint', esc(errMsg(r.error)), tkChat); return; }
+      await tkQuiet(st);
+      return;
+    }
+    st.quiet = 0;
+    tkConfirm(st, alts);
+  } finally { st.busy = false; }
+};
+/* 토비가 들은 말 확인 */
+function tkConfirm(st, alts){
+  const box = $('#tkConfirm');
+  let heard = alts[0];
+  box.style.display = 'block';
+  box.innerHTML = '<div class="small">🦊 토비가 들은 말</div><div class="heard"></div>' +
+    (alts.length > 1 ? '<div class="small">혹시 이 말이었어요?</div><div class="choices">' + alts.slice(1, 4).map((a, k) => `<button class="chip" data-k="${k + 1}">${esc(a)}</button>`).join('') + '</div>' : '') +
+    '<div class="row"><button class="btn main c-ok">✅ 맞아요</button><button class="btn c-again">🔄 다시 말하기</button><button class="btn c-pen">✏️ 고치기</button></div>' +
+    '<input type="text" class="c-in" style="display:none" autocomplete="off" autocapitalize="off" spellcheck="false">';
+  const hv = box.querySelector('.heard'), inp = box.querySelector('.c-in');
+  const show = () => { hv.textContent = '"' + heard + '"'; };
+  show();
+  box.querySelectorAll('.choices .chip').forEach(b => { b.onclick = () => { heard = alts[+b.dataset.k]; show(); }; });
+  box.querySelector('.c-ok').onclick = () => {
+    const t = (inp.style.display === 'none' ? heard : inp.value).trim();
+    if(!t) return;
+    tkHideConfirm(); tkSend(st, t);
+  };
+  box.querySelector('.c-again').onclick = () => { tkHideConfirm(); tkMic.click(); };
+  box.querySelector('.c-pen').onclick = () => {
+    inp.style.display = 'block'; inp.value = heard; inp.focus();
+    box.querySelector('.c-ok').textContent = '✅ 이걸로 보내기';
+  };
+  box.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+}
+/* 목소리가 안 들렸을 때 */
+async function tkQuiet(st){
+  st.quiet++;
+  const LV = LEVELS[st.lv];
+  if(st.quiet === 1){
+    addBubble('hint', '🙂 목소리가 안 들렸어요. 펜이나 손이 마이크를 가리지 않게 하고, 조금 더 크게 말해 볼까요?', tkChat);
+    await speakTobi("I can't hear you. Can you say it again?", LV.rate, 'ai');
+    return;
+  }
+  st.fails++;
+  if(st.fails >= 3){ await tkMoveOn(st); return; }
+  if(st.last.hint){
+    addBubble('hint', '💡 이렇게 말해 보세요: <b>' + esc(st.last.hint) + '</b><small>' + esc(st.last.hint_ko || '') + '</small>', tkChat);
+    await speak('You can say, ' + ttsText(st.last.hint), Math.min(LV.rate, 0.85));
+  }
+  tkChoices(st);
+}
+/* 3번 연속 안 되면: 어려웠던 질문으로 남기고 토비가 예시 답을 말한 뒤 쉬운 새 질문 */
+async function tkMoveOn(st){
+  const q = st.last;
+  const hard = store.get('hardQ', []);
+  hard.push({t: Date.now(), q: q.reply, ko: q.ko, a: q.hint});
+  if(hard.length > 30) hard.splice(0, hard.length - 30);
+  store.set('hardQ', hard);
+  addBubble('hint', '👍 괜찮아요! 어려운 질문이었어요. 토비가 답을 알려 주고 다음 질문으로 갈게요.', tkChat);
+  st.fails = 0; st.quiet = 0;
+  await tkSend(st, '[App note: she could not answer that question after several tries. Kindly say the example answer in one short sentence, then ask a new, much easier choice question about another part of the picture.]', true);
+}
+
+async function tkSend(st, said, note){
+  if(st.done) return;
+  if(aiLeft() <= 0){ tkAskMore(() => tkSend(st, said, note)); return; }
+  st.busy = true;
+  if(!note) addBubble('me', '🗣️ ' + esc(said), tkChat);
+  const prev = st.last;
+  st.hist.push({w: 'c', x: said}); st.turns++;
+  st.waiting = true;
+  const th = tkThinking();
+  let res;
+  try{ res = await aiCallRetry('/picchat', tkBody(st)); }
+  catch(e){
+    st.hist.pop(); st.turns--; th.remove(); st.waiting = false; st.busy = false;
+    if(st !== TK) return;
+    if(e.kind === 'refusal'){ addBubble('hint', '🙂 토비가 그 이야기는 잘 몰라요. 그림 이야기를 해 볼까요?', tkChat); return; }
+    tkFail(e); return;
+  }
+  th.remove(); st.waiting = false;
+  if(st !== TK){ st.busy = false; return; }
+  dailyCount('aiTurn', true); aiSync(res);
+  try{
+    let got = 0;
+    if(!note){
+      got = res.effort === 'good' ? AI_STAR[st.lv] : res.effort === 'short' ? 1 : 0;
+      if(got){ st.stars += got; addStars(got); }
+      addLog({mode: 'pic', target: prev ? prev.reply : '', said, score: null, stars: got});
+      if(res.effort === 'idk' || res.effort === 'none') st.fails++; else st.fails = 0;
+    }
+    if(res.fix) st.fixes.push(res.fix);
+    const p = tkSay(st, res);
+    if(!note && res.expand && res.effort !== 'idk') tkExpand(st, res.expand);
+    else if(res.fix) aiFixBubbleIn(res.fix, tkChat);
+    await p;
+    if(res.end || st.turns >= (st.short ? 3 : 7) + 2){ await tkFinish(st); return; }
+    if(!note && (res.effort === 'idk' || res.effort === 'none')){
+      if(st.fails >= 3){ st.busy = false; await tkMoveOn(st); return; }
+      tkChoices(st);
+    }
+  } finally { st.busy = false; }
+}
+function aiFixBubbleIn(fx, box){
+  const d = addBubble('fix', '💡 이렇게 말하면 더 자연스러워요<br><b>' + esc(fx.better) + '</b> <button class="replay" title="듣기">🔊</button>' + (fx.ko ? '<small>' + esc(fx.ko) + '</small>' : ''), box);
+  d.querySelector('.replay').onclick = () => speak(fx.better, 0.85);
+}
+/* 한 단어 대답 → 토비가 늘려 준 문장을 따라 말하기 (별 1개, 한 번만 권함) */
+function tkExpand(st, sent){
+  const d = addBubble('fix', '🔁 문장으로 말해 볼까요?<br><b>' + esc(sent) + '</b> <button class="replay x-say" title="듣기">🔊</button><button class="replay slow x-slow" title="또박또박">🐢</button>' +
+    '<div class="row" style="justify-content:flex-start;margin-top:6px"><button class="btn x-mic">🎤 따라 말하기</button></div>', tkChat);
+  d.querySelector('.x-say').onclick = () => speak(sent, 0.85);
+  d.querySelector('.x-slow').onclick = () => speakSlow(sent);
+  const b = d.querySelector('.x-mic');
+  b.onclick = async () => {
+    if(isListening()){ stopListening(); return; }
+    if(st.busy) return;
+    st.busy = true; b.textContent = '⏹ 다 말했어요';
+    try{
+      const r = await listen(null);
+      let best = 0;
+      r.alts.forEach(a => { best = Math.max(best, compare(sent, a).score); });
+      if(best >= 0.7){
+        b.parentNode.innerHTML = '👍 문장으로 말했어요! ⭐+1';
+        st.stars++; addStars(1);
+        addLog({mode: 'pic', target: sent, said: r.alts[0] || '', score: Math.round(best * 100), stars: 1});
+      } else { b.textContent = '🎤 한 번 더'; addBubble('hint', r.alts.length ? '🙂 거의 다 왔어요! 🔊로 듣고 한 번 더 해 봐요.' : esc(errMsg(r.error || 'no-speech')), tkChat); }
+    } finally { st.busy = false; if(b.isConnected && b.textContent.startsWith('⏹')) b.textContent = '🎤 따라 말하기'; }
+  };
+}
+
+/* 💡 힌트: 1번 뜻 → 2번 문장 틀 → 3번 예시 답 들려주기 + 선택지 */
+$('#tkHint').onclick = () => {
+  const st = TK; if(!st || !st.last || st.done) return;
+  const L = st.last, LV = LEVELS[st.lv];
+  st.hintLv++;
+  if(st.hintLv === 1){ addBubble('hint', '👀 토비가 한 말의 뜻: ' + esc(L.ko) + '<small>한 번 더 누르면 문장 틀이 나와요</small>', tkChat); return; }
+  if(st.hintLv === 2 && L.frame){
+    addBubble('frame', '✍️ ' + esc(L.frame).replace(/___/g, '<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>') + (L.frame_ko ? '<small>' + esc(L.frame_ko) + '</small>' : '') + '<small>한 번 더 누르면 예시 답을 들려줘요</small>', tkChat);
+    return;
+  }
+  if(!L.hint) return;
+  addBubble('hint', '💡 ' + esc(L.hint) + '<small>' + esc(L.hint_ko || '') + '</small>', tkChat);
+  speak(ttsText(L.hint), Math.min(LV.rate, 0.85));
+  if(st.hintLv <= 3) tkChoices(st);
+};
+$('#tkReplay').onclick = () => TK && TK.last && speakTobi(ttsText(TK.last.reply), LEVELS[TK.lv].rate, 'ai');
+$('#tkSlow').onclick = () => TK && TK.last && speakSlow(ttsText(TK.last.reply));
+/* 🇰🇷 한국어로 말하면 영어 문장을 알려 줌 (대답 횟수 안 셈) */
+$('#tkKo').onclick = async () => {
+  const st = TK, btn = $('#tkKo');
+  if(!st || st.done || st.waiting || !st.last) return;
+  if(isListening()){ stopListening(); return; }
+  if(st.busy){ speakToken++; if('speechSynthesis' in window) speechSynthesis.cancel(); await sleep(200); if(st.busy) return; }
+  st.busy = true; tkHideConfirm();
+  try{
+    btn.textContent = '🔴 한국어로 말해요 (누르면 끝)';
+    const live = addBubble('ko-me', '🇰🇷 ...', tkChat);
+    const r = await listen(t => { live.textContent = '🇰🇷 ' + (t || '...'); }, {lang: 'ko-KR', wait: 2.5, single: true});
+    btn.textContent = '🇰🇷 한국어로';
+    if(st !== TK || st.done){ live.remove(); return; }
+    const ko = (r.alts[0] || '').trim();
+    if(!ko){ live.remove(); addBubble('hint', '🙂 한국어가 안 들렸어요. 🇰🇷 버튼을 다시 누르고 말해 볼까요?', tkChat); return; }
+    live.textContent = '🇰🇷 ' + ko;
+    st.waiting = true;
+    const th = tkThinking();
+    let res;
+    try{ res = await aiCallRetry('/translate', {ko, level: st.lv, context: st.last.reply}); }
+    catch(e){ addBubble('hint', '🔌 지금은 영어로 바꿀 수 없어요. 💡 힌트를 눌러 보세요.', tkChat); return; }
+    finally{ th.remove(); st.waiting = false; }
+    if(st !== TK) return;
+    aiUsageSync(res);
+    const d = addBubble('help', '👇 이렇게 말해 보세요' + transHTML(res) + '<small>🎤를 누르고 영어로 말해 보세요!</small>', tkChat);
+    bindTrans(d);
+    await speak(res.easy.en, Math.min(LEVELS[st.lv].rate, 0.85));
+  } finally { st.busy = false; btn.textContent = '🇰🇷 한국어로'; }
+};
+$('#tkEnd').onclick = () => {
+  const st = TK; if(!st || st.done || st.waiting) return;
+  if(isListening()) stopListening();
+  speakToken++; if('speechSynthesis' in window) speechSynthesis.cancel();
+  tkFinish(st);
+};
+function tkAskMore(then){
+  const d = addBubble('hint', '🎯 오늘 AI 토비와 <b>' + dailyCount('aiTurn') + '번</b> 대답했어요! 정말 열심히 했어요. 더 할까요?' +
+    '<div class="row"><button class="btn main b-more">➕ ' + AI_EXT + '번 더 하기</button><button class="btn b-stop">오늘은 그만</button></div>', tkChat);
+  d.querySelector('.b-stop').onclick = () => { d.querySelector('.row').remove(); if(TK && !TK.done && TK.turns) tkFinish(TK); };
+  d.querySelector('.b-more').onclick = async ev => {
+    ev.target.disabled = true;
+    try{
+      const r = await aiCallRetry('/extend', {});
+      if(typeof r.allow === 'number') aiSync(r); else dailyCount('aiExt', AI_EXT);
+      d.querySelector('.row').remove();
+      addBubble('hint', '👍 ' + AI_EXT + '번 더 할 수 있어요!', tkChat);
+      if(then) then();
+    }catch(e){
+      if(e.kind === 'max'){ d.querySelector('.row').remove(); addBubble('hint', '🌙 오늘은 가족 전체 최대 횟수까지 대화했어요. 내일 또 만나요!', tkChat); return; }
+      ev.target.disabled = false; ev.target.textContent = '❌ 다시 시도';
+    }
+  };
+}
+function tkFail(e){
+  store.set('aiLastError', {t: Date.now(), kind: e.kind, detail: String(e.message || '').slice(0, 120)});
+  if(e.kind === 'limit'){ aiSync(e.data); if(aiLeft() > 0) dailyCount('aiTurn', aiLeft()); tkAskMore(); return; }
+  if(e.kind === 'max'){ addBubble('hint', '🌙 오늘은 가족 전체 최대 횟수까지 대화했어요. 내일 또 만나요!', tkChat); return; }
+  const pm = AI_PARENT_MSG[e.kind];
+  addBubble('hint', '🔌 토비 연결이 잠깐 안 돼요. 잠시 후 다시 해 봐요.' + (pm ? '<small>부모님: ' + esc(pm) + '</small>' : ''), tkChat);
+}
+
+/* 끝 → 그림책 한 장 만들기 */
+async function tkFinish(st){
+  if(!st || st.done) return;
+  st.done = true;
+  $('#tkCtrls').style.display = 'none'; tkHideConfirm();
+  const real = st.hist.filter(h => h.w === 'c' && !/^\[/.test(h.x)).length;
+  if(real < 2){
+    saveAISession(st, null);
+    const d = addBubble('hint', '🙂 다음에 또 이야기해요! 받은 별 ⭐ ' + st.stars + '개<div class="row"><button class="btn b-home">◀ 그림 메뉴</button></div>', tkChat);
+    d.querySelector('.b-home').onclick = () => { showDr('home'); renderDrawHome(); };
+    return;
+  }
+  const box = addBubble('hint', '📖 토비가 내 이야기로 그림책 한 장을 만들고 있어요 <span class="dots"><i></i><i></i><i></i></span>', tkChat);
+  let r = null;
+  try{ r = await aiCallRetry('/picbook', tkBody(st)); aiUsageSync(r); }catch(e){ r = null; }
+  saveAISession(st, r ? {praise: r.praise, better: st.fixes.slice(-3), words: [], tip: '📖 ' + r.sents.map(x => x.en).join(' ')} : null);
+  if(!r){
+    box.innerHTML = '🔌 그림책 문장을 못 만들었어요. 받은 별 ⭐ ' + st.stars + '개<div class="row"><button class="btn b-retry">🔄 다시 만들기</button></div>';
+    box.querySelector('.b-retry').onclick = () => { st.done = false; box.remove(); tkFinish(st); };
+    return;
+  }
+  const page = {id: 'pg' + Date.now().toString(36), who: PROFILE, t: Date.now(), lv: st.lv, title: r.title, title_ko: r.title_ko, praise: r.praise,
+    img: st.img, thumb: await jpegOf(await blobBitmap(st.img), 360, 0.8), sents: r.sents, audio: [], read: [], bonus: false, workId: st.workId};
+  try{ await DB.put('pages', page); }catch(e){ box.innerHTML = '저장 공간이 부족해서 그림책에 넣지 못했어요.'; return; }
+  box.innerHTML = '🎉 그림책 한 장이 생겼어요! 이제 문장을 소리 내어 읽어 봐요.';
+  celebrate('📖');
+  setTimeout(() => { if(TK === st) openPage(page, 'make'); }, 1200);
+}
+
+/* ---------- 📖 내 그림책 ----------
+   make = 방금 만든 페이지 (문장마다 읽기 → 다 읽으면 완성 보너스) / view = 보기·듣기 / review = 🙈 글자 가리고 말하기 */
+let PG = null, recNow = null, playTok = 0;
+async function renderBook(){
+  showDr('book');
+  const pages = await DB.mine('pages').catch(() => []);
+  const g = $('#bookGrid');
+  g.querySelectorAll('img').forEach(i => imgUrl(i, null));
+  if(!pages.length){ g.innerHTML = '<p class="small">아직 그림책이 비어 있어요. 🗣️ 그림 이야기를 하면 한 장씩 생겨요!</p>'; return; }
+  g.innerHTML = pages.map(p => `<button class="dr-th" data-id="${p.id}"><img alt=""><b>${esc(p.title)}</b>${fmt(p.t)}${p.bonus ? ' ✅' : ''}</button>`).join('');
+  g.querySelectorAll('.dr-th').forEach((b, k) => imgUrl(b.querySelector('img'), pages[k].thumb));
+  g.onclick = e => { const b = e.target.closest('.dr-th'); if(b) openPage(pages.find(p => p.id === b.dataset.id), 'view'); };
+}
+$('#bkBack').onclick = () => { stopPlay(); showDr('home'); renderDrawHome(); };
+$('#pgBack').onclick = () => { stopPlay(); renderBook(); };
+function stopPlay(){ playTok++; if(recNow) recNow.stop(); speakToken++; if('speechSynthesis' in window) speechSynthesis.cancel(); if(isListening()) stopListening(); }
+
+function openPage(page, mode){
+  stopPlay();
+  PG = {page, mode, busy: false};
+  page.revealed = [];                              // 가리고 말하기는 매번 새로
+  showDr('page');
+  imgUrl($('#pgImg'), page.img);
+  $('#pgHead').textContent = mode === 'review' ? '🙈 가리고 말하기' : mode === 'make' ? '📖 새 그림책 페이지' : '📖 ' + fmt(page.t);
+  $('#pgTitle').textContent = page.title;
+  $('#pgTitleKo').textContent = page.title_ko || '';
+  $('#pgMsg').innerHTML = mode === 'make' ? '🎤를 누르고 문장을 하나씩 소리 내어 읽어 봐요!' + (page.praise ? '<div class="small">🌟 ' + esc(page.praise) + '</div>' : '')
+    : mode === 'review' ? '🦊 글자를 가렸어요. 그림을 보고 기억나는 대로 말해 봐요! (🎤를 누르고 말하면 맞는 문장이 나타나요)' : '';
+  renderSents();
+  const btns = [];
+  btns.push('<button class="btn blue p-play">▶ 처음부터 듣기</button>');
+  if(mode !== 'review') btns.push('<button class="btn p-review">🙈 가리고 말하기</button>');
+  else btns.push('<button class="btn p-view">👀 글자 보기</button>');
+  btns.push('<button class="btn p-del">🗑 지우기</button>');
+  $('#pgBtns').innerHTML = btns.join('');
+  $('#pgBtns').querySelector('.p-play').onclick = playAll;
+  const rv = $('#pgBtns').querySelector('.p-review'); if(rv) rv.onclick = () => openPage(page, 'review');
+  const vw = $('#pgBtns').querySelector('.p-view'); if(vw) vw.onclick = () => openPage(page, 'view');
+  $('#pgBtns').querySelector('.p-del').onclick = async () => {
+    if(!confirm('이 그림책 페이지를 지울까요?')) return;
+    await DB.del('pages', page.id).catch(() => {}); renderBook();
+  };
+  if(mode === 'review') speakTobi('Tell me about ' + ttsText(page.title) + '!', LEVELS[page.lv || 1].rate, 'ai');
+}
+function renderSents(){
+  const {page, mode} = PG;
+  page.audio = page.audio || []; page.read = page.read || [];
+  page.revealed = page.revealed || [];
+  $('#pgSents').innerHTML = page.sents.map((s, i) => {
+    const hide = mode === 'review' && !page.revealed[i];
+    return `<div class="pg-sent" data-i="${i}"><span class="st">${(mode === 'review' ? page.revealed[i] : page.read[i]) ? '✅' : (i + 1)}</span>` +
+      `<div class="tx${hide ? ' hidden' : ''}"><span class="en">${s.en.split(/\s+/).map(w => '<span>' + esc(w) + '</span>').join(' ')}</span>` +
+      (hide ? `<small class="s-peek">👀 첫 단어 보기</small>` : `<small class="s-ko">👀 뜻 보기</small>`) + '</div>' +
+      (hide ? '' : '<button class="btn s-say" title="듣기">🔊</button>') +
+      `<button class="btn main s-mic">🎤 ${mode === 'review' ? '말하기' : '읽기'}</button>` +
+      (mode === 'review' ? '' : (page.audio[i] ? '<button class="btn s-mine">▶ 내 목소리</button>' : '') +
+        `<button class="btn rec s-rec">${page.audio[i] ? '⏺ 다시 녹음' : '⏺ 녹음'}</button>`) + '</div>';
+  }).join('');
+}
+$('#pgSents').onclick = async e => {
+  const row = e.target.closest('.pg-sent'); if(!row || !PG) return;
+  const i = +row.dataset.i, s = PG.page.sents[i];
+  if(e.target.closest('.s-say')) return speak(s.en, LEVELS[PG.page.lv || 1].rate);
+  if(e.target.closest('.s-ko')){ e.target.textContent = s.ko; return; }
+  if(e.target.closest('.s-peek')){ e.target.textContent = '👀 ' + s.en.split(/\s+/)[0] + ' ...'; return; }
+  if(e.target.closest('.s-mine')) return playBlob(PG.page.audio[i]);
+  if(e.target.closest('.s-rec')) return recordSent(i, e.target.closest('.s-rec'));
+  if(e.target.closest('.s-mic')) return readSent(i, row, e.target.closest('.s-mic'));
+};
+async function readSent(i, row, btn){
+  if(isListening()){ stopListening(); return; }
+  if(PG.busy || recNow) return;
+  const {page, mode} = PG, s = page.sents[i];
+  PG.busy = true; btn.textContent = '⏹ 다 말했어요'; btn.classList.add('listening');
+  try{
+    const r = await listen(null);
+    if(!r.alts.length){ $('#pgMsg').textContent = errMsg(r.error || 'no-speech'); return; }
+    let best = null;
+    r.alts.forEach(a => { const c = compare(s.en, a); if(!best || c.score > best.score) best = Object.assign(c, {said: a}); });
+    const ok = best.score >= 0.6;
+    const key = (mode === 'review' ? 'pgv:' : 'pgr:') + page.id + ':' + i;
+    let got = 0;
+    if(ok && dailyCount(key) < 1){ dailyCount(key, true); got = mode === 'review' ? 1 : 2; addStars(got); }
+    addLog({mode: 'book', target: s.en, said: best.said, score: Math.round(best.score * 100), stars: got});
+    if(mode === 'review'){
+      if(ok){ page.revealed[i] = true; $('#pgMsg').innerHTML = '🎉 기억했어요! ' + (got ? '⭐+' + got : ''); }
+      else $('#pgMsg').innerHTML = '🙂 비슷해요! 🗣️ "' + esc(best.said) + '" — 👀 첫 단어 보기를 눌러 볼까요?';
+      renderSents();
+      if(ok && page.revealed.filter(Boolean).length === page.sents.length){ $('#pgMsg').innerHTML = '🏆 글자 없이 전부 말했어요! 정말 대단해요!'; celebrate('🏆'); }
+      return;
+    }
+    if(ok) page.read[i] = true;
+    renderSents();
+    const spans = $('#pgSents').querySelectorAll('.pg-sent')[i].querySelectorAll('.en span');
+    best.wordOk.forEach((w, k) => { if(spans[k]) spans[k].className = w ? 'ok' : 'miss'; });
+    $('#pgMsg').innerHTML = ok ? rand(['👍 잘 읽었어요!', '🎉 완벽해요!', '😊 좋아요!']) + (got ? ' ⭐+' + got : '') : '💪 주황색 단어를 🔊로 듣고 다시 읽어 봐요!';
+    if(ok && !page.bonus && page.read.filter(Boolean).length === page.sents.length){
+      page.bonus = true;
+      const b = LEVELS[page.lv || 1].bonus; addStars(b);
+      $('#pgMsg').innerHTML = '🏆 그림책 한 장 완성! 완성 보너스 ⭐+' + b + '<div class="small">⏺ 녹음을 누르면 내 목소리로 그림책을 들을 수 있어요</div>';
+      celebrate('📖');
+    }
+    await DB.put('pages', Object.assign({}, page, {revealed: []})).catch(() => {});
+  } finally { PG.busy = false; btn.classList.remove('listening'); if(btn.isConnected) btn.textContent = mode === 'review' ? '🎤 말하기' : '🎤 읽기'; }
+}
+/* ⏺ 내 목소리 녹음 (음성 인식과 따로, 12초까지) */
+async function recordSent(i, btn){
+  if(recNow){ recNow.stop(); return; }
+  if(isListening() || PG.busy) return;
+  if(!window.MediaRecorder){ $('#pgMsg').textContent = '이 기기에서는 녹음이 안 돼요.'; return; }
+  let stream;
+  try{ stream = await navigator.mediaDevices.getUserMedia({audio: true}); }
+  catch(e){ $('#pgMsg').textContent = '마이크를 쓸 수 없어요. 마이크 권한을 확인해 주세요.'; return; }
+  const page = PG.page, chunks = [];
+  const mr = new MediaRecorder(stream);
+  let tm = null;
+  mr.ondataavailable = e => { if(e.data && e.data.size) chunks.push(e.data); };
+  mr.onstop = async () => {
+    clearTimeout(tm); stream.getTracks().forEach(t => t.stop()); recNow = null;
+    const b = new Blob(chunks, {type: mr.mimeType || 'audio/webm'});
+    if(b.size > 2000){ page.audio[i] = b; await DB.put('pages', page).catch(() => {}); $('#pgMsg').textContent = '🎙️ 녹음했어요! ▶ 내 목소리로 들어 봐요.'; }
+    if(PG && PG.page === page) renderSents();
+  };
+  recNow = mr;
+  btn.classList.add('on'); btn.textContent = '⏹ 그만';
+  $('#pgMsg').textContent = '🔴 녹음 중이에요. 문장을 읽고 ⏹을 눌러요.';
+  mr.start();
+  tm = setTimeout(() => { if(mr.state !== 'inactive') mr.stop(); }, 12000);
+}
+function playBlob(b){
+  return new Promise(res => {
+    if(!b){ res(); return; }
+    const a = new Audio(URL.createObjectURL(b)), tok = playTok;
+    const fin = () => { clearInterval(iv); URL.revokeObjectURL(a.src); res(); };
+    const iv = setInterval(() => { if(tok !== playTok){ a.pause(); fin(); } }, 150);
+    a.onended = fin; a.onerror = fin;
+    a.play().catch(fin);
+  });
+}
+async function playAll(){
+  const tok = ++playTok, page = PG.page;
+  for(let i = 0; i < page.sents.length; i++){
+    if(tok !== playTok || !PG || PG.page !== page) return;
+    const row = $('#pgSents').querySelectorAll('.pg-sent')[i];
+    if(row) row.style.background = '#fff6d6';
+    if(page.audio && page.audio[i]) await playBlob(page.audio[i]);
+    else await speak(page.sents[i].en, LEVELS[page.lv || 1].rate);
+    if(row) row.style.background = '';
+    await sleep(350);
+  }
+}
+
+/* ---------- 그림 탭 첫 화면 ---------- */
+async function renderDrawHome(){
+  const [works, pages] = await Promise.all([DB.mine('works').catch(() => []), DB.mine('pages').catch(() => [])]);
+  $('#bookCount').textContent = pages.length ? pages.length + '장 · 다시 읽기' : '내 그림과 문장';
+  const g = $('#workGrid');
+  g.querySelectorAll('img').forEach(i => imgUrl(i, null));
+  if(!works.length){ g.innerHTML = '<p class="small">아직 그림이 없어요. 위에서 골라 시작해 봐요! (PENUP 그림은 🗣️ 그림 이야기 → 갤러리에서 골라요)</p>'; return; }
+  g.innerHTML = works.slice(0, 40).map(w => `<button class="dr-th" data-id="${w.id}"><img alt=""><b>${esc(WORK_NAME[w.mode] || '그림')}</b>${fmt(w.t)}</button>`).join('');
+  g.querySelectorAll('.dr-th').forEach((b, k) => imgUrl(b.querySelector('img'), works[k].thumb));
+  g.onclick = async e => {
+    const b = e.target.closest('.dr-th'); if(!b) return;
+    const w = works.find(x => x.id === b.dataset.id); if(!w) return;
+    const v = await sheet('🖼️ 이 그림으로 뭐 할까요?', [
+      {ic: '✏️', t: '이어 그리기·색칠하기', v: 'edit'},
+      {ic: '🦊', t: '토비랑 이야기하기', s: '그림책 한 장을 만들어요', v: 'talk', off: !aiReady()},
+      {ic: '🗑', t: '지우기', v: 'del'}
+    ]);
+    if(v === 'edit') editWork(w);
+    if(v === 'talk') startTalk(await workImage(w), {short: w.mode === 'color', work: w});
+    if(v === 'del' && confirm('이 그림을 지울까요?')){ await DB.del('works', w.id).catch(() => {}); renderDrawHome(); }
+  };
+}
+async function workImage(w){                     // 저장된 그림 → 흰 종이 + 색칠 + 선
+  const c = mkCanvas(w.W, w.H), x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, w.W, w.H);
+  if(w.color) x.drawImage(await blobBitmap(w.color), 0, 0, w.W, w.H);
+  if(w.line) x.drawImage(await blobBitmap(w.line), 0, 0, w.W, w.H);
+  return c;
+}
+async function startTalkFlow(){
+  const v = await sheet('🗣️ 어떤 그림을 소개할까요?', [
+    {ic: '📷', t: '카메라로 찍기', s: '종이에 그린 그림', v: 'cam'},
+    {ic: '🖼️', t: '갤러리에서 고르기', s: 'PENUP에 저장한 그림', v: 'gal'},
+    {ic: '🎨', t: '내 그림에서 고르기', s: '이 앱에서 그린 그림', v: 'mine'}
+  ], aiReady() ? '' : '🔒 그림 이야기는 AI 토비가 연결되면 할 수 있어요.');
+  if(!v) return;
+  if(v === 'mine'){ const w = await pickWork('🗣️ 소개할 그림 고르기'); if(w) startTalk(await workImage(w), {short: w.mode === 'color', work: w}); return; }
+  const photo = await getPhoto(v);
+  if(photo) startTalk(photo);
+}
+$('#drHome').querySelector('.dr-menu').onclick = e => {
+  const b = e.target.closest('.dr-card'); if(!b || b.disabled) return;
+  const g = b.dataset.go;
+  if(g === 'talk') startTalkFlow();
+  if(g === 'trace') startTrace();
+  if(g === 'color') startColor();
+  if(g === 'free') runEditor({mode: 'free'});
+  if(g === 'book') renderBook();
+};
+
+/* ---------- PENUP 등에서 "공유 → Bella English"로 보낸 그림 ---------- */
+async function takeShared(){
+  if(!/[?&]share=1/.test(location.search) || ADULT) return;
+  history.replaceState(null, '', location.pathname);
+  let blob = null;
+  try{
+    const c = await caches.open('bella-share'), r = await c.match('shared-image');
+    if(r){ blob = await r.blob(); await c.delete('shared-image'); }
+  }catch(e){}
+  showTab('draw');
+  if(!blob || !blob.size) return;
+  const v = await sheet('🎨 보내 준 그림으로 뭐 할까요?', [
+    {ic: '🦊', t: '토비에게 그림 소개하기', s: '그림 이야기 → 그림책', v: 'talk', off: !aiReady()},
+    {ic: '✏️', t: '따라 그리기', v: 'trace'},
+    {ic: '🖍️', t: '테두리 만들어서 색칠하기', v: 'color'}
+  ]);
+  if(!v) return;
+  const photo = await cropImage(blob); if(!photo) return;
+  if(v === 'talk') startTalk(photo);
+  if(v === 'trace') runEditor({mode: 'trace', bg: photo});
+  if(v === 'color'){ const lines = await outlineFromPhoto(photo); if(lines) runEditor({mode: 'color', line: lines}); }
+}
+
+/* 기록 탭: 그림 이야기에서 어려웠던 질문 */
+function renderHardQ(){
+  const h = store.get('hardQ', []);
+  $('#hardCard').style.display = h.length ? 'block' : 'none';
+  $('#hardBox').innerHTML = h.slice(-10).reverse().map(x => '<div class="item"><div class="t">' + fmt(x.t) + '</div>🦊 ' + esc(x.q) +
+    '<br><span class="small">' + esc(x.ko || '') + (x.a ? ' · 예시 답: ' + esc(x.a) : '') + '</span></div>').join('');
+}
+
 /* ================= 기록 탭 ================= */
 function renderRecord(){
   const log = store.get('log', []);
@@ -2246,7 +3758,7 @@ function renderRecord(){
     : '<p class="small">아직 없어요</p>';
   $('#logBox').innerHTML = log.slice(-50).reverse().map(x =>
     '<div class="item"><div class="t">' + fmt(x.t) + ' · ' + (MODE[x.mode] || x.mode) + (x.score != null ? ' · ' + x.score + '%' : '') + ' · ' + '⭐'.repeat(Math.min(x.stars || 0, 8)) + '</div>' +
-    (x.mode === 'role' || x.mode === 'ai' ? '🦊 ' : '목표: ') + esc(x.target) + '<br>🗣️ ' + esc(x.said) + '</div>'
+    (['role', 'ai', 'pic', 'color'].includes(x.mode) ? '🦊 ' : '목표: ') + esc(x.target) + '<br>🗣️ ' + esc(x.said) + '</div>'
   ).join('') || '<p class="small">아직 기록이 없어요</p>';
   // AI 토비 대화 (부모님 확인용)
   const ai = store.get('aiLog', []);
@@ -2258,6 +3770,7 @@ function renderRecord(){
     (s.fixes || []).map(f => '<div class="ln small">💡 ' + esc(f.said) + ' → <b>' + esc(f.better) + '</b> ' + esc(f.ko || '') + '</div>').join('') +
     (s.sum ? '<div class="ln small">🌟 ' + esc(s.sum.praise) + (s.sum.tip ? '<br>👉 ' + esc(s.sum.tip) : '') + '</div>' : '') +
     '</details></div>').join('');
+  renderHardQ();
 }
 $('#logReset').onclick = () => {
   if(confirm('말하기 기록과 별을 모두 지울까요? (산 아이템은 그대로 남아요)')){
@@ -2372,7 +3885,8 @@ function showTab(name){
   document.querySelectorAll('main section').forEach(s => s.classList.toggle('on', s.id === name));
   if(name === 'record') renderRecord();
   if(name === 'role' && roleMode === 'ai') renderAIArea();
-  $('#layout').classList.toggle('study', ['repeat','role','words'].includes(name));
+  $('#layout').classList.toggle('study', ['repeat','role','words','draw'].includes(name));
+  if(name === 'draw' && $('#drHome').style.display !== 'none') renderDrawHome();
   if(name === 'dress'){ preview = null; shopCat = shopCat || 'outfit'; renderShop(); }
 }
 $('#tabs').onclick = e => { const b = e.target.closest('button'); if(b) showTab(b.dataset.tab); };
@@ -2408,6 +3922,7 @@ const warn = [];
 if(!SR) warn.push('이 브라우저는 음성 인식을 지원하지 않아요. <b>크롬</b>으로 열어주세요.');
 if(location.protocol === 'file:') warn.push('파일을 직접 열면 마이크가 동작하지 않을 수 있어요. 바탕화면의 Bella English 아이콘으로 열어주세요.');
 if(warn.length){ $('#warn').innerHTML = warn.join('<br>'); $('#warn').style.display = 'block'; }
+takeShared();
 if('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')){
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }

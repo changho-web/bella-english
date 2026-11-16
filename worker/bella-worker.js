@@ -23,6 +23,11 @@
         - 있으면: 서버에서도 횟수 제한 + 사용 금액 계산 + 어디서나 대화 기록 확인 (/parent)
         - 없으면: 제한은 기기에서만, 기록도 기기 안에만 저장
    5) 주소(https://bella-tobi.○○○.workers.dev)와 가족 코드를 앱 설정 → "AI 토비 연결"에 입력
+
+   [🎨 그림 기능 (2026-11-16)]
+   - 그림 이야기: 그림을 Claude가 한 번 보고(/picture) → 대화(/picchat) → 그림책 문장(/picbook). 그림은 서버에 저장하지 않음
+   - 색칠 밑그림(/coloring): 4-1의 Workers AI 연결(AI)로 그림을 만듦. 목소리와 같은 하루 무료 양(뉴런)을 나눠 씀
+     하루 최대 장수는 COLORING_DAILY(기본 30)로 바꿀 수 있음
    ===================================================================== */
 
 const DEFAULT_MODEL = 'claude-haiku-5-5';
@@ -210,6 +215,107 @@ For each, ko = the Korean meaning of that English sentence.
 tip: one short Korean note (under 40 characters) about a key word or expression (e.g. "부탁은 Could you ~?로 시작해요"). Keep content ${adult ? 'appropriate for a family app' : 'child-friendly'}.${context ? '\nThe conversation partner just said: "' + context + '"' : ''}`;
 }
 
+/* ---------- 🎨 그림 이야기 ---------- */
+const PIC_WORD = {type: 'object', additionalProperties: false,
+  properties: {en: {type: 'string'}, ko: {type: 'string'}, emoji: {type: 'string'}}, required: ['en', 'ko', 'emoji']};
+const PICTURE_SCHEMA = {type: 'object', additionalProperties: false,
+  properties: {kind: {type: 'string', enum: ['picture', 'person_photo', 'not_ok']}, title: {type: 'string'}, title_ko: {type: 'string'},
+    desc: {type: 'string'}, words: {type: 'array', items: PIC_WORD}},
+  required: ['kind', 'title', 'title_ko', 'desc', 'words']};
+const PICCHAT_SCHEMA = {type: 'object', additionalProperties: false,
+  properties: {
+    reply: {type: 'string'}, ko: {type: 'string'}, step: {type: 'integer'},
+    frame: {type: 'string'}, frame_ko: {type: 'string'}, hint: {type: 'string'}, hint_ko: {type: 'string'},
+    choices: {type: 'array', items: PIC_WORD}, expand: {type: 'string'}, fix: FIX,
+    effort: {type: 'string', enum: ['good', 'short', 'idk', 'none']}, end: {type: 'boolean'}
+  },
+  required: ['reply', 'ko', 'step', 'frame', 'frame_ko', 'hint', 'hint_ko', 'choices', 'expand', 'fix', 'effort', 'end']};
+const PICBOOK_SCHEMA = {type: 'object', additionalProperties: false,
+  properties: {title: {type: 'string'}, title_ko: {type: 'string'}, praise: {type: 'string'}, sents: {type: 'array', items: EN_KO}},
+  required: ['title', 'title_ko', 'praise', 'sents']};
+const PIC_START = {1: 1, 2: 2, 3: 4};                 // 계단 시작: 초급 고르기, 중급 예/아니오, 고급 짧은 질문
+const PIC_SENTS = {1: 3, 2: 4, 3: 5};                 // 그림책 문장 수
+const PIC_SENT_LEN = {1: '3-6 words', 2: '4-9 words', 3: '5-12 words'};
+function picTurns(lv, short) { return short ? {min: 2, max: 3} : {min: 4, max: lv === 3 ? 7 : 6}; }
+
+function pictureSystem(purpose) {
+  return `You look at a picture for "Bella English", an English speaking-practice app for a 10-year-old girl in Korea. Usually it is her own drawing (made on a tablet, or a photo of paper), a coloring page, or a picture she traced or colored.
+- kind: "picture" for drawings, paintings, coloring pages, cartoons, toys, animals, objects, food, or scenery. "person_photo" if it is a real photograph that clearly shows a real person's face (a DRAWING of a person is "picture"). "not_ok" if it shows anything not suitable for a child (violence, scary or adult content) or private information (documents, names, addresses, phone numbers).
+- If kind is not "picture", keep the other fields very short (words can be empty).
+- title: a short, cute English title (2-5 words). title_ko: Korean.
+- desc: 3-5 plain English sentences describing what is in the picture: characters, animals or people (drawn), how they look (colors, clothes, faces, feelings), what they are doing, objects, background, weather or time. Be concrete. If something is unclear, say "maybe". It will be used later to ask her questions.
+${purpose === 'color'
+    ? '- This is a black-and-white coloring page. words: 4-8 different PARTS of the picture that she can color (simple nouns a child knows, e.g. "hat", "dress", "flower", "sky", "cat"), each a separate area, en lowercase without "the".'
+    : '- words: 5-8 useful English words a 10-year-old can see in this picture: mostly nouns, plus 1-2 colors, feelings or actions. Easy words, en lowercase.'}
+- For each word: ko = Korean meaning, emoji = one emoji that fits.`;
+}
+
+function picSystem(info, lv, n, short) {
+  const T = picTurns(lv, short);
+  return `You are Tobi, a cheerful, kind fox character in "Bella English", an English speaking-practice app for a 10-year-old girl in Korea. She is shy and usually speaks in short 1-4 word phrases. She drew or colored a picture, and now you talk with her about HER PICTURE.
+Goal: help her talk about her picture step by step, from very easy to a little harder, so that at the end she can say a few full sentences about it. Make it feel safe, fun, and successful.
+
+HER PICTURE (from an automatic description; it may be imperfect. If she says something different, she is right: it is her picture.)
+Title: ${info.title}
+Description: ${info.desc}
+Picture words she has seen: ${info.words.map(w => w.en).join(', ')}
+
+QUESTION LADDER
+1 = choice question: "Is it a cat or a dog?" (answer: 1-2 words)
+2 = yes/no question about a feature: "Is she happy?"
+3 = fill-in question with a frame: ask so she can answer with a frame like "She has a ___."
+4 = short open question with a frame: "What is she doing?" (frame "She is ___ing.")
+5 = imagination question: "What's her name?" "Where is she going?" "What happens next?"
+- Start at step ${PIC_START[lv]}. When she answers well, go up one step. When she can't answer, go DOWN one or two steps (usually to a choice question).
+- Ask about different parts of the picture as you go. Use the picture words.
+
+HOW TO TALK
+- Every turn: react warmly to what she said (one short sentence), then ask ONE question. Never two questions at once.
+- Your reply is read aloud by text-to-speech: plain sentences only. No emojis, lists, brackets, or stage directions.
+- Her messages come from speech recognition on a tablet, so words may be misheard or missing. Be generous: guess what she meant from the picture and continue.
+- Keep her ideas, even if they are different from the picture or imaginative ("A dragon!" -> "Oh, a dragon? Cool!"). Never say the picture shows something else.
+- If her answer is short or a fragment, say the full natural sentence with her words inside your reply ("Pink cat." -> "Oh, a pink cat! I love your pink cat.") and put that sentence in expand.
+- If she says she doesn't know, is silent, says something that does not answer the question, or speaks Korean: be kind, say it's okay, and ask an EASIER question (go down the ladder).
+- Never say "wrong", "mistake", or "incorrect".
+- A message in square brackets is a note from the app, not from her.
+
+GENTLE CORRECTION
+- If her last message has a clear grammar or word-choice error that a kind teacher would fix, say the correct version inside your reply and fill fix: said = her words, better = the natural sentence, ko = a very short friendly Korean tip in 해요체 (under 30 Korean characters). If expand already shows the better sentence, leave fix empty. Do NOT correct capitalization, punctuation, or small words probably lost by speech recognition. Otherwise set said, better and ko to "".
+
+SAFETY (very important)
+- You are an AI. If she asks, say simply that you are an AI friend made to help her practice English.
+- Never ask for real personal information: full name, home address, school name, phone numbers, passwords, photos, or where she is right now. Names for characters in her picture are great.
+- Keep everything child-friendly. If she brings up something scary, violent, or adult, kindly steer back to the picture.
+- If she says something worrying (someone hurt her, she feels unsafe, she is very sad), reply warmly and tell her to talk to her mom, dad, or a teacher right away; say the same in Korean in ko.
+
+ENDING
+- This talk should last about ${T.max} of her answers. She has answered ${n} time(s) so far.
+- When she has answered at least ${T.min} times and the talk feels complete, or when she has answered ${T.max} times, give one short specific praise, say "Let's make a page for your picture book!", and set end to true. Otherwise end is false.
+
+OUTPUT FIELDS
+- reply: what you say now (English). ko: natural, easy Korean translation of reply.
+- step: the ladder step (1-5) of the question you just asked (0 if end is true).
+- frame: an answer frame for your question with ___ for the missing part (e.g. "It is a ___.", "She is ___ing."). Required at steps 3 and 4, helpful at 1-2, "" at step 5 or when ending. frame_ko: Korean meaning of frame.
+- hint: one example answer to your question at her level, fitting the picture. hint_ko: Korean meaning.
+- choices: 2-3 short possible answers to your question (1-4 words each; en, ko, emoji). Put the one that fits the picture best first. At step 5 give fun imaginative options. Empty only when ending.
+- expand: the full natural sentence of her short answer (see above), or "".
+- fix: as described above.
+- effort: about HER LAST MESSAGE. "good" = a fitting English answer (at Beginner even 1-3 fitting words are good). "short" = a fitting English attempt that is very short for her level or only partly fits. "idk" = she said she doesn't know, or answered something that does not fit the question. "none" = silence, nonsense, Korean, or there is no message yet.
+
+LEVEL: ${LEVELS_KID[lv]}`;
+}
+
+function picbookSystem(lv) {
+  return `You write one page of a tiny picture book for "Bella English". A 10-year-old Korean girl drew or colored a picture and talked about it with Tobi, an AI fox friend. Now her picture becomes a page in her own picture book, and she will read the sentences aloud.
+- sents: exactly ${PIC_SENTS[lv]} short English sentences (${PIC_SENT_LEN[lv]} each) that tell about her picture in a natural order, like a tiny story.
+- Use HER ideas and words as much as possible (names she gave, colors and things she said, actions she imagined), turned into natural, correct English. Her lines came from speech recognition, so ignore likely recognition errors.
+- Talk about the picture's characters in the third person ("This is Mimi. Mimi is a pink cat."), or use "I" only if she said she drew herself.
+- Easy words that are easy to read aloud. Child-friendly only. No real personal information.
+- For each sentence: ko = natural Korean translation.
+- title: 2-5 English words (use her character's name if she gave one). title_ko: Korean.
+- praise: one warm, specific Korean sentence (해요체) about what she did well in the talk.`;
+}
+
 const EXAMPLES_SYSTEM = adult => `For each English word, write one short, simple example sentence (5-${adult ? 12 : 10} words) ${adult ? 'that an adult would use in travel, work, or daily life' : 'that a 10-year-old would use in daily life'}, plus its natural Korean translation. Use the given Korean meaning to choose the right sense. Keep "en" exactly as given.${adult ? '' : ' Child-friendly content only.'}`;
 
 /* ---------- 요청 처리 ---------- */
@@ -225,7 +331,7 @@ export default {
       if (req.method !== 'POST') return json({error: 'not_found'}, 404, cors);
       if (!env.ANTHROPIC_API_KEY || !env.FAMILY_CODE) return json({error: 'not_configured'}, 503, cors);
       const text = await req.text();
-      if (text.length > 40000) return json({error: 'too_big'}, 413, cors);
+      if (text.length > (url.pathname === '/picture' ? 1500000 : 40000)) return json({error: 'too_big'}, 413, cors);   // 그림은 크게
       let b;
       try { b = JSON.parse(text); } catch (e) { return json({error: 'bad_request'}, 400, cors); }
       const code = String(b.code || '').trim();
@@ -244,6 +350,10 @@ export default {
         case '/examples': return await examples(ctx);
         case '/extend': return await extend(ctx);
         case '/tts': return await tts(ctx);
+        case '/picture': return await picture(ctx);
+        case '/picchat': return await picchat(ctx);
+        case '/picbook': return await picbook(ctx);
+        case '/coloring': return await coloring(ctx);
       }
       return json({error: 'not_found'}, 404, cors);
     } catch (e) {
@@ -351,8 +461,8 @@ function sceneOf(ctx) {
 }
 function levelOf(b) { return [1, 2, 3].includes(+b.level) ? +b.level : 1; }
 
-function toMessages(hist) {
-  const msgs = [{role: 'user', content: '[The app just opened this scene. Start the conversation: greet the learner and ask your first question.]'}];
+function toMessages(hist, start) {
+  const msgs = [{role: 'user', content: start || '[The app just opened this scene. Start the conversation: greet the learner and ask your first question.]'}];
   hist.forEach(h => {
     const role = h.w === 'c' ? 'user' : 'assistant';
     const content = h.x || (role === 'user' ? '[silence]' : '...');
@@ -413,8 +523,9 @@ async function ping(ctx) {
     if (rec) await saveDay(env, rec);
   }
   const t = env.BELLA_KV ? await env.BELLA_KV.get('tts:' + kstDay(), 'json') : null;
-  return json(Object.assign({ok: true, model: env.MODEL || DEFAULT_MODEL, kv: !!env.BELLA_KV, usage: usage(rec, env),
-    tts: {on: !!env.AI, azure: !!(env.AZURE_SPEECH_KEY && env.AZURE_SPEECH_REGION), used: t ? Math.round(t.n) : 0, budget: num(env.TTS_DAILY_NEURONS, TTS_DAILY_NEURONS)}}, counts(rec, ctx.who, L)), 200, ctx.cors);
+  return json(Object.assign({ok: true, model: env.MODEL || DEFAULT_MODEL, kv: !!env.BELLA_KV, usage: usage(rec, env), pic: true,
+    tts: {on: !!env.AI, azure: !!(env.AZURE_SPEECH_KEY && env.AZURE_SPEECH_REGION), used: t ? Math.round(t.n) : 0, budget: num(env.TTS_DAILY_NEURONS, TTS_DAILY_NEURONS),
+      img: t ? (t.img || 0) : 0, imgMax: num(env.COLORING_DAILY, COLORING_DAILY)}}, counts(rec, ctx.who, L)), 200, ctx.cors);
 }
 
 const AZ_VOICES = {ana: 'en-US-AnaNeural'};
@@ -450,7 +561,8 @@ async function tts(ctx) {
   const speaker = T.voices.includes(sp) ? sp : T.voices.includes('luna') ? 'luna' : T.voices[0];
   const need = text.length * T.npc, budget = num(env.TTS_DAILY_NEURONS, TTS_DAILY_NEURONS);
   const key = 'tts:' + kstDay();
-  const used = env.BELLA_KV ? ((await env.BELLA_KV.get(key, 'json')) || {n: 0}).n : 0;
+  const day = env.BELLA_KV ? ((await env.BELLA_KV.get(key, 'json')) || {n: 0}) : {n: 0};   // 색칠 밑그림(img)과 같은 기록
+  const used = day.n || 0;
   if (used + need > budget) return json({error: 'tts_limit'}, 429, cors);
   let out;
   try { out = await env.AI.run(T.model, {text, speaker, encoding: 'mp3'}, {returnRawResponse: true}); }
@@ -463,7 +575,7 @@ async function tts(ctx) {
   else if (out instanceof ReadableStream || out instanceof ArrayBuffer || ArrayBuffer.isView(out)) body = out;
   else if (out && typeof out.audio === 'string') body = Uint8Array.from(atob(out.audio), c => c.charCodeAt(0));
   if (!body) return json({error: 'tts', detail: 'no audio'}, 502, cors);
-  if (env.BELLA_KV) { try { await env.BELLA_KV.put(key, JSON.stringify({n: used + need}), {expirationTtl: 3 * 86400}); } catch (e) {} }
+  if (env.BELLA_KV) { try { await env.BELLA_KV.put(key, JSON.stringify(Object.assign(day, {n: used + need})), {expirationTtl: 3 * 86400}); } catch (e) {} }
   return new Response(body, {headers: Object.assign({'content-type': 'audio/mpeg', 'cache-control': 'no-store'}, cors)});
 }
 
@@ -559,6 +671,130 @@ async function examples(ctx) {
   return json({items: (out.items || []).map(x => ({en: str(x.en, 60), ex: str(x.ex, 200), ex_ko: str(x.ex_ko, 200)})).filter(x => x.en && x.ex)}, 200, cors);
 }
 
+/* ---------- 🎨 그림 이야기 ---------- */
+function cleanPicWords(w, n) {
+  if (!Array.isArray(w)) return [];
+  return w.slice(0, n).map(x => ({en: str(x && x.en, 40), ko: str(x && x.ko, 40), emoji: str(x && x.emoji, 8)})).filter(x => x.en);
+}
+function cleanInfo(i) {
+  i = i || {};
+  return {title: str(i.title, 80) || 'My picture', desc: str(i.desc, 900), words: cleanPicWords(i.words, 8)};
+}
+
+/* 그림을 한 번 보고 → 제목·설명·단어 카드 (그림은 저장하지 않음) */
+async function picture(ctx) {
+  const {b, env, cors} = ctx, L = limits(env);
+  const data = String(b.image || '');
+  if (data.length < 200 || data.length > 1400000 || !/^[A-Za-z0-9+/=]+$/.test(data)) return json({error: 'bad_request'}, 400, cors);
+  const rec = await loadDay(env);
+  if (extraFull(rec, L)) return json({error: 'max'}, 429, cors);
+  const purpose = b.purpose === 'color' ? 'color' : 'talk';
+  const msgs = [{role: 'user', content: [
+    {type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data}},
+    {type: 'text', text: purpose === 'color' ? 'This is a coloring page (black-and-white line art).' : 'This is her picture.'}
+  ]}];
+  const out = await guarded(ctx, rec, () => askClaude(env, rec, pictureSystem(purpose), msgs, PICTURE_SCHEMA, 1500));
+  if (rec) { rec.extra++; await saveDay(env, rec); }
+  const kind = ['picture', 'person_photo', 'not_ok'].includes(out.kind) ? out.kind : 'not_ok';
+  return json({kind, title: str(out.title, 80), title_ko: str(out.title_ko, 80), desc: str(out.desc, 900),
+    words: kind === 'picture' ? cleanPicWords(out.words, 8) : [], usage: usage(rec, env)}, 200, cors);
+}
+
+async function picchat(ctx) {
+  const {b, env, cors} = ctx, L = limits(env);
+  const lv = levelOf(b), info = cleanInfo(b.info), short = !!b.short;
+  const hist = cleanHistory(b.history);
+  const n = hist.filter(h => h.w === 'c').length;
+  const isTurn = n > 0;
+  const rec = await loadDay(env);
+  if (rec && isTurn) {
+    const p = person(rec, ctx.who, L);
+    if (rec.turns >= L.max) return json(Object.assign({error: 'max'}, counts(rec, ctx.who, L)), 429, cors);
+    if (p.turns >= p.allow) return json(Object.assign({error: 'limit', canExtend: rec.turns + 1 <= L.max}, counts(rec, ctx.who, L)), 429, cors);
+  }
+  if (!isTurn && extraFull(rec, L)) return json(Object.assign({error: 'max'}, counts(rec, ctx.who, L)), 429, cors);
+  const start = '[The app just showed her the picture and its word cards. Start: say one short, happy sentence about her picture, then ask your first question.]';
+  const out = await guarded(ctx, rec, () => askClaude(env, rec, picSystem(info, lv, n, short), toMessages(hist, start), PICCHAT_SCHEMA, 1800));
+  const fx = out.fix || {};
+  const end = !!out.end && isTurn;
+  const r = {
+    reply: str(out.reply, 500) || 'Can you tell me about your picture?',
+    ko: str(out.ko, 400), step: Math.max(0, Math.min(5, parseInt(out.step, 10) || 0)),
+    frame: end ? '' : str(out.frame, 120), frame_ko: end ? '' : str(out.frame_ko, 120),
+    hint: end ? '' : str(out.hint, 200), hint_ko: end ? '' : str(out.hint_ko, 200),
+    choices: end ? [] : cleanPicWords(out.choices, 3),
+    expand: isTurn ? str(out.expand, 200) : '',
+    fix: fx.better && fx.said && fx.better.toLowerCase() !== fx.said.toLowerCase() ? {said: str(fx.said, 200), better: str(fx.better, 200), ko: str(fx.ko, 100)} : null,
+    effort: isTurn && ['good', 'short', 'idk', 'none'].includes(out.effort) ? out.effort : 'none',
+    end
+  };
+  if (rec) {
+    if (isTurn) { rec.turns++; person(rec, ctx.who, L).turns++; } else rec.extra++;
+    const s = sessionOf(rec, ctx, 'picture', lv);
+    s.lines = hist.concat([{w: 't', x: r.reply}]);
+    s.title = info.title;
+    if (r.fix) (s.fixes = s.fixes || []).push(r.fix);
+    await saveDay(env, rec);
+  }
+  return json(Object.assign(r, counts(rec, ctx.who, L), {usage: usage(rec, env)}), 200, cors);
+}
+
+/* 대화가 끝나면 → 그림책 한 장 (아이가 읽을 문장) */
+async function picbook(ctx) {
+  const {b, env, cors} = ctx, L = limits(env);
+  const lv = levelOf(b), info = cleanInfo(b.info);
+  const hist = cleanHistory(b.history);
+  if (!hist.some(h => h.w === 'c')) return json({error: 'bad_request'}, 400, cors);
+  const rec = await loadDay(env);
+  if (extraFull(rec, L)) return json({error: 'max'}, 429, cors);
+  const transcript = hist.filter(h => !/^\[/.test(h.x)).map(h => (h.w === 'c' ? 'Girl: ' : 'Tobi: ') + h.x).join('\n');
+  const user = 'Picture title idea: ' + info.title + '\nPicture description: ' + info.desc + '\n\nConversation:\n' + transcript;
+  const out = await guarded(ctx, rec, () => askClaude(env, rec, picbookSystem(lv), [{role: 'user', content: user}], PICBOOK_SCHEMA, 1500));
+  const sents = (out.sents || []).map(x => ({en: str(x && x.en, 160), ko: str(x && x.ko, 160)})).filter(x => x.en).slice(0, PIC_SENTS[lv] + 1);
+  if (!sents.length) throw fail('ai', 'no sentences');
+  const r = {title: str(out.title, 60) || info.title, title_ko: str(out.title_ko, 60), praise: str(out.praise, 200), sents};
+  if (rec) {
+    rec.extra++;
+    const s = sessionOf(rec, ctx, 'picture', lv);
+    if (hist.length >= s.lines.length) s.lines = hist;
+    s.summary = {praise: r.praise, better: [], words: [], tip: '📖 ' + sents.map(x => x.en).join(' ')};
+    await saveDay(env, rec);
+  }
+  return json(Object.assign(r, {usage: usage(rec, env)}), 200, cors);
+}
+
+/* ---------- 🖍 색칠 밑그림 (Workers AI · FLUX.1 schnell) ---------- */
+const COLORING_DAILY = 30;        // 가족 하루 최대 장수
+const COLOR_STEPS = 6;            // 그리기 단계 (많을수록 깔끔, 뉴런 더 씀)
+const TOPIC_BLOCK = /\b(gun|guns|knife|knives|sword|blood|bloody|kill|killing|dead|death|zombie|monster|scary|horror|weapon|bomb|war|fight|naked|nude|sexy|kiss|bikini|beer|wine|cigarette|smoke|drug|devil|demon|ghost|skull)\b/i;
+async function coloring(ctx) {
+  const {b, env, cors} = ctx;
+  if (!env.AI) return json({error: 'no_ai'}, 503, cors);
+  const topic = str(b.topic, 60).replace(/[^a-zA-Z ,'-]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (topic.length < 2) return json({error: 'bad_request'}, 400, cors);
+  if (TOPIC_BLOCK.test(topic)) return json({error: 'topic'}, 400, cors);
+  const key = 'tts:' + kstDay();
+  const day = env.BELLA_KV ? ((await env.BELLA_KV.get(key, 'json')) || {n: 0}) : {n: 0};
+  const need = 4 * 4.8 + COLOR_STEPS * 9.6;            // 1024×1024 = 512 타일 4개 + 단계
+  const budget = num(env.TTS_DAILY_NEURONS, TTS_DAILY_NEURONS);
+  if ((day.img || 0) >= num(env.COLORING_DAILY, COLORING_DAILY)) return json({error: 'img_limit'}, 429, cors);
+  if ((day.n || 0) + need > budget) return json({error: 'tts_limit'}, 429, cors);
+  const prompt = `A children's coloring book page of ${topic}. Cute, simple, friendly cartoon style for kids, original design. ` +
+    'Clean thick black outlines only on a pure white background. No shading, no gray, no color fill, no text, no letters, no border frame. ' +
+    'Large simple shapes that are easy to color. The whole subject is centered and fully visible.';
+  let out;
+  try { out = await env.AI.run('@cf/black-forest-labs/flux-1-schnell', {prompt, steps: COLOR_STEPS, seed: Math.floor(Math.random() * 1e9)}); }
+  catch (e) {
+    const msg = String((e && e.message) || e);
+    return json({error: /limit|quota|neuron|exceed|429|capacity/i.test(msg) ? 'tts_limit' : /nsfw|safety|flagged/i.test(msg) ? 'topic' : 'img', detail: msg.slice(0, 200)}, 502, cors);
+  }
+  const b64 = out && out.image;
+  if (!b64) return json({error: 'img', detail: 'no image'}, 502, cors);
+  if (env.BELLA_KV) { try { await env.BELLA_KV.put(key, JSON.stringify(Object.assign(day, {n: (day.n || 0) + need, img: (day.img || 0) + 1})), {expirationTtl: 3 * 86400}); } catch (e) {} }
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  return new Response(bytes, {headers: Object.assign({'content-type': 'image/jpeg', 'cache-control': 'no-store'}, cors)});
+}
+
 async function logs(b, env) {
   if (!env.BELLA_KV) return {kv: false, days: []};
   const n = Math.min(Math.max(parseInt(b.days, 10) || 7, 1), 30);
@@ -568,7 +804,7 @@ async function logs(b, env) {
     if (rec) days.push(rec);
   }
   const today = await loadDay(env);
-  return {kv: true, scenes: Object.fromEntries(Object.entries(SCENES).map(([k, v]) => [k, v.ko])),
+  return {kv: true, scenes: Object.assign(Object.fromEntries(Object.entries(SCENES).map(([k, v]) => [k, v.ko])), {picture: '🎨 그림 이야기'}),
     who: Object.fromEntries(Object.entries(WHO).map(([k, v]) => [k, v.ko])), usage: usage(today, env), limits: limits(env), days};
 }
 
