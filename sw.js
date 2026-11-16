@@ -11,11 +11,25 @@ self.addEventListener('fetch', e => {
   /* PENUP 등에서 "공유 → Bella English": 그림을 잠깐 저장하고 앱을 ?share=1로 엶 */
   if(req.method === 'POST' && new URL(req.url).pathname.endsWith('/share-target')){
     e.respondWith((async () => {
+      const info = {t: Date.now(), ok: false, type: '', size: 0, name: '', keys: [], err: ''};
       try{
+        const c = await caches.open('bella-share');
         const fd = await req.formData();
-        const f = fd.getAll('image').find(x => x && x.size);
-        if(f){ const c = await caches.open('bella-share'); await c.put('shared-image', new Response(f, {headers: {'content-type': f.type || 'image/png'}})); }
-      }catch(err){}
+        let f = null;
+        for(const [k, v] of fd.entries()){                 // 앱마다 보내는 이름이 달라도 첫 번째 파일을 받음
+          const isFile = v && typeof v === 'object' && 'size' in v;
+          info.keys.push(k + (isFile ? '=' + (v.type || '?') + '/' + v.size : '=text'));
+          if(!f && isFile && v.size) f = v;
+        }
+        if(f){
+          await c.put('shared-image', new Response(f, {headers: {'content-type': f.type || 'application/octet-stream'}}));
+          Object.assign(info, {ok: true, type: f.type || '', size: f.size, name: f.name || ''});
+        }
+        await c.put('shared-info', new Response(JSON.stringify(info), {headers: {'content-type': 'application/json'}}));
+      }catch(err){
+        info.err = String(err && err.message || err).slice(0, 200);
+        try{ await (await caches.open('bella-share')).put('shared-info', new Response(JSON.stringify(info))); }catch(e2){}
+      }
       return Response.redirect('./?share=1', 303);
     })());
     return;

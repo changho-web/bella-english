@@ -567,7 +567,7 @@ html.adult #tabs button[data-tab=draw]{display:none;}
       </details>
     </div>
     <p class="small">크롬 브라우저에서 사용하세요. 음성 인식은 인터넷 연결이 필요합니다. 기록은 이 기기의 브라우저에 사람별로 저장됩니다. (AI 토비 대화는 연결한 서버에도 저장될 수 있어요)</p>
-    <p class="small" style="text-align:center;margin-top:20px">Bella English · 버전 2026-11-16</p>
+    <p class="small" style="text-align:center;margin-top:20px">Bella English · 버전 2026-11-16.2</p>
   </section>
 </main>
 </div>
@@ -2517,7 +2517,8 @@ async function getPhoto(how){
 function cropImage(file){
   return new Promise(async res => {
     let bmp;
-    try{ bmp = await blobBitmap(file); }catch(e){ alert('그림을 열 수 없어요. 다른 그림을 골라 주세요.'); res(null); return; }
+    try{ bmp = await blobBitmap(file); }
+    catch(e){ alert(isTiff(file) ? TIFF_MSG : '그림을 열 수 없어요. 다른 그림을 골라 주세요.' + (file.type ? ' (' + file.type + ')' : '')); res(null); return; }
     const ov = $('#cropView'), area = $('#cropArea'), cv = $('#cropCv'), box = $('#cropBox');
     let rot = 0, src = null, D = null, r = null, drag = null;
     function makeSrc(){
@@ -3704,17 +3705,34 @@ $('#drHome').querySelector('.dr-menu').onclick = e => {
   if(g === 'book') renderBook();
 };
 
-/* ---------- PENUP 등에서 "공유 → Bella English"로 보낸 그림 ---------- */
+/* ---------- 다른 그림 앱에서 "공유 → Bella English"로 보낸 그림 ----------
+   sw.js가 그림(shared-image)과 받은 내용(shared-info)을 잠깐 보관 → 앱이 열리면 꺼내 씀
+   ?share=1 없이 열려도 10분 안에 받은 그림이 있으면 꺼냄. 못 받았으면 이유를 화면에 보여 줌 */
+function isTiff(b){ return /tif/i.test((b && b.type) || '') || /\.tiff?$/i.test((b && b.name) || ''); }
+const TIFF_MSG = '이 그림은 TIFF 형식이라 열 수 없어요.\nSketchbook에서는 공유(Share)를 누르고 형식을 PNG로 골라서 보내 주세요.\n(또는 Export to Files → PNG로 저장한 뒤 갤러리에서 골라요)';
 async function takeShared(){
-  if(!/[?&]share=1/.test(location.search) || ADULT) return;
-  history.replaceState(null, '', location.pathname);
-  let blob = null;
+  const asked = /[?&]share=1/.test(location.search);
+  if(asked) history.replaceState(null, '', location.pathname);
+  if(!('caches' in window)) return;
+  let blob = null, info = null;
   try{
-    const c = await caches.open('bella-share'), r = await c.match('shared-image');
-    if(r){ blob = await r.blob(); await c.delete('shared-image'); }
-  }catch(e){}
+    const c = await caches.open('bella-share');
+    const ri = await c.match('shared-info'); if(ri) info = await ri.json().catch(() => null);
+    const r = await c.match('shared-image'); if(r) blob = await r.blob();
+    if(!asked && !(info && Date.now() - info.t < 600000)) return;      // 오래된 것은 무시
+    await c.delete('shared-image'); await c.delete('shared-info');
+  }catch(e){ if(!asked) return; }
+  if(!asked && !blob) return;
+  if(ADULT){ alert('🎨 그림 탭은 딸 프로필에서 쓸 수 있어요.\n화면 위 이름 버튼에서 딸로 바꾼 뒤 다시 공유해 주세요.'); return; }
   showTab('draw');
-  if(!blob || !blob.size) return;
+  if(!blob || !blob.size){
+    store.set('shareLastError', {t: Date.now(), info});
+    alert('🙂 보내 준 그림을 받지 못했어요. 그림 앱에서 "저장"한 뒤 🖼️ 갤러리에서 골라 주세요.\n\n(부모님 확인용: ' +
+      (info ? (info.keys.join(', ') || '받은 것 없음') + (info.err ? ' / ' + info.err : '') : '앱이 새 버전으로 바뀌기 전에 공유했을 수 있어요. 앱을 한 번 닫았다가 다시 공유해 보세요.') + ')');
+    return;
+  }
+  if(info && info.name) try{ blob.name = info.name; }catch(e){}
+  if(isTiff(blob) || (info && /tif/i.test(info.type + info.name))){ alert(TIFF_MSG); return; }
   const v = await sheet('🎨 보내 준 그림으로 뭐 할까요?', [
     {ic: '🦊', t: '토비에게 그림 소개하기', s: '그림 이야기 → 그림책', v: 'talk', off: !aiReady()},
     {ic: '✏️', t: '따라 그리기', v: 'trace'},
