@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "Bella Math",
+  "short_name": "Bella Math",
+  "description": "토비랑 수학 문제 푸는 방법 알아보기",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6f4ff",
+  "theme_color": "#7b6cf6",
+  "lang": "ko",
+  "icons": [
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

@@ -28,6 +28,11 @@
    - 그림 이야기: 그림을 Claude가 한 번 보고(/picture) → 대화(/picchat) → 그림책 문장(/picbook). 그림은 서버에 저장하지 않음
    - 색칠 밑그림(/coloring): 4-1의 Workers AI 연결(AI)로 그림을 만듦. 목소리와 같은 하루 무료 양(뉴런)을 나눠 씀
      하루 최대 장수는 COLORING_DAILY(기본 30)로 바꿀 수 있음
+
+   [🧮 Bella Math (2026-11-18)]  — 같은 서버를 수학 풀이 앱(…/bella-english/math/)도 같이 씀
+   - 문제 사진 읽기(/mathread) → 단계별 설명(/mathexplain). 정답은 앱으로 보내지 않음(암호화해서 왕복)
+   - 설명에 정답이 섞이면 서버가 □로 가림. 사진은 저장하지 않음
+   - 모델: MATH_MODEL(기본 claude-sonnet-5-5, 사진 읽기·계산 정확도 때문), 하루 문제 수 MATH_DAILY(기본 40, 가족 전체)
    ===================================================================== */
 
 const DEFAULT_MODEL = 'claude-haiku-5-5';
@@ -331,7 +336,7 @@ export default {
       if (req.method !== 'POST') return json({error: 'not_found'}, 404, cors);
       if (!env.ANTHROPIC_API_KEY || !env.FAMILY_CODE) return json({error: 'not_configured'}, 503, cors);
       const text = await req.text();
-      if (text.length > (url.pathname === '/picture' ? 1500000 : 40000)) return json({error: 'too_big'}, 413, cors);   // 그림은 크게
+      if (text.length > (url.pathname === '/picture' ? 1500000 : url.pathname === '/mathread' ? 2200000 : 40000)) return json({error: 'too_big'}, 413, cors);   // 그림·문제 사진은 크게
       let b;
       try { b = JSON.parse(text); } catch (e) { return json({error: 'bad_request'}, 400, cors); }
       const code = String(b.code || '').trim();
@@ -354,6 +359,9 @@ export default {
         case '/picchat': return await picchat(ctx);
         case '/picbook': return await picbook(ctx);
         case '/coloring': return await coloring(ctx);
+        case '/mathread': return await mathRead(ctx);
+        case '/mathexplain': return await mathExplain(ctx);
+        case '/mathdone': return await mathDone(ctx);
       }
       return json({error: 'not_found'}, 404, cors);
     } catch (e) {
@@ -474,13 +482,14 @@ function toMessages(hist, start) {
 }
 
 /* Claude 호출 → JSON. 쓴 토큰으로 금액을 rec.usd에 더함 */
-async function askClaude(env, rec, system, messages, schema, maxTokens) {
-  const effort = env.EFFORT || 'low';
+async function askClaude(env, rec, system, messages, schema, maxTokens, opt) {
+  opt = opt || {};
+  const effort = opt.effort || env.EFFORT || 'low';
   const send = withEffort => fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
     body: JSON.stringify({
-      model: env.MODEL || DEFAULT_MODEL, max_tokens: maxTokens, system, messages,
+      model: opt.model || env.MODEL || DEFAULT_MODEL, max_tokens: maxTokens, system, messages,
       output_config: Object.assign(withEffort ? {effort} : {}, {format: {type: 'json_schema', schema}})
     })
   });
@@ -499,8 +508,8 @@ async function askClaude(env, rec, system, messages, schema, maxTokens) {
     throw fail(kind, msg || ('HTTP ' + res.status));
   }
   const u = data.usage || {};
-  if (rec) rec.usd += ((u.input_tokens || 0) + (u.cache_creation_input_tokens || 0) * 1.25 + (u.cache_read_input_tokens || 0) * 0.1) * num(env.PRICE_IN, PRICE_IN) / 1e6 +
-    (u.output_tokens || 0) * num(env.PRICE_OUT, PRICE_OUT) / 1e6;
+  if (rec) rec.usd += ((u.input_tokens || 0) + (u.cache_creation_input_tokens || 0) * 1.25 + (u.cache_read_input_tokens || 0) * 0.1) * (opt.priceIn || num(env.PRICE_IN, PRICE_IN)) / 1e6 +
+    (u.output_tokens || 0) * (opt.priceOut || num(env.PRICE_OUT, PRICE_OUT)) / 1e6;
   if (data.stop_reason === 'refusal') throw fail('refusal', 'refusal');
   const block = (data.content || []).find(c => c.type === 'text');
   if (!block) throw fail('ai', 'no text (' + data.stop_reason + ')');
@@ -524,6 +533,7 @@ async function ping(ctx) {
   }
   const t = env.BELLA_KV ? await env.BELLA_KV.get('tts:' + kstDay(), 'json') : null;
   return json(Object.assign({ok: true, model: env.MODEL || DEFAULT_MODEL, kv: !!env.BELLA_KV, usage: usage(rec, env), pic: true,
+    math: {model: env.MATH_MODEL || MATH_MODEL, used: rec ? (rec.math || 0) : null, max: num(env.MATH_DAILY, MATH_DAILY)},
     tts: {on: !!env.AI, azure: !!(env.AZURE_SPEECH_KEY && env.AZURE_SPEECH_REGION), used: t ? Math.round(t.n) : 0, budget: num(env.TTS_DAILY_NEURONS, TTS_DAILY_NEURONS),
       img: t ? (t.img || 0) : 0, imgMax: num(env.COLORING_DAILY, COLORING_DAILY)}}, counts(rec, ctx.who, L)), 200, ctx.cors);
 }
@@ -795,6 +805,288 @@ async function coloring(ctx) {
   return new Response(bytes, {headers: Object.assign({'content-type': 'image/jpeg', 'cache-control': 'no-store'}, cors)});
 }
 
+/* =====================================================================
+   🧮 Bella Math — 수학 문제 사진 → 정답 없이 풀이 설명 (초등 3학년)
+   ===================================================================== */
+const MATH_MODEL = 'claude-sonnet-5-5';
+const MATH_PRICE_IN = 2, MATH_PRICE_OUT = 10;   // 100만 토큰당 달러 (Claude Sonnet 5.5)
+const MATH_DAILY = 40;                          // 가족 전체 하루 문제(사진 읽기) 수
+const MATH_EXPLAIN_DAILY = 240;                 // 가족 전체 하루 설명 수 (문제당 최대 6번 정도)
+function mathOpt(env, effort) {
+  const model = env.MATH_MODEL || MATH_MODEL;
+  const sonnet = /sonnet/.test(model);
+  return {model, effort: effort,
+    priceIn: num(env.MATH_PRICE_IN, sonnet ? MATH_PRICE_IN : num(env.PRICE_IN, PRICE_IN)),
+    priceOut: num(env.MATH_PRICE_OUT, sonnet ? MATH_PRICE_OUT : num(env.PRICE_OUT, PRICE_OUT))};
+}
+
+const MATH_READ_SCHEMA = {type: 'object', additionalProperties: false,
+  properties: {
+    kind: {type: 'string', enum: ['math', 'unclear', 'not_math']},
+    problem: {type: 'string'}, say: {type: 'string'}, topic: {type: 'string'}, note: {type: 'string'},
+    solution: {type: 'string'}, answer: {type: 'string'}, answer_forms: {type: 'array', items: {type: 'string'}}
+  },
+  required: ['kind', 'problem', 'say', 'topic', 'note', 'solution', 'answer', 'answer_forms']};
+const MATH_PIC = {type: 'object', additionalProperties: false,
+  properties: {
+    kind: {type: 'string', enum: ['none', 'objects', 'fraction', 'column', 'numberline', 'blocks']},
+    emoji: {type: 'string'}, nums: {type: 'array', items: {type: 'integer'}}, x: {type: 'integer'}, y: {type: 'integer'},
+    op: {type: 'string'}, top: {type: 'string'}, bottom: {type: 'string'}, result: {type: 'string'}
+  },
+  required: ['kind', 'emoji', 'nums', 'x', 'y', 'op', 'top', 'bottom', 'result']};
+const MATH_CARD = {type: 'object', additionalProperties: false,
+  properties: {text: {type: 'string'}, say: {type: 'string'}, pic: MATH_PIC,
+    q: {type: 'string'}, choices: {type: 'array', items: {type: 'string'}}, correct: {type: 'integer'}, hint: {type: 'string'}},
+  required: ['text', 'say', 'pic', 'q', 'choices', 'correct', 'hint']};
+const MATH_EXPLAIN_SCHEMA = {type: 'object', additionalProperties: false,
+  properties: {cards: {type: 'array', items: MATH_CARD}, closing: {type: 'string'}}, required: ['cards', 'closing']};
+const MATH_PARENT_SCHEMA = {type: 'object', additionalProperties: false,
+  properties: {
+    answer: {type: 'string'}, concept: {type: 'string'},
+    cards: {type: 'array', items: {type: 'object', additionalProperties: false,
+      properties: {text: {type: 'string'}, say: {type: 'string'}, tip: {type: 'string'}, pic: MATH_PIC}, required: ['text', 'say', 'tip', 'pic']}},
+    mistakes: {type: 'array', items: {type: 'string'}}, check: {type: 'string'}, check_answer: {type: 'string'}
+  },
+  required: ['answer', 'concept', 'cards', 'mistakes', 'check', 'check_answer']};
+
+const MATH_READ_SYSTEM = `You read a photo of ONE math problem from a Korean elementary-school workbook (3rd grade, e.g. 눈높이 수학 or a 문제집) for "Bella Math", an app that explains HOW to solve a problem to a 9-10 year-old girl without giving her the answer.
+- kind: "math" if a math problem is readable. "unclear" if the photo is too blurry, dark, cut off, or a number you need cannot be read for sure (do NOT guess numbers). "not_math" if it is not a math problem.
+- If several problems are visible, choose the one that is most centered and complete, and say so in note (Korean, e.g. "여러 문제 중 가운데 문제를 읽었어요"). Otherwise note is "".
+- problem: the problem in Korean exactly as written in the workbook, numbers exactly as printed. Write vertical calculations (세로셈) on one line, e.g. "324 × 3 = □". Briefly describe a figure, table or picture that is needed to solve it in [그림: ...]. Ignore pencil marks and anything the child already wrote by hand (do not include her answers).
+- say: the problem as it should be read aloud by Korean text-to-speech: no symbols (+ 더하기, − 빼기, × 곱하기, ÷ 나누기, = 는, □ 네모, 3/4 → 4분의 3), digits are fine.
+- topic: short Korean unit name, e.g. "세 자리 수의 덧셈", "곱셈(두 자리 × 한 자리)", "나눗셈", "분수", "길이와 시간", "들이와 무게".
+- solution: a teacher's answer key in Korean: the solution step by step, using methods taught in Korean 3rd grade (세로셈, 받아올림/받아내림, 곱셈구구, 몫과 나머지, 분수 등). Check each calculation twice.
+- answer: the final answer in the workbook's format, with unit if any. If there are several blanks, give all of them.
+- answer_forms: every short string that would GIVE AWAY the answer if the child saw it: the number in digits ("972"), with unit ("972원"), fraction both ways ("3/4", "4분의 3"), each labeled part ("몫 5", "나머지 2"), a word answer ("직각삼각형"). Do not list words that already appear in the problem.
+If kind is not "math", the other fields may be short or empty.`;
+
+const MATH_LEVELS = {
+  1: `LEVEL 1 (기본 설명): explain like a kind teacher using the textbook method, in order. 3-5 cards: first what the problem asks (무엇을 구하는지), then the steps. The last card stops right before the final result and asks her to finish it herself.`,
+  2: `LEVEL 2 (더 쉽게): she did not understand the first explanation. Use easier words and smaller steps. First show a SMALLER-NUMBER example of the same type and solve that example completely (its result must be different from the real answer), then show how the real problem works the same way, step by step, stopping before the final result. 4-6 cards.`,
+  3: `LEVEL 3 (그림으로): she still did not understand. Explain with pictures and a real-life story she knows (candies, stickers, pizza, colored paper, marbles, money, a ruler, a clock...). Use a pic on most cards. Very short sentences. Concrete before abstract. Stop before the final result. 4-6 cards.`,
+  4: `LEVEL 4 (같이 한 걸음씩): solve it TOGETHER with tiny questions. 4-7 cards. Every card except the last explains one tiny step in one or two sentences and asks ONE tiny question in q, with 2-3 short choices (correct = index of the right choice, starting at 0) and a gentle hint in Korean for a wrong choice. Each question is about a small part (one digit, one 곱셈구구 fact, which number to write where) and its right choice must NOT be the final answer. The last card has no question (q "", choices []) and tells her she can now finish the last step on her paper.`
+};
+
+const MATH_PIC_RULES = `PICTURES (pic): the app draws simple pictures from these fields. Use kind "none" when a picture does not help. Unused fields: "" or 0 or [].
+- objects: groups of emoji. nums = how many in each group, e.g. [4,4,4] = 3 groups of 4 (max 40 items in total). emoji = one emoji (🍬 🍎 🍪 ⭐ 🧁 🐟 ✏️ 🎈). x = how many to cross out from the end (for take-away), else 0. Use small numbers (an example), not the full real problem if it would be too many.
+- fraction: x = number of equal parts, y = colored parts, op = "circle" (pizza) or "bar" (chocolate bar).
+- column: a vertical calculation (세로셈). op = "+", "-", or "×". top and bottom = the two numbers. result = the partial result shown so far, with "?" for every digit she should still find (same number of digits as the final result), e.g. "?72", or "" to show no result.
+- numberline: x = start, y = end (max 30 apart is easiest to read), nums = the points of jumps in order, e.g. [0,3,6,9] draws jumps 0→3→6→9.
+- blocks: base-ten blocks. nums = [hundreds, tens, ones], e.g. [3,2,4] for 324 (each at most 9).`;
+
+function mathKidSystem(level, info, prev, adult) {
+  return `You are Tobi, a cheerful, kind fox character in "Bella Math", a math helper app for a 9-10 year-old girl in Korea (3rd grade). She got stuck on a workbook problem. Her parents are not teachers, so you explain it to her. ${adult ? 'Right now her mom is reading this explanation (to learn how to explain it), but write it for the child exactly the same way.' : ''}
+
+THE MOST IMPORTANT RULE
+- NEVER tell the final answer, in any form (digits, words, unit, a picture labeled with it, a choice that is the answer). The answer is given below ONLY so that you can avoid it. Stop right before the last calculation and invite her to do it ("이 부분은 직접 해 볼까요?").
+- Example numbers you invent must give results different from the real answer.
+
+HOW TO EXPLAIN
+- Korean 해요체, warm and encouraging, like a kind older sister/teacher. Very short sentences a 3rd grader understands. Each card: 1-3 sentences, at most about 90 Korean characters.
+- One idea per card. Bold nothing, no markdown, no lists. Emojis: at most one per card.
+- Use only methods taught up to Korean 3rd grade (no algebra, no x, no negative numbers). Follow the textbook way (세로셈, 받아올림, 곱셈구구, 몫과 나머지 ...).
+- say: the same content written for Korean text-to-speech: no emojis or symbols (+ 더하기, − 빼기, × 곱하기, ÷ 나누기, = 는, □ 네모, ? 물음표 칸, 3/4 → 4분의 3), digits are fine.
+- For cards without a question: q "", choices [], correct 0, hint "".
+- closing: one short warm Korean sentence for the end (e.g. "이제 문제집에 직접 써 볼까요? 할 수 있어요!"), without the answer.
+
+${MATH_LEVELS[level]}
+
+${MATH_PIC_RULES}
+
+PROBLEM: ${info.p}
+TOPIC: ${info.t}
+TEACHER'S SOLUTION (secret, for you only): ${info.s}
+ANSWER (secret, NEVER say it): ${info.a}${prev ? '\n\nEXPLANATIONS SHE ALREADY SAW AND DID NOT UNDERSTAND (do not repeat them; explain differently):\n' + prev : ''}`;
+}
+
+function mathParentSystem(info) {
+  return `You help a Korean mom teach her 3rd-grade daughter (9-10 years old) a math problem from a workbook (눈높이 수학 등). The parents are not teachers and feel they explain badly. Write in Korean, polite 해요체, short and practical.
+- answer: the final answer (for the mom only), with unit.
+- concept: 1-2 sentences: what concept this problem checks, with the 3rd-grade unit name, and why children find it hard.
+- cards: 3-5 steps of HOW to teach it. text = what to do with the child (use real objects at home when helpful: 사탕, 동전, 색종이, 블록...). say = an example of exactly what the mom can say to her child (one or two short sentences, child-friendly, NOT revealing the answer; the child should find it). tip = one short tip (e.g. "아이가 먼저 말하게 기다려 주세요"). pic: optional picture (see PICTURES), kind "none" if not needed.
+- mistakes: 2-3 common mistakes children make on this type of problem, each one short sentence.
+- check: one similar easier problem the mom can give to check understanding. check_answer: its answer.
+- Use only methods taught up to Korean 3rd grade (no algebra). Encourage patience; never suggest scolding.
+
+${MATH_PIC_RULES}
+
+PROBLEM: ${info.p}
+TOPIC: ${info.t}
+TEACHER'S SOLUTION: ${info.s}
+ANSWER: ${info.a}`;
+}
+
+/* 정답은 앱에 보내지 않고 서버 키로 암호화해서 왕복 (AES-GCM) */
+async function mathKey(env) {
+  const raw = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('bella-math|' + env.ANTHROPIC_API_KEY));
+  return crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
+}
+const b64u = u8 => btoa(String.fromCharCode(...u8)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64u = s => Uint8Array.from(atob(s.replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+async function seal(env, obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({name: 'AES-GCM', iv}, await mathKey(env), new TextEncoder().encode(JSON.stringify(obj))));
+  const all = new Uint8Array(12 + ct.length); all.set(iv); all.set(ct, 12);
+  return b64u(all);
+}
+async function unseal(env, s) {
+  try {
+    const all = unb64u(String(s || ''));
+    const pt = await crypto.subtle.decrypt({name: 'AES-GCM', iv: all.slice(0, 12)}, await mathKey(env), all.slice(12));
+    return JSON.parse(new TextDecoder().decode(pt));
+  } catch (e) { return null; }
+}
+
+/* 정답 가리기: 문제에 없는 정답 표현이 설명에 나오면 □로 바꿈 */
+const normNum = t => String(t || '').replace(/(\d),(?=\d{3}(?!\d))/g, '$1');
+const escRe = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function answerMasker(info) {
+  const prob = normNum(info.p);
+  const reOf = f => {
+    const core = f.split(/\s+/).map(escRe).join('\\s*');
+    return (/^\d/.test(f) ? '(?<!\\d)' : '') + core + (/\d$/.test(f) ? '(?!\\d)' : '');
+  };
+  const forms = (info.f || []).map(f => normNum(str(f, 40))).filter(Boolean)
+    .filter(f => !new RegExp(reOf(f)).test(prob))                  // 문제에 이미 있는 숫자·말은 가리지 않음
+    .sort((a, b) => b.length - a.length);
+  const res = forms.map(f => new RegExp(reOf(f), 'g'));
+  const mask = t => {
+    let s = normNum(t), hit = false;
+    res.forEach(r => { s = s.replace(r, () => { hit = true; return '□'; }); });
+    return {s: hit ? s : String(t || ''), hit};
+  };
+  mask.digits = forms.filter(f => /^\d+$/.test(f));
+  return mask;
+}
+function cleanPic(p, mask) {
+  p = p || {};
+  const kinds = ['objects', 'fraction', 'column', 'numberline', 'blocks'];
+  if (!kinds.includes(p.kind)) return null;
+  const int = (v, lo, hi) => Math.max(lo, Math.min(hi, parseInt(v, 10) || 0));
+  const nums = Array.isArray(p.nums) ? p.nums.slice(0, 12).map(v => int(v, 0, 9999)) : [];
+  const o = {kind: p.kind};
+  if (p.kind === 'objects') {
+    o.nums = nums.map(v => Math.min(v, 40)).filter(v => v > 0).slice(0, 10);
+    let total = 0; o.nums = o.nums.map(v => { const k = Math.min(v, 40 - total); total += k; return k; }).filter(v => v > 0);
+    if (!o.nums.length) return null;
+    o.emoji = str(p.emoji, 4) || '🍬'; o.x = int(p.x, 0, total);
+  } else if (p.kind === 'fraction') {
+    o.x = int(p.x, 1, 16); o.y = int(p.y, 0, o.x); o.op = p.op === 'bar' ? 'bar' : 'circle';
+  } else if (p.kind === 'column') {
+    o.op = ['+', '-', '×'].includes(p.op) ? p.op : p.op === 'x' || p.op === '*' ? '×' : '+';
+    o.top = str(p.top, 6).replace(/[^\d]/g, ''); o.bottom = str(p.bottom, 6).replace(/[^\d]/g, '');
+    o.result = str(p.result, 8).replace(/[^\d?]/g, '');
+    if (!o.top || !o.bottom) return null;
+    if (o.result && mask.digits.includes(o.result.replace(/\?/g, '')) && !o.result.includes('?')) o.result = o.result.replace(/\d/g, '?');
+  } else if (p.kind === 'numberline') {
+    o.x = int(p.x, 0, 9999); o.y = int(p.y, 0, 9999);
+    if (o.y <= o.x) o.y = o.x + 10;
+    if (o.y - o.x > 100) o.y = o.x + 100;
+    o.nums = nums.filter(v => v >= o.x && v <= o.y).slice(0, 10);
+  } else if (p.kind === 'blocks') {
+    o.nums = [0, 1, 2].map(i => int(nums[i], 0, 9));
+    if (!o.nums.some(v => v)) return null;
+  }
+  return o;
+}
+
+function mathCounts(rec, env) {
+  return {used: rec ? (rec.math || 0) : null, max: num(env.MATH_DAILY, MATH_DAILY)};
+}
+
+/* 사진(또는 고친 글)로 문제 읽기 + 몰래 풀기 */
+async function mathRead(ctx) {
+  const {b, env, cors} = ctx;
+  const data = String(b.image || '');
+  const typed = str(b.text, 600);
+  if (!typed && (data.length < 200 || data.length > 2100000 || !/^[A-Za-z0-9+/=]+$/.test(data))) return json({error: 'bad_request'}, 400, cors);
+  const rec = await loadDay(env);
+  if (rec && (rec.math || 0) >= num(env.MATH_DAILY, MATH_DAILY)) return json(Object.assign({error: 'math_limit'}, mathCounts(rec, env)), 429, cors);
+  const content = typed
+    ? [{type: 'text', text: 'There is no photo this time. A parent typed (or corrected) the problem text. Treat this as the problem exactly as written:\n' + typed}]
+    : [{type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data}}, {type: 'text', text: 'This is the problem photo.'}];
+  const out = await guarded(ctx, rec, () => askClaude(env, rec, MATH_READ_SYSTEM, [{role: 'user', content}], MATH_READ_SCHEMA, 6000, mathOpt(env, env.MATH_READ_EFFORT || 'medium')));
+  const kind = ['math', 'unclear', 'not_math'].includes(out.kind) ? out.kind : 'unclear';
+  const multi = (v, n) => String(v == null ? '' : v).replace(/[ \t]+/g, ' ').replace(/\s*\n\s*/g, '\n').trim().slice(0, n);   // 줄바꿈은 살림
+  const r = {kind, problem: multi(out.problem, 600), say: str(out.say, 600), topic: str(out.topic, 60), note: str(out.note, 120)};
+  if (kind === 'math' && r.problem && str(out.answer, 200)) {
+    const info = {p: r.problem, t: r.topic, s: str(out.solution, 2500), a: str(out.answer, 200),
+      f: (Array.isArray(out.answer_forms) ? out.answer_forms : []).map(x => str(x, 40)).filter(Boolean).slice(0, 12)};
+    if (!info.f.length) info.f = [info.a];
+    r.sealed = await seal(env, info);
+  } else if (kind === 'math') r.kind = 'unclear';
+  if (rec) {
+    if (r.kind === 'math') {
+      rec.math = (rec.math || 0) + 1;
+      const s = sessionOf(rec, ctx, 'math', 0);
+      Object.assign(s, {problem: r.problem, topic: r.topic, answer: str(out.answer, 200), typed: !!typed, levels: s.levels || [], lines: []});
+    }
+    await saveDay(env, rec);
+  }
+  return json(Object.assign(r, {counts: mathCounts(rec, env), usage: usage(rec, env)}), 200, cors);
+}
+
+/* 단계별 설명: level 1~4 (아이용) 또는 mode=parent (엄마용 가르치는 방법 + 정답) */
+async function mathExplain(ctx) {
+  const {b, env, cors} = ctx;
+  const info = await unseal(env, b.sealed);
+  if (!info || !info.p) return json({error: 'sealed'}, 400, cors);
+  const parent = b.mode === 'parent';
+  if (parent && !ctx.adult) return json({error: 'adult_only'}, 403, cors);
+  const level = [1, 2, 3, 4].includes(+b.level) ? +b.level : 1;
+  const rec = await loadDay(env);
+  if (rec && (rec.mathx || 0) >= num(env.MATH_EXPLAIN_DAILY, MATH_EXPLAIN_DAILY)) return json({error: 'math_limit'}, 429, cors);
+  const prev = Array.isArray(b.prev) ? b.prev.slice(-12).map(x => '- ' + str(x, 200)).join('\n') : '';
+  const mask = answerMasker(info);
+  let r;
+  if (parent) {
+    const out = await guarded(ctx, rec, () => askClaude(env, rec, mathParentSystem(info), [{role: 'user', content: 'Write the guide for the mom.'}], MATH_PARENT_SCHEMA, 5000, mathOpt(env, 'low')));
+    r = {mode: 'parent', answer: info.a, concept: str(out.concept, 300),
+      cards: (out.cards || []).slice(0, 6).map(c => ({text: str(c.text, 300), say: mask(str(c.say, 240)).s, tip: str(c.tip, 160), pic: cleanPic(c.pic, mask)})).filter(c => c.text),
+      mistakes: (out.mistakes || []).slice(0, 4).map(x => str(x, 160)).filter(Boolean),
+      check: str(out.check, 200), check_answer: str(out.check_answer, 80)};
+  } else {
+    const out = await guarded(ctx, rec, () => askClaude(env, rec, mathKidSystem(level, info, prev, ctx.adult), [{role: 'user', content: 'Write the level ' + level + ' explanation cards.'}], MATH_EXPLAIN_SCHEMA, 6000, mathOpt(env, 'low')));
+    let masked = 0;
+    const cards = (out.cards || []).slice(0, 8).map(c => {
+      const t = mask(str(c.text, 400)), sy = mask(str(c.say, 400));
+      let q = mask(str(c.q, 200)), choices = Array.isArray(c.choices) ? c.choices.slice(0, 3).map(x => str(x, 40)).filter(Boolean) : [];
+      let correct = parseInt(c.correct, 10) || 0;
+      // 고르기 정답이 진짜 정답이면 질문을 없앰
+      if (choices.length < 2 || correct < 0 || correct >= choices.length || mask(choices[correct]).hit || q.hit || !q.s) { if (choices.length) masked += q.hit || (choices[correct] && mask(choices[correct]).hit) ? 1 : 0; q = {s: ''}; choices = []; correct = 0; }
+      else choices = choices.map(x => mask(x).s);
+      if (t.hit || sy.hit) masked++;
+      return {text: t.s, say: sy.s || t.s, pic: cleanPic(c.pic, mask), q: q.s, choices, correct, hint: choices.length ? str(c.hint, 160) : ''};
+    }).filter(c => c.text);
+    if (!cards.length) throw fail('ai', 'no cards');
+    r = {mode: 'kid', level, cards, closing: mask(str(out.closing, 160)).s || '이제 문제집에 직접 풀어 볼까요? 할 수 있어요!', masked};
+  }
+  if (rec) {
+    rec.mathx = (rec.mathx || 0) + 1;
+    const s = sessionOf(rec, ctx, 'math', parent ? 0 : level);
+    if (!s.problem) Object.assign(s, {problem: info.p, topic: info.t, answer: info.a});
+    s.levels = s.levels || []; s.lines = s.lines || [];
+    if (parent) s.parent = true; else if (!s.levels.includes(level)) s.levels.push(level);
+    s.level = Math.max(0, ...s.levels);
+    if (b.result === 'stuck') s.stuck = true;
+    await saveDay(env, rec);
+  }
+  return json(Object.assign(r, {usage: usage(rec, env)}), 200, cors);
+}
+
+/* 앱에서 "이해했어요" / "엄마랑 같이" 결과만 기록 (AI 호출 없음) */
+async function mathDone(ctx) {
+  const {b, env, cors} = ctx;
+  const rec = await loadDay(env);
+  if (rec && rec.sessions[str(b.sid, 40)]) {
+    const s = rec.sessions[str(b.sid, 40)];
+    s.result = b.result === 'understood' ? 'understood' : 'stuck';
+    s.doneLevel = [1, 2, 3, 4].includes(+b.level) ? +b.level : 0;
+    await saveDay(env, rec);
+  }
+  return json({ok: true}, 200, cors);
+}
+
 async function logs(b, env) {
   if (!env.BELLA_KV) return {kv: false, days: []};
   const n = Math.min(Math.max(parseInt(b.days, 10) || 7, 1), 30);
@@ -804,13 +1096,13 @@ async function logs(b, env) {
     if (rec) days.push(rec);
   }
   const today = await loadDay(env);
-  return {kv: true, scenes: Object.assign(Object.fromEntries(Object.entries(SCENES).map(([k, v]) => [k, v.ko])), {picture: '🎨 그림 이야기'}),
+  return {kv: true, scenes: Object.assign(Object.fromEntries(Object.entries(SCENES).map(([k, v]) => [k, v.ko])), {picture: '🎨 그림 이야기', math: '🧮 수학 풀이'}),
     who: Object.fromEntries(Object.entries(WHO).map(([k, v]) => [k, v.ko])), usage: usage(today, env), limits: limits(env), days};
 }
 
 /* ---------- 부모용 대화 기록 화면 (/parent) ---------- */
 const PARENT_HTML = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bella English · 가족 대화 기록</title>
+<title>Bella · 가족 기록</title>
 <style>
 body{margin:0;font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;background:#fff6f9;color:#2b2b2b}
 header{background:#ff7aa8;color:#fff;padding:14px 16px;font-size:18px;font-weight:700}
@@ -825,7 +1117,7 @@ button{background:#ff7aa8;color:#fff;border:none;cursor:pointer}
 .sum{background:#f0f7ff;border-radius:8px;padding:8px;margin-top:6px;font-size:14px}
 .money b{font-size:20px;color:#e0457b}.low{color:#c00;font-weight:700}
 details summary{cursor:pointer}
-</style></head><body><header>🦊 Bella English · 가족 대화 기록</header><main>
+</style></head><body><header>🦊 Bella · 가족 대화 · 🧮 수학 기록</header><main>
 <div class="card"><input id="code" type="password" placeholder="부모 코드" style="width:150px">
 <select id="days"><option value="1">오늘</option><option value="3">3일</option><option value="7" selected>7일</option><option value="14">14일</option><option value="30">30일</option></select>
 <select id="who"><option value="">가족 모두</option><option value="kid">👧 딸</option><option value="dad">👨 아빠</option><option value="mom">👩 엄마</option></select>
@@ -849,15 +1141,22 @@ $('#go').onclick=async()=>{
       (u.credit?' · 충전 후 '+usd(u.sinceCredit)+' / '+usd(u.credit)+'<br>남은 금액(추정) <b>'+usd(u.left)+'</b>'+(u.low?' <span class="low">— 곧 충전이 필요해요</span>':''):'<br><span class="t">CREDIT_USD를 넣으면 남은 금액도 보여요</span>')+
       '<div class="t">한 사람 하루 '+d.limits.person+'번 (+'+d.limits.step+'번씩 더 하기) · 가족 전체 하루 최대 '+d.limits.max+'번</div></div>';
     const who=$('#who').value;
-    $('#msg').textContent=d.days.length?'':'이 기간에 AI 토비 대화가 없어요.';
+    $('#msg').textContent=d.days.length?'':'이 기간에 AI 토비 대화·수학 풀이가 없어요.';
     $('#out').innerHTML=d.days.map(day=>{
       const ss=Object.values(day.sessions||{}).filter(s=>!who||(s.who||'kid')===who).sort((a,b)=>b.t-a.t);
-      const pp=Object.entries(day.people||{}).map(([k,p])=>(d.who[k]||k)+' '+p.turns+'번').join(' · ');
+      const pp=Object.entries(day.people||{}).map(([k,p])=>(d.who[k]||k)+' '+p.turns+'번').join(' · ')+(day.math?' · 🧮 수학 '+day.math+'문제':'');
       return '<div class="day">'+esc(day.day)+' · 대답 '+day.turns+'번'+(pp?' ('+esc(pp)+')':'')+' · '+usd(day.usd)+'</div><div class="card">'+(ss.length?ss.map(s=>{
-        const tm=new Date(s.t);const kids=s.lines.filter(x=>x.w==='c').length;const me=(d.who[s.who||'kid']||'').split(' ')[0];
+        const tm=new Date(s.t);const hm=tm.getHours()+':'+String(tm.getMinutes()).padStart(2,'0');
+        if(s.scene==='math'){
+          const lv=(s.levels||[]).length?'설명 '+Math.max(...s.levels)+'단계까지':'설명 안 봄';
+          const res=s.result==='understood'?' · 😊 이해했어요'+(s.doneLevel?'('+s.doneLevel+'단계)':''):s.result==='stuck'?' · <span class="low">🤔 엄마랑 같이 보기</span>':'';
+          return '<div class="s"><details><summary>'+esc(d.who[s.who||'kid']||'')+' · <b>🧮 '+esc(s.topic||'수학')+'</b> <span class="t">'+hm+' · '+lv+(s.parent?' · 가르치는 방법 봄':'')+'</span>'+res+'</summary>'+
+            '<div class="l">📄 '+esc(s.problem)+'</div><div class="fix">정답: <b>'+esc(s.answer)+'</b></div></details></div>';
+        }
+        const kids=s.lines.filter(x=>x.w==='c').length;const me=(d.who[s.who||'kid']||'').split(' ')[0];
         const sum=s.summary?'<div class="sum">🌟 '+esc(s.summary.praise)+(s.summary.better||[]).map(x=>'<div>✏️ '+esc(x.said)+' → <b>'+esc(x.better)+'</b> '+esc(x.ko)+'</div>').join('')+(s.summary.words&&s.summary.words.length?'<div>📒 '+s.summary.words.map(w=>esc(w.en)+'('+esc(w.ko)+')').join(', ')+'</div>':'')+'<div>👉 '+esc(s.summary.tip)+'</div></div>':'';
         const fx=(s.fixes||[]).map(x=>'<div class="fix">💡 '+esc(x.said)+' → <b>'+esc(x.better)+'</b> '+esc(x.ko)+'</div>').join('');
-        return '<div class="s"><details><summary>'+esc(d.who[s.who||'kid']||'')+' · <b>'+esc(d.scenes[s.scene]||s.scene)+'</b> '+(LV[s.level]||'')+' <span class="t">'+tm.getHours()+':'+String(tm.getMinutes()).padStart(2,'0')+' · 대답 '+kids+'번</span></summary>'+
+        return '<div class="s"><details><summary>'+esc(d.who[s.who||'kid']||'')+' · <b>'+esc(d.scenes[s.scene]||s.scene)+'</b> '+(LV[s.level]||'')+' <span class="t">'+hm+' · 대답 '+kids+'번</span></summary>'+
           s.lines.map(x=>'<div class="l'+(x.w==='c'?' c':'')+'">'+(x.w==='c'?me+' ':'🦊 ')+esc(x.x)+'</div>').join('')+fx+'</details>'+sum+'</div>';
       }).join(''):'<span class="t">대화 없음</span>')+'</div>';
     }).join('');
