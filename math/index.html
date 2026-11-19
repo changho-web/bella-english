@@ -323,7 +323,9 @@ let speakBtn = null, speakTok = 0, audio = null, ttsWarned = false;
 const VOICES = [
   ['az:jimin', '지민', '여자 목소리'], ['az:seohyeon', '서현', '여자 목소리'], ['az:yujin', '유진', '여자 목소리'],
   ['az:sunhi', '선희', '여자 목소리'], ['az:soonbok', '순복', '여자 목소리'], ['device', '기기 목소리', '무료 · 폰에 들어 있는 목소리']];
-const SAMPLE = () => N() + '야, 이 문제는 사탕 12개를 친구 4명에게 똑같이 나눠 주는 문제야. 먼저 사탕을 한 개씩 차례대로 나눠 줘 볼까? 한 사람이 몇 개씩 받는지 세어 보면 돼. 아주 잘하고 있어! 마지막 계산은 ' + N() + '가 직접 해 볼까?';
+const SAMPLE = () => NYA() + ', 이 문제는 사탕 12개를 친구 4명에게 똑같이 나눠 주는 문제야. 어렵게 느껴져도 괜찮아. 우리 같이 천천히 생각해 보자. ' +
+  '먼저 친구 4명 앞에 접시를 하나씩 놓는다고 생각해 봐. 그리고 사탕을 한 개씩 차례대로 접시에 나눠 주는 거야. 첫 번째 친구, 두 번째 친구, 세 번째 친구, 네 번째 친구. ' +
+  '사탕이 다 없어질 때까지 이렇게 계속 나눠 주면 돼. 그럼 한 접시에 사탕이 몇 개씩 있을까? ' + NNEUN() + ' 어떻게 생각해? 아주 잘하고 있어! 마지막 계산은 ' + N() + (bat(N()) ? '이가' : '가') + ' 직접 해 볼까?';
 const ttsCache = new Map();
 async function serverAudio(text, voice){
   const key = voice + '|' + (S.hd ? 1 : 0) + '|' + S.rate + '|' + text;
@@ -333,8 +335,9 @@ async function serverAudio(text, voice){
     const res = await fetch(S.url.replace(/\/+$/, '') + '/tts', {method: 'POST', headers: {'Content-Type': 'application/json'}, signal: ctl.signal,
       body: JSON.stringify({code: S.code, who: S.who, voice, hd: !!S.hd, text: text.slice(0, 480), rate: Math.round((+S.rate - 1) * 100), pitch: 2})});
     if(!res.ok){ const d = await res.json().catch(() => ({})); throw {kind: d.error || 'http'}; }
-    const url = URL.createObjectURL(await res.blob());
     const hd = res.headers.get('x-voice-hd');
+    if(hd == null) throw {kind: 'old_server'};              // 예전 서버: 한국어 목소리가 없어 영어 목소리로 읽어 버림 → 기기 목소리로
+    const url = URL.createObjectURL(await res.blob());
     if(ttsCache.size > 80){ const k = ttsCache.keys().next().value; URL.revokeObjectURL(ttsCache.get(k).url); ttsCache.delete(k); }
     const r = {url, hd}; ttsCache.set(key, r); return r;
   }finally{ clearTimeout(tm); }
@@ -355,7 +358,8 @@ async function speak(text, btn, voiceOverride){
       return r;
     }catch(e){
       if(my !== speakTok) return;
-      if(!ttsWarned || voiceOverride){ ttsWarned = true; toast(e && e.kind === 'no_azure' ? '서버에 Azure 연결이 없어서 기기 목소리로 읽어요' : '서버 목소리가 잠깐 안 돼서 기기 목소리로 읽어요', 3000); }
+      if(!ttsWarned || voiceOverride){ ttsWarned = true; toast(e && e.kind === 'old_server' ? '서버가 예전 코드라서 기기 목소리로 읽어요. Cloudflare에 새 서버 코드를 붙여 넣어 주세요.'
+        : e && e.kind === 'no_azure' ? '서버에 Azure 연결이 없어서 기기 목소리로 읽어요' : '서버 목소리가 잠깐 안 돼서 기기 목소리로 읽어요', 4500); }
     }
   }
   deviceSpeak(say, done);
