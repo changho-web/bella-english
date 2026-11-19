@@ -1,5 +1,5 @@
 /* Bella Math 오프라인 캐시 — 화면은 항상 새 버전을 먼저 받고, 아이콘은 저장해 두고 씀 */
-const CACHE = 'bella-math-v1';
+const CACHE = 'bella-math-v2';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith('bella-math-') && k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));

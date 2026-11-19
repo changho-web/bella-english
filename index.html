@@ -147,7 +147,7 @@ html.adult #headAvatar{font-size:26px;}
 .my-list .it{display:flex;align-items:center;gap:8px;border-bottom:1px solid #f3f3f3;padding:6px 0;font-size:15px;}
 .my-list .it span{flex:1;}
 .credit-low{background:#fff4e5;color:#8a4b00;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:14px;display:none;}
-/* 상황극: 대본 / AI 토비 */
+/* 상황극: 대본 / AI 친구 */
 .modeSw{display:flex;gap:8px;margin-bottom:10px;}
 .modeSw button{flex:1;border:2px solid var(--main);background:#fff;color:var(--main-d);border-radius:14px;padding:10px;font-size:16px;font-weight:700;cursor:pointer;}
 .modeSw button.on{background:var(--main);color:#fff;}
@@ -325,7 +325,7 @@ html.adult #tabs button[data-tab=draw]{display:none;}
         <div class="row"><button class="btn" id="myKoMic">🎤 한국어로 말하기</button><button class="btn main" id="myGo">✨ 영어로 바꾸기</button></div>
         <div class="my-out" id="myOut"></div>
       </div>
-      <p class="small" id="myAiLocked">🔒 AI 토비를 연결하면 한국어 → 영어 바꾸기를 쓸 수 있어요. 지금은 아래에 직접 넣을 수 있어요.</p>
+      <p class="small" id="myAiLocked">🔒 AI 친구를 연결하면 한국어 → 영어 바꾸기를 쓸 수 있어요. 지금은 아래에 직접 넣을 수 있어요.</p>
       <label for="myManual" class="small">직접 넣기: <code>영어 / 뜻</code></label>
       <div style="display:flex;gap:8px"><input type="text" id="myManual" placeholder="Where can I get a taxi? / 택시 어디서 타요?"><button class="btn" id="myManualAdd" style="white-space:nowrap;flex-shrink:0">추가</button></div>
     </details>
@@ -337,7 +337,7 @@ html.adult #tabs button[data-tab=draw]{display:none;}
   <section id="role">
     <div class="modeSw" id="roleModeSw">
       <button data-m="script">📜 대본</button>
-      <button data-m="ai">🤖 AI 토비</button>
+      <button data-m="ai">🤖 AI 친구</button>
     </div>
     <p class="small" id="roleIntro"></p>
     <div class="chips" id="roleLevels"></div>
@@ -357,13 +357,13 @@ html.adult #tabs button[data-tab=draw]{display:none;}
     </div>
     <div id="aiMode" style="display:none">
       <div class="card" id="aiLocked">
-        <div class="lbl">🔒 AI 토비는 아직 준비 중이에요</div>
-        <p class="small">부모님이 설정 → "🤖 AI 토비 연결"에서 연결하면, 토비가 정해진 대본 없이 내 말에 맞춰 대답해 줘요. 지금은 대본 상황극으로 연습해요!</p>
+        <div class="lbl">🔒 AI 친구는 아직 준비 중이에요</div>
+        <p class="small">부모님이 설정 → "🤖 AI 친구 연결"에서 연결하면, 친구가 정해진 대본 없이 내 말에 맞춰 대답해 줘요. 지금은 대본 상황극으로 연습해요!</p>
         <div class="row"><button class="btn main" id="aiGoScript">📜 대본 상황극 하기</button></div>
       </div>
       <div id="aiReadyArea" style="display:none">
         <div class="card ai-notice" id="aiNotice">
-          <div class="lbl">🤖 AI 토비를 만나기 전에</div>
+          <div class="lbl">🤖 AI 친구를 만나기 전에</div>
           <ul class="small" id="aiNoticeList"></ul>
           <div class="row"><button class="btn main" id="aiNoticeOk">알겠어요! 👍</button></div>
         </div>
@@ -431,9 +431,9 @@ html.adult #tabs button[data-tab=draw]{display:none;}
   <section id="draw">
     <div id="drHome">
       <div class="dr-menu">
-        <button class="dr-card" data-go="talk"><span class="ic">🗣️</span><b>그림 이야기</b><small>내 그림을 토비에게 소개해요</small></button>
+        <button class="dr-card" data-go="talk"><span class="ic">🗣️</span><b>그림 이야기</b><small>내 그림을 영어로 소개해요</small></button>
         <button class="dr-card" data-go="trace"><span class="ic">✏️</span><b>따라 그리기</b><small>사진 위에 따라 그려요</small></button>
-        <button class="dr-card" data-go="color"><span class="ic">🖍️</span><b>색칠하기</b><small>토비의 영어 색칠 미션</small></button>
+        <button class="dr-card" data-go="color"><span class="ic">🖍️</span><b>색칠하기</b><small>영어 색칠 미션</small></button>
         <button class="dr-card" data-go="free"><span class="ic">🎨</span><b>자유 그리기</b><small>빈 도화지에 그려요</small></button>
         <button class="dr-card" data-go="book"><span class="ic">📖</span><b>내 그림책</b><small id="bookCount">내 그림과 문장</small></button>
         <button class="dr-card soon" disabled><span class="ic">🎬</span><b>4컷 만화</b><small>곧 열려요!</small></button>
@@ -507,7 +507,7 @@ html.adult #tabs button[data-tab=draw]{display:none;}
   <section id="record">
     <div class="card"><div class="stat" id="statBox"></div></div>
     <div class="card"><b>어려워한 문장</b> <span class="small">(따라 말하기 평균 80% 미만)</span><div class="log" id="weakBox"></div></div>
-    <div class="card" id="aiLogCard" style="display:none"><b>🤖 AI 토비 대화</b> <span class="small">(눌러서 대화 보기)</span><div class="log ai-log" id="aiLogBox"></div></div>
+    <div class="card" id="aiLogCard" style="display:none"><b>🤖 AI 친구 대화</b> <span class="small">(눌러서 대화 보기)</span><div class="log ai-log" id="aiLogBox"></div></div>
     <div class="card" id="hardCard" style="display:none"><b>🎨 그림 이야기에서 어려웠던 질문</b> <span class="small">(3번 해도 대답하기 어려웠던 질문)</span><div class="log" id="hardBox"></div></div>
     <div class="card"><b>최근에 말한 문장</b><div class="log" id="logBox"></div></div>
     <div class="row"><button class="btn" id="logReset">기록 지우기</button></div>
@@ -532,20 +532,20 @@ html.adult #tabs button[data-tab=draw]{display:none;}
       <div class="row"><button class="btn blue" id="voiceTest">🔊 목소리 들어보기</button></div>
     </div>
     <div class="card" id="ttsCard">
-      <b>🔊 토비 목소리 (사람 같은 목소리)</b>
-      <p class="small" id="ttsLocked">AI 토비를 연결하면 서버의 자연스러운 목소리를 쓸 수 있어요.</p>
+      <b>🔊 AI 친구 목소리 (사람 같은 목소리)</b>
+      <p class="small" id="ttsLocked">AI 친구를 연결하면 서버의 자연스러운 목소리를 쓸 수 있어요.</p>
       <div id="ttsArea">
         <label for="setTtsMode">어디에 쓸까요?</label>
         <select id="setTtsMode">
-          <option value="all">📜 대본 토비 + 🤖 AI 토비</option>
-          <option value="ai">🤖 AI 토비만</option>
+          <option value="all">📜 대본 + 🤖 AI 친구</option>
+          <option value="ai">🤖 AI 친구만</option>
           <option value="off">쓰지 않기 (기기 목소리)</option>
         </select>
         <label for="setTtsVoice">목소리 고르기</label>
         <select id="setTtsVoice"></select>
         <label style="display:flex;align-items:center;gap:8px;margin-top:10px"><input type="checkbox" id="setTtsTone" style="width:auto"> 🎈 톤 높이기 (더 어린 느낌, 말이 조금 빨라져요)</label>
         <div class="row"><button class="btn blue" id="ttsTest">▶ 이 목소리 들어보기</button></div>
-        <p class="small" id="ttsMsg">모두 미국 영어 목소리예요. Ana는 여자아이 목소리예요 (Azure 연결이 없으면 Stella로 읽어요). 하루 무료 양(토비 말 50~100번쯤)을 다 쓰거나 연결이 안 되면 위의 기기 목소리로 자동으로 바뀌어요.</p>
+        <p class="small" id="ttsMsg">모두 미국 영어 목소리예요. Ana는 여자아이 목소리예요 (Azure 연결이 없으면 Stella로 읽어요). 하루 무료 양(친구 말 50~100번쯤)을 다 쓰거나 연결이 안 되면 위의 기기 목소리로 자동으로 바뀌어요.</p>
       </div>
     </div>
     <div class="card">
@@ -555,8 +555,8 @@ html.adult #tabs button[data-tab=draw]{display:none;}
     </div>
     <div class="card">
       <details id="aiSetup">
-        <summary><b>🤖 AI 토비 연결 (부모님용)</b> <span class="small" id="aiSetState"></span></summary>
-        <p class="small">서버(Cloudflare Worker) 주소와 가족 코드를 넣으면 상황극에서 🤖 AI 토비를 쓸 수 있어요. 비워 두면 📜 대본 상황극만 써요.</p>
+        <summary><b>🤖 AI 친구 연결 (부모님용)</b> <span class="small" id="aiSetState"></span></summary>
+        <p class="small">서버(Cloudflare Worker) 주소와 가족 코드를 넣으면 상황극에서 🤖 AI 친구를 쓸 수 있어요. 비워 두면 📜 대본 상황극만 써요.</p>
         <label for="setAiUrl">서버 주소</label>
         <input type="text" id="setAiUrl" placeholder="https://bella-tobi.○○○.workers.dev" autocomplete="off" autocapitalize="off" spellcheck="false">
         <label for="setAiCode">가족 코드</label>
@@ -566,7 +566,7 @@ html.adult #tabs button[data-tab=draw]{display:none;}
         <div class="small" id="aiUsage" style="margin-top:6px"></div>
       </details>
     </div>
-    <p class="small">크롬 브라우저에서 사용하세요. 음성 인식은 인터넷 연결이 필요합니다. 기록은 이 기기의 브라우저에 사람별로 저장됩니다. (AI 토비 대화는 연결한 서버에도 저장될 수 있어요)</p>
+    <p class="small">크롬 브라우저에서 사용하세요. 음성 인식은 인터넷 연결이 필요합니다. 기록은 이 기기의 브라우저에 사람별로 저장됩니다. (AI 친구 대화는 연결한 서버에도 저장될 수 있어요)</p>
     <p class="small" style="text-align:center;margin-top:20px">Bella English · 버전 2026-11-16.2</p>
   </section>
 </main>
@@ -728,18 +728,18 @@ const ADULT_SETS = [
 ];
 
 /* ================= 상황극 데이터 =================
-   S(질문, 질문 뜻, 예시 답, 예시 답 뜻, 맞는 답 단어(|로 구분, 빈칸이면 아무 대답), 토비 반응) */
+   S(질문, 질문 뜻, 예시 답, 예시 답 뜻, 맞는 답 단어(|로 구분, 빈칸이면 아무 대답), 친구 반응) */
 function S(q, ko, hint, hko, kw, ok){ return {q, ko, hint, hko, kw: kw ? kw.split('|') : [], ok}; }
 const ROLES = [
 {id:'friend', name:'🧒 새 친구 만나기', lv:{
 1:{steps:[
-  S("Hi! I'm Tobi. What's your name?", "안녕! 나는 토비야. 너 이름이 뭐야?", "My name is ___.", "내 이름은 ___야.", "", "Nice to meet you!"),
+  S("Hi! I'm new here. What's your name?", "안녕! 나 여기 처음 왔어. 너 이름이 뭐야?", "My name is ___.", "내 이름은 ___야.", "", "Nice to meet you!"),
   S("How old are you?", "몇 살이야?", "I'm ten years old.", "나는 열 살이야.", "ten|old|years|nine|eleven", "Cool! I'm ten, too!"),
   S("Do you like dogs?", "강아지 좋아해?", "Yes, I do. / No, I don't.", "응, 좋아해. / 아니, 안 좋아해.", "yes|no|do|like|love|not", "Me too!"),
   S("What color do you like?", "무슨 색 좋아해?", "I like pink.", "나는 분홍색을 좋아해.", "pink|red|blue|green|yellow|purple|white|black|orange|mint|like|color", "That's a pretty color!")
  ], end:"Let's be friends! Bye!"},
 2:{steps:[
-  S("Hi! I'm Tobi. I'm new here. What's your name?", "안녕! 나는 토비야. 여기 처음 왔어. 너 이름이 뭐야?", "Hi Tobi! My name is ___.", "안녕 토비! 내 이름은 ___야.", "", "Nice to meet you!"),
+  S("Hi! I just moved here. What's your name?", "안녕! 나 여기로 막 이사 왔어. 너 이름이 뭐야?", "Hi! My name is ___.", "안녕! 내 이름은 ___야.", "", "Nice to meet you!"),
   S("Where do you live?", "어디 살아?", "I live in Korea.", "나는 한국에 살아.", "live|korea|in|near", "Oh, cool!"),
   S("What do you like to do after school?", "방과 후에 뭐 하는 거 좋아해?", "I like to draw pictures.", "나는 그림 그리는 걸 좋아해.", "like|love|enjoy|play|read|draw|watch|go", "That sounds fun!"),
   S("What's your favorite food?", "제일 좋아하는 음식이 뭐야?", "My favorite food is tteokbokki.", "내가 제일 좋아하는 음식은 떡볶이야.", "favorite|like|love|food|is", "Yummy! I want to try it."),
@@ -761,7 +761,7 @@ const ROLES = [
   S("Here you are. Enjoy!", "여기 있어요. 맛있게 드세요!", "Thank you!", "고맙습니다!", "thank|thanks", "You're welcome!")
  ], end:"Bye bye!"},
 2:{steps:[
-  S("Hi there! Welcome to Tobi's Ice Cream. What can I get for you?", "어서 오세요! 토비 아이스크림이에요. 뭘 드릴까요?", "Can I have a strawberry ice cream, please?", "딸기 아이스크림 주시겠어요?", "can|have|like|want|please|chocolate|vanilla|strawberry|mint|mango", "Sure thing!"),
+  S("Hi there! Welcome to our ice cream shop. What can I get for you?", "어서 오세요! 아이스크림 가게예요. 뭘 드릴까요?", "Can I have a strawberry ice cream, please?", "딸기 아이스크림 주시겠어요?", "can|have|like|want|please|chocolate|vanilla|strawberry|mint|mango", "Sure thing!"),
   S("Would you like one scoop or two scoops?", "한 스쿱 드릴까요, 두 스쿱 드릴까요?", "Two scoops, please.", "두 스쿱 주세요.", "one|two|three|scoop|scoops", "Okay!"),
   S("Do you want any toppings? We have sprinkles and chocolate chips.", "토핑 올려 드릴까요? 스프링클이랑 초코칩 있어요.", "Yes, sprinkles, please. / No, thank you.", "네, 스프링클 주세요. / 아니요, 괜찮아요.", "yes|no|sprinkles|chocolate|chips|please|thank", "Good choice!"),
   S("Is it for here or to go?", "여기서 드실 거예요, 가져가실 거예요?", "For here, please. / To go, please.", "여기서 먹을게요. / 가져갈게요.", "here|go", "Alright."),
@@ -1007,7 +1007,7 @@ const PRAISE = {
   1:[['Good try! One more time?','좋은 시도예요! 한 번 더 해볼까요?']],
   0:[["Nice try! Let's listen and try again.",'괜찮아요! 다시 듣고 해봐요 💪']]
 };
-const MODE = {repeat:'따라 말하기', role:'상황극', words:'단어장', ai:'AI 토비'};
+const MODE = {repeat:'따라 말하기', role:'상황극', words:'단어장', ai:'AI 친구'};
 
 /* ================= 저장소 ================= */
 /* ================= 가족 프로필 =================
@@ -1024,6 +1024,8 @@ let PROFILE = lsGet('bella_profile', 'kid');
 if(!PROFILES.some(p => p.id === PROFILE)) PROFILE = 'kid';
 const ME = PROFILES.find(p => p.id === PROFILE);
 const ADULT = ME.adult;
+const BUD = ADULT ? '💬' : '👧';                       // 말하는 AI 친구 표시 (2026-11-19 여우 → 여자아이)
+const KIDNAME = () => (!ADULT && settings.name) || 'Bella';   // 아이 이름 (설정 → 이름, 기본 Bella)
 const PFX = PROFILE === 'kid' ? 'bella_' : 'bella_' + PROFILE + '_';
 const store = {
   get(k,d){ return lsGet(PFX + k, d); },
@@ -1095,7 +1097,7 @@ function speak(text, rate, fromSlow){
 }
 
 /* ================= 🔊 서버 목소리 (사람 같은 목소리) =================
-   토비 말만 서버(Cloudflare Workers AI · Deepgram Aura)로 읽음. 하루 무료 양을 넘거나 오류면 기기 목소리로.
+   친구 말만 서버(Cloudflare Workers AI · Deepgram Aura)로 읽음. 하루 무료 양을 넘거나 오류면 기기 목소리로.
    a1: = Aura-1(무료 양으로 더 많이), a2: = Aura-2(더 자연스러움) */
 const TTS_VOICES = [   // 모두 미국 영어 목소리
   ['az:ana', 'Ana · 미국 · 여자아이 (Azure, 아이 목소리)'],
@@ -1104,7 +1106,7 @@ const TTS_VOICES = [   // 모두 미국 영어 목소리
   ['a2:asteria', 'Asteria · 미국 · 여자 (또렷)'], ['a2:helena', 'Helena · 미국 · 여자 (다정)'], ['a2:callista', 'Callista · 미국 · 여자'],
   ['a2:apollo', 'Apollo · 미국 · 남자 (편안)'], ['a2:arcas', 'Arcas · 미국 · 남자 (부드러움)'], ['a2:aries', 'Aries · 미국 · 남자 (따뜻)']
 ];
-if(!settings.ttsMode) settings.ttsMode = ADULT ? 'ai' : 'all';            // all = 대본 토비도, ai = AI 토비만, off
+if(!settings.ttsMode) settings.ttsMode = ADULT ? 'ai' : 'all';            // all = 대본 친구도, ai = AI 친구만, off
 if(!settings.ttsVoice || !TTS_VOICES.some(v => v[0] === settings.ttsVoice)) settings.ttsVoice = ADULT ? 'a2:asteria' : 'az:ana';
 if(!ADULT && !settings.ttsAna){ settings.ttsVoice = 'az:ana'; settings.ttsAna = 1; }            // 딸은 여자아이 목소리로 한 번 바꿈
 const ttsCache = new Map();
@@ -1620,7 +1622,7 @@ if(ADULT) $('#myMake').open = true;
    초급: 글자 보임, 천천히 / 중급: 소리만, 조금 빠르게 / 고급: 소리만, 보통 속도
    답이 안 맞거나 잘못 들리면 다시 묻기 (2번까지), 세 번째엔 예시 답을 알려주고 넘어감 */
 const LEVELS = {
-  1:{name:'🌱 초급', rate:0.72, minWords:1, showText:true,  max:3, bonus:3, desc:'토비 말이 글자로 보이고, 천천히 말해요.'},
+  1:{name:'🌱 초급', rate:0.72, minWords:1, showText:true,  max:3, bonus:3, desc:'친구 말이 글자로 보이고, 천천히 말해요.'},
   2:{name:'🌿 중급', rate:0.88, minWords:2, showText:false, max:4, bonus:5, desc:'글자 없이 소리만 들려요. 문장으로 대답해 봐요.'},
   3:{name:'🌳 고급', rate:1.0,  minWords:3, showText:false, max:5, bonus:8, desc:'원어민처럼 보통 속도로 말해요. 길게 대답해 봐요.'}
 };
@@ -1650,13 +1652,13 @@ function tobiSay(en, ko){
   roleState.script.push({who:'tobi', en, ko});
   return foxBubble(chat, en, ko, LV);
 }
-/* 토비 말풍선 (대본·AI 공통): 초급은 글자, 중급·고급은 소리만 */
+/* 친구 말풍선 (대본·AI 공통): 초급은 글자, 중급·고급은 소리만 */
 function foxBubble(box, en, ko, LV){
   let html;
   if(LV.showText){
-    html = '🦊 ' + esc(en) + ' <button class="replay" title="다시 듣기">🔊</button><button class="replay slow" title="또박또박">🐢</button>' + (ko ? '<small class="koline">👀 뜻 보기</small>' : '');
+    html = '' + BUD + ' ' + esc(en) + ' <button class="replay" title="다시 듣기">🔊</button><button class="replay slow" title="또박또박">🐢</button>' + (ko ? '<small class="koline">👀 뜻 보기</small>' : '');
   } else {
-    html = '🦊 ' + (ko ? '<span class="listen-only">잘 듣고 대답해요</span> ' : '') + '<button class="replay" title="다시 듣기">🔊</button><button class="replay slow" title="또박또박">🐢</button>';
+    html = '' + BUD + ' ' + (ko ? '<span class="listen-only">잘 듣고 대답해요</span> ' : '') + '<button class="replay" title="다시 듣기">🔊</button><button class="replay slow" title="또박또박">🐢</button>';
   }
   const d = addBubble('tobi', html, box);
   const where = box === chat ? 'script' : 'ai';
@@ -1722,7 +1724,7 @@ async function nextStep(){
     d.querySelector('.b-again').onclick = () => startRole(roleState.sc);
     d.querySelector('.b-script').onclick = () => {
       const lines = roleState.script.map(s => s.who === 'tobi'
-        ? '🦊 ' + esc(s.en) + (s.ko ? '<small>' + esc(s.ko) + '</small>' : '')
+        ? '' + BUD + ' ' + esc(s.en) + (s.ko ? '<small>' + esc(s.ko) + '</small>' : '')
         : '🗣️ ' + esc(s.en)).join('<br>');
       addBubble('hint', '<b>📜 대화 대본</b><br>' + lines);
     };
@@ -1736,7 +1738,7 @@ async function onFail(step, heardNothing){
   roleState.tries++;
   const LV = LEVELS[roleState.lv];
   if(roleState.tries === 1){
-    addBubble('hint', heardNothing ? '🙂 목소리가 안 들렸어요. 다시 한 번 말해 볼까요?' : '🙂 토비가 잘 못 알아들었어요. 다시 천천히 또박또박 말해 볼까요?');
+    addBubble('hint', heardNothing ? '🙂 목소리가 안 들렸어요. 다시 한 번 말해 볼까요?' : '🙂 친구가 잘 못 알아들었어요. 다시 천천히 또박또박 말해 볼까요?');
     const pre = heardNothing ? "I couldn't hear you." : rand(["Sorry, I didn't catch that.", "Hmm, I'm not sure I understood."]);
     await tobiSay(pre + ' ' + step.q, step.ko);
   } else if(roleState.tries === 2){
@@ -1753,7 +1755,7 @@ const roleMic = $('#roleMic'), roleMicLabel = $('#roleMicLabel');
 roleMic.onclick = async () => {
   if(!roleState || roleState.done) return;
   if(isListening()){ stopListening(); return; }
-  if(roleState.busy){ speakToken++; speechSynthesis.cancel(); return; }   // 토비 말 건너뛰기
+  if(roleState.busy){ speakToken++; speechSynthesis.cancel(); return; }   // 친구 말 건너뛰기
   roleState.busy = true;
   try{
     const LV = LEVELS[roleState.lv];
@@ -1800,7 +1802,7 @@ $('#roleHint').onclick = () => {
   const LV = LEVELS[roleState.lv];
   if(!LV.showText && roleState.hintLv === 0){
     roleState.hintLv = 1;
-    addBubble('hint', '👀 토비가 한 말의 뜻: ' + esc(step.ko) + '<small>한 번 더 누르면 대답 예시가 나와요</small>');
+    addBubble('hint', '👀 친구가 한 말의 뜻: ' + esc(step.ko) + '<small>한 번 더 누르면 대답 예시가 나와요</small>');
     return;
   }
   roleState.hintLv = 2;
@@ -1812,10 +1814,10 @@ $('#roleSlow').onclick = () => roleState && speakSlow(roleState.lastTobi);
 renderRoleLevels();
 renderRoleList();
 
-/* ================= 🤖 AI 토비 (유료) =================
+/* ================= 🤖 AI 친구 (유료) =================
    앱 → 부모님 서버(Cloudflare Worker, API 키 보관) → Claude
    - 하루 60번 대답 제한 (탭 + 서버 둘 다)
-   - 틀린 말은 토비가 자연스럽게 바꿔 말해 주고(💡), 끝나면 요약
+   - 틀린 말은 친구가 자연스럽게 바꿔 말해 주고(💡), 끝나면 요약
    - 연결이 안 되면 📜 대본 상황극으로 자동 전환 */
 const AI_BASE = 100, AI_EXT = 50;                 // 한 사람 하루 100번, 넘으면 물어보고 50번씩 더
 const AI_STAR = {1:2, 2:3, 3:4};                 // 잘 대답하면 받는 별 (짧은 대답 1개)
@@ -1857,7 +1859,7 @@ async function aiCall(path, body){
   try{
     const res = await fetch(settings.aiUrl.replace(/\/+$/, '') + path, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(Object.assign({code: settings.aiCode, who: PROFILE}, body)), signal: ctl.signal});
+      body: JSON.stringify(Object.assign({code: settings.aiCode, who: PROFILE, name: ADULT ? '' : KIDNAME()}, body)), signal: ctl.signal});
     let data = null; try{ data = await res.json(); }catch(e){}
     if(!res.ok){ const e = new Error((data && data.detail) || ('HTTP ' + res.status)); e.kind = (data && data.error) || 'http'; e.data = data; throw e; }
     return data;
@@ -1884,13 +1886,13 @@ function aiSync(r){                                  // 서버가 센 횟수·�
 }
 function aiInfo(){
   const el = $('#aiInfo');
-  if(el) el.innerHTML = (ADULT ? '🤖 AI 대화 상대 토비' : '🤖 토비는 AI 친구예요') + ' · 오늘 남은 대답 <b>' + aiLeft() + '</b> / ' + aiAllow();
+  if(el) el.innerHTML = (ADULT ? '🤖 AI 대화 상대' : '🤖 AI 친구예요') + ' · 오늘 남은 대답 <b>' + aiLeft() + '</b> / ' + aiAllow();
 }
 /* 오늘 횟수를 다 쓰면 더 할지 물어봄 */
 let aiMorePending = null;
 function aiAskMore(pending){
   aiMorePending = pending || null;
-  const html = '🎯 오늘 AI 토비와 <b>' + dailyCount('aiTurn') + '번</b> 대답했어요!' + (ADULT ? '' : ' 정말 열심히 했어요.') + ' 더 할까요?' +
+  const html = '🎯 오늘 AI 친구와 <b>' + dailyCount('aiTurn') + '번</b> 대답했어요!' + (ADULT ? '' : ' 정말 열심히 했어요.') + ' 더 할까요?' +
     '<div class="row"><button class="btn main b-more">➕ ' + AI_EXT + '번 더 하기</button><button class="btn b-stop">오늘은 그만</button></div>';
   const active = !!(aiState && !aiState.done && $('#aiBox').style.display !== 'none');
   let el;
@@ -1932,15 +1934,15 @@ function setRoleMode(m){
   roleMode = m; store.set('roleMode', m);
   document.querySelectorAll('#roleModeSw button').forEach(b => {
     b.classList.toggle('on', b.dataset.m === m);
-    if(b.dataset.m === 'ai') b.textContent = '🤖 AI 토비' + (aiReady() ? '' : ' 🔒');
+    if(b.dataset.m === 'ai') b.textContent = '🤖 AI 친구' + (aiReady() ? '' : ' 🔒');
   });
   $('#scriptMode').style.display = m === 'script' ? 'block' : 'none';
   $('#aiMode').style.display = m === 'ai' ? 'block' : 'none';
   $('#roleIntro').textContent = m === 'script'
-    ? (ADULT ? '📜 정해진 대본으로 연습해요 (아이용 상황 12개). 어른용 상황은 🤖 AI 토비에 있어요.'
-             : '토비가 외국인 역할을 해요. 단계를 고르고 상황을 눌러 시작하세요. 잘못 들리면 토비가 다시 물어봐요!')
-    : (ADULT ? '🤖 토비가 상황 속 상대 역할을 해요. 말이 막히면 🇰🇷 한국어로 버튼을 눌러 보세요.'
-             : '🤖 AI 토비는 정해진 대본 없이, 내가 한 말에 맞춰 대답해요. 하고 싶은 말을 자유롭게 해 봐요!');
+    ? (ADULT ? '📜 정해진 대본으로 연습해요 (아이용 상황 12개). 어른용 상황은 🤖 AI 친구에 있어요.'
+             : '친구가 외국인 역할을 해요. 단계를 고르고 상황을 눌러 시작하세요. 잘못 들리면 친구가 다시 물어봐요!')
+    : (ADULT ? '🤖 AI가 상황 속 상대 역할을 해요. 말이 막히면 🇰🇷 한국어로 버튼을 눌러 보세요.'
+             : '🤖 AI 친구는 정해진 대본 없이, 내가 한 말에 맞춰 대답해요. 하고 싶은 말을 자유롭게 해 봐요!');
   if(isListening()) stopListening();
   if(m === 'ai') renderAIArea();
 }
@@ -1950,23 +1952,23 @@ let aiPending = null;
 $('#aiNoticeOk').onclick = () => {
   store.set('aiNoticeOk', 1); renderAIArea();
   if(aiPending){ const p = aiPending; aiPending = null; startAI(p.sceneId, p.words); }
-  else speak(ADULT ? "Hi! I'm Tobi, your AI conversation partner. Let's practice!" : "Hi! I'm Tobi, your AI friend. Let's talk!");
+  else speak(ADULT ? "Hi! I'm your AI conversation partner. Let's practice!" : "Hi " + KIDNAME() + "! I'm your AI friend. Let's talk!");
 };
 $('#aiNoticeList').innerHTML = (ADULT ? [
-  'AI 토비는 AI(인공지능) 대화 상대예요. 틀려도 괜찮아요. 더 자연스러운 표현은 💡로 알려 줘요.',
+  'AI 친구는 AI(인공지능) 대화 상대예요. 틀려도 괜찮아요. 더 자연스러운 표현은 💡로 알려 줘요.',
   '말이 막히면 <b>🇰🇷 한국어로</b> 버튼을 누르고 한국어로 말하면, 영어 문장을 알려 줘요.',
   '여권·카드 번호, 비밀번호 같은 실제 개인정보는 말하지 마세요. 상황극에서는 지어낸 정보면 돼요.',
   '대화 기록은 가족 기록 화면에서 볼 수 있어요.',
   '하루 ' + AI_BASE + '번 대답할 수 있고, 더 하고 싶으면 ' + AI_EXT + '번씩 늘릴 수 있어요.'
 ] : [
-  'AI 토비는 컴퓨터 프로그램(AI)이에요. 진짜 사람이 아니에요.',
-  '토비는 내 말에 맞춰 대답해요. 가끔 이상한 말을 할 수도 있어요.',
+  'AI 친구는 컴퓨터 프로그램(AI)이에요. 진짜 사람이 아니에요.',
+  '친구는 내 말에 맞춰 대답해요. 가끔 이상한 말을 할 수도 있어요.',
   '집 주소, 학교 이름, 전화번호, 비밀번호는 말하지 않아요. 상황극에서는 지어낸 대답도 좋아요!',
   '영어로 말이 안 나오면 🇰🇷 한국어로 버튼을 눌러 한국어로 말해 봐요.',
-  '토비랑 나눈 대화는 부모님이 볼 수 있어요.',
+  '친구랑 나눈 대화는 부모님이 볼 수 있어요.',
   '하루에 ' + AI_BASE + '번 대답할 수 있어요. 더 하고 싶으면 늘릴 수 있어요.'
 ]).map(t => '<li>' + t + '</li>').join('');
-if(ADULT) $('#aiLocked').querySelector('p').textContent = '설정 → "🤖 AI 토비 연결"에 서버 주소와 가족 코드를 넣으면, 토비가 공항·호텔·회의 같은 상황에서 상대 역할을 해 줘요.';
+if(ADULT) $('#aiLocked').querySelector('p').textContent = '설정 → "🤖 AI 친구 연결"에 서버 주소와 가족 코드를 넣으면, AI가 공항·호텔·회의 같은 상황에서 상대 역할을 해 줘요.';
 
 function renderAIArea(){
   const ready = aiReady();
@@ -1983,7 +1985,7 @@ function renderAIArea(){
 }
 $('#aiList').onclick = e => { const b = e.target.closest('.chip'); if(b) startAI(b.dataset.id); };
 
-function aiThinking(){ return addBubble('tobi', '🦊 <span class="dots"><i></i><i></i><i></i></span>', aiChat); }
+function aiThinking(){ return addBubble('tobi', '' + BUD + ' <span class="dots"><i></i><i></i><i></i></span>', aiChat); }
 function aiSay(en, ko){
   aiState.lastEn = en; aiState.lastKo = ko;
   return foxBubble(aiChat, ttsText(en), ko, LEVELS[aiState.lv]);
@@ -2012,7 +2014,7 @@ async function startAI(sceneId, words){
   $('#aiBox').scrollIntoView({behavior:'smooth', block:'start'});
   addBubble('hint', `${LEVELS[st.lv].name} · ${esc(AI_NAME[sceneId] || sceneId)}` +
     (st.words.length ? '<small>📒 ' + st.words.map(w => esc(w.en)).join(', ') + '</small>' : '') +
-    '<small>🤖 토비가 내 말에 맞춰 대답해요. 틀려도 괜찮아요!</small>', aiChat);
+    '<small>🤖 친구가 내 말에 맞춰 대답해요. 틀려도 괜찮아요!</small>', aiChat);
   try{
     st.waiting = true;
     const th = aiThinking();
@@ -2031,7 +2033,7 @@ aiMic.onclick = async () => {
   const st = aiState;
   if(!st || st.done) return;
   if(isListening()){ stopListening(); return; }
-  if(st.busy){ if(!st.waiting){ speakToken++; speechSynthesis.cancel(); } return; }   // 토비 말 건너뛰기
+  if(st.busy){ if(!st.waiting){ speakToken++; speechSynthesis.cancel(); } return; }   // 친구 말 건너뛰기
   if(!st.last) return;
   if(aiLeft() <= 0){ aiAskMore(); return; }
   st.busy = true;
@@ -2064,7 +2066,7 @@ aiMic.onclick = async () => {
     catch(e){
       st.hist.pop(); st.turns--;
       if(st !== aiState) return;
-      if(e.kind === 'refusal'){ addBubble('hint', '🙂 토비가 그 이야기는 잘 몰라요. 다른 이야기를 해 볼까요?', aiChat); return; }
+      if(e.kind === 'refusal'){ addBubble('hint', '🙂 친구가 그 이야기는 잘 몰라요. 다른 이야기를 해 볼까요?', aiChat); return; }
       aiFail(e); return;
     }finally{ th.remove(); st.waiting = false; }
     if(st !== aiState) return;
@@ -2123,7 +2125,7 @@ $('#aiHint').onclick = () => {
   const L = st.last, LV = LEVELS[st.lv];
   if(!LV.showText && st.hintLv === 0){
     st.hintLv = 1;
-    addBubble('hint', '👀 토비가 한 말의 뜻: ' + esc(L.ko) + '<small>한 번 더 누르면 대답 예시가 나와요</small>', aiChat);
+    addBubble('hint', '👀 친구가 한 말의 뜻: ' + esc(L.ko) + '<small>한 번 더 누르면 대답 예시가 나와요</small>', aiChat);
     return;
   }
   if(!L.hint) return;
@@ -2152,7 +2154,7 @@ async function aiFinish(st){
     if(dailyCount(k) < 2){ dailyCount(k, true); bonus = LV.bonus; st.stars += bonus; addStars(bonus); }
   }
   const box = addBubble('hint', '🎉 대화 끝! 받은 별 ⭐ ' + st.stars + '개' + (bonus ? ` (완주 보너스 ${bonus}개 포함)` : '') +
-    '<div class="sum">' + (st.turns >= 2 ? '🌟 토비가 오늘 대화를 정리하고 있어요...' : '') + '</div>' +
+    '<div class="sum">' + (st.turns >= 2 ? '🌟 친구가 오늘 대화를 정리하고 있어요...' : '') + '</div>' +
     '<div class="row"><button class="btn main b-again">다시 하기</button><button class="btn b-other">다른 대화</button></div>', aiChat);
   box.querySelector('.b-again').onclick = () => startAI(st.scene, st.words);
   box.querySelector('.b-other').onclick = () => { $('#aiBox').style.display = 'none'; renderAIArea(); $('#aiPick').scrollIntoView({behavior:'smooth'}); };
@@ -2203,11 +2205,11 @@ function aiFail(e){
   const pm = AI_PARENT_MSG[e.kind];
   if(ADULT){                                           // 어른: 대본(아이용)으로 넘기지 않고 이유만 알려 줌
     addBubble('hint', (e.kind === 'credit' ? '💳 AI 충전 금액이 다 됐어요. Claude 콘솔 → Billing에서 충전하면 다시 쓸 수 있어요.'
-      : '🔌 토비 연결이 잠깐 안 돼요. 잠시 후 다시 해 주세요.' + (pm ? '<small>' + esc(pm) + '</small>' : '')), aiChat);
+      : '🔌 친구 연결이 잠깐 안 돼요. 잠시 후 다시 해 주세요.' + (pm ? '<small>' + esc(pm) + '</small>' : '')), aiChat);
     if(st){ st.done = true; $('#aiCtrls').style.display = 'none'; if(st.turns) saveAISession(st, null); }
     return;
   }
-  addBubble('hint', '🔌 토비 연결이 잠깐 안 돼요. 📜 대본 상황극으로 바꿀게요!' + (pm ? '<small>부모님: ' + esc(pm) + '</small>' : ''), aiChat);
+  addBubble('hint', '🔌 친구 연결이 잠깐 안 돼요. 📜 대본 상황극으로 바꿀게요!' + (pm ? '<small>부모님: ' + esc(pm) + '</small>' : ''), aiChat);
   if(st){ st.done = true; $('#aiCtrls').style.display = 'none'; if(st.turns) saveAISession(st, null); }
   setTimeout(() => {
     if(roleMode !== 'ai' || aiState !== st) return;
@@ -2284,7 +2286,7 @@ function renderWordGroups(){
     return `<div class="wg">
       <div class="wg-head"><b>${esc(groupLabel(day, ws[0].t))}</b> <span class="small">${ws.length}개</span>
         <span class="wg-btns"><button class="btn main wg-practice" data-day="${esc(day)}">📖 이 단어로 따라 말하기</button>
-        ${ai ? `<button class="btn wg-talk" data-day="${esc(day)}">🤖 토비랑 대화</button>` : ''}
+        ${ai ? `<button class="btn wg-talk" data-day="${esc(day)}">🤖 AI 친구랑 대화</button>` : ''}
         ${ai && needEx ? `<button class="btn wg-ex" data-day="${esc(day)}">✨ 예문 만들기</button>` : ''}</span></div>
       <div class="wg-list">${ws.map(w => `<div class="wi" data-id="${w.id}">
         <span class="wi-en">${esc(w.en)}</span><span class="wi-ko">${esc(w.ko || '')}</span>
@@ -2404,7 +2406,7 @@ vaRender();
 /* ================= 🎨 그림 탭 =================
    그림 이야기 · 따라 그리기 · 색칠하기 · 자유 그리기 · 내 그림책
    - 그림은 이 기기(IndexedDB)에만 사람별로 저장. 서버에는 그림 이야기 때 한 번 보내고 저장하지 않음
-   - 모든 메뉴에 듣기·말하기가 들어감 (색칠 = 영어 색 이름 듣기, 다 그리면 토비랑 이야기 → 그림책 읽기) */
+   - 모든 메뉴에 듣기·말하기가 들어감 (색칠 = 영어 색 이름 듣기, 다 그리면 친구랑 이야기 → 그림책 읽기) */
 AI_NAME.picture = '🎨 그림 이야기';
 MODE.pic = '그림 이야기'; MODE.book = '그림책 읽기'; MODE.color = '색칠 미션';
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -2462,7 +2464,7 @@ function imgUrl(el, blob){                      // <img>에 그림 넣기 (예�
 function hexRgb(h){ const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
 function loading(text){
   const d = document.createElement('div'); d.className = 'loading-ovl';
-  d.innerHTML = '<div class="big">🦊</div><div>' + text + '</div>';
+  d.innerHTML = '<div class="big">' + BUD + '</div><div>' + text + '</div>';
   document.body.appendChild(d);
   return () => d.remove();
 }
@@ -2986,15 +2988,15 @@ async function closeEditor(action){
 $('#edClose').onclick = () => closeEditor('close');
 $('#edDone').onclick = async () => {
   const v = await sheet('✅ 다 그렸어요!', [
-    {ic: '🦊', t: '토비랑 이야기하기', s: '그림을 영어로 소개하고 그림책 한 장을 만들어요', v: 'talk', off: !aiReady()},
+    {ic: BUD, t: 'AI 친구랑 이야기하기', s: '그림을 영어로 소개하고 그림책 한 장을 만들어요', v: 'talk', off: !aiReady()},
     {ic: '💾', t: '저장하고 나가기', v: 'close'},
     {ic: '✏️', t: '계속 그리기', v: 'more'}
-  ], aiReady() ? '' : '🔒 토비랑 이야기하기는 AI 토비가 연결되면 할 수 있어요.');
+  ], aiReady() ? '' : '🔒 AI 친구랑 이야기하기는 AI 친구가 연결되면 할 수 있어요.');
   if(v === 'talk' || v === 'close') closeEditor(v);
 };
 
 /* ---------- 🎯 영어 색칠 미션 (듣기) ----------
-   토비가 "Color the hat pink!"라고 말하면 → 그 색으로 칠하기. 맞는지는 고른 색으로 확인 (어디를 칠했는지는 아이를 믿음)
+   친구가 "Color the hat pink!"라고 말하면 → 그 색으로 칠하기. 맞는지는 고른 색으로 확인 (어디를 칠했는지는 아이를 믿음)
    다른 색이면 1번째: "Hmm, that's green! Let's try pink." / 2번째부터: 색 이름 옆에 그 색 동그라미 */
 const MISSION_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'brown', 'sky blue', 'light green', 'gray', 'black'];
 function picLevel(){ const v = store.get('picLevel', roleLevel); return LEVELS[v] ? v : 1; }
@@ -3002,7 +3004,7 @@ async function missionInit(){
   if(!ED.missionOn){ $('#edMission').style.display = 'none'; return; }
   if(!ED.parts.length && aiReady()){                     // 밑그림에서 칠할 부분 이름 찾기 (한 번)
     $('#edMission').style.display = 'flex';
-    $('#edMission').innerHTML = '<div class="m-txt">🦊 토비가 밑그림을 보고 있어요 <span class="dots"><i></i><i></i><i></i></span></div>';
+    $('#edMission').innerHTML = '<div class="m-txt">' + BUD + ' AI 친구가 밑그림을 보고 있어요 <span class="dots"><i></i><i></i><i></i></span></div>';
     try{
       const img = await jpegOf(composite(768), 768, 0.8);
       const r = await aiCall('/picture', {image: await blobB64(img), purpose: 'color', level: picLevel()});
@@ -3029,7 +3031,7 @@ function renderMission(say){
   el.style.display = 'flex';
   const dot = m.tries >= 2 ? `<span class="dot" style="background:${PAL_BY[m.color][1]}"></span>` : '';
   const txt = LV.showText || m.tries >= 2 ? esc(missionEn(m)).replace(esc(m.color), '<b>' + esc(m.color) + '</b>' + dot) : '잘 듣고 칠해요!' + dot;
-  el.innerHTML = `<div class="m-txt">🦊 ${txt}${m.showKo ? '<small>' + esc(missionKo(m)) + '</small>' : ''}<small>🎯 성공 ${ED.mDone}개</small></div>` +
+  el.innerHTML = `<div class="m-txt">${BUD} ${txt}${m.showKo ? '<small>' + esc(missionKo(m)) + '</small>' : ''}<small>🎯 성공 ${ED.mDone}개</small></div>` +
     '<button class="btn m-say">🔊</button><button class="btn m-ko">👀 뜻</button><button class="btn m-skip">⏭ 다른 미션</button>';
   el.querySelector('.m-say').onclick = () => speakTobi(missionEn(m), LV.rate, 'script');
   el.querySelector('.m-ko').onclick = () => { m.showKo = true; renderMission(false); };
@@ -3045,7 +3047,7 @@ function missionCheck(color){
     let got = 0;
     if(dailyCount('cm') < 15){ dailyCount('cm', true); got = 1; addStars(1); }
     addLog({mode: 'color', target: missionEn(m), said: color, score: null, stars: got});
-    $('#edMission').innerHTML = `<div class="m-txt">🦊 ${rand(['Great job!', 'Perfect!', 'Wow, nice!'])} <b>${esc(color)}</b>! ${got ? '⭐+1' : ''}<small>🎯 성공 ${ED.mDone}개</small></div>`;
+    $('#edMission').innerHTML = `<div class="m-txt">${BUD} ${rand(['Great job!', 'Perfect!', 'Wow, nice!'])} <b>${esc(color)}</b>! ${got ? '⭐+1' : ''}<small>🎯 성공 ${ED.mDone}개</small></div>`;
     speakTobi(rand(['Great job! ', 'Perfect! ', 'Nice! ']) + color[0].toUpperCase() + color.slice(1) + '!', LV.rate, 'script');
     if(ED.mDone % 3 === 0) celebrate('🎨');
     setTimeout(() => { if(ED.mission === m) missionNext(); }, 2600);
@@ -3068,11 +3070,11 @@ const COLOR_TOPICS = [
 ];
 async function startColor(){
   const v = await sheet('🖍️ 무엇을 색칠할까요?', [
-    {ic: '🦊', t: '토비가 밑그림 그려 주기', s: '주제를 고르면 새 색칠 그림이 나와요', v: 'ai', off: !aiReady()},
+    {ic: BUD, t: 'AI 친구가 밑그림 그려 주기', s: '주제를 고르면 새 색칠 그림이 나와요', v: 'ai', off: !aiReady()},
     {ic: '📷', t: '사진 찍어서 테두리 만들기', s: '예쁜 그림을 찍으면 선만 남겨요', v: 'cam'},
     {ic: '🖼️', t: '갤러리 그림으로 테두리 만들기', s: 'PENUP 그림도 돼요', v: 'gal'},
     {ic: '🎨', t: '내 그림 색칠하기', s: '따라 그린 그림, 그리던 그림', v: 'mine'}
-  ], aiReady() ? '' : '🔒 토비 밑그림은 AI 토비가 연결되면 쓸 수 있어요.');
+  ], aiReady() ? '' : '🔒 AI 밑그림은 AI 친구가 연결되면 쓸 수 있어요.');
   if(!v) return;
   if(v === 'mine'){ const w = await pickWork('🎨 색칠할 그림 고르기'); if(w) editWork(w); return; }
   if(v === 'cam' || v === 'gal'){
@@ -3087,7 +3089,7 @@ async function startColor(){
 async function pickTopic(){
   const items = COLOR_TOPICS.map(t => ({ic: t[0], t: t[2], s: t[1], v: t[1]}));
   items.unshift({ic: '🎤', t: '영어로 직접 말하기', s: '예: a cat in a hat', v: '_say'});
-  const v = await sheet('🦊 어떤 그림을 그려 줄까요?', items);
+  const v = await sheet('' + BUD + ' 어떤 그림을 그려 줄까요?', items);
   if(v !== '_say') return v;
   const stop = loading('🎤 영어로 말해 주세요! (예: a bear with a balloon)');
   const r = await listen(null, {single: true, wait: 2.5});
@@ -3097,13 +3099,13 @@ async function pickTopic(){
   return confirm('"' + said + '" 그림을 그려 줄까요?') ? said : null;
 }
 async function makeColoring(topic){
-  const stop = loading('🦊 토비가 <b>' + esc(topic) + '</b> 밑그림을 그리고 있어요...<br><span class="small">10초쯤 걸려요</span>');
+  const stop = loading('' + BUD + ' AI 친구가 <b>' + esc(topic) + '</b> 밑그림을 그리고 있어요...<br><span class="small">10초쯤 걸려요</span>');
   let blob;
   try{ blob = await aiBlob('/coloring', {topic}); }
   catch(e){
     stop();
     alert({topic: '그 주제는 그릴 수 없어요. 다른 주제를 골라 볼까요?', img_limit: '오늘은 밑그림을 많이 그렸어요. 내일 또 그려 줄게요!',
-      tts_limit: '오늘 토비 그림 무료 양을 다 썼어요. 내일 또 그려 줄게요!', no_ai: '부모님: 서버에 Workers AI 연결(이름 AI)이 필요해요.'}[e.kind] ||
+      tts_limit: '오늘 AI 그림 무료 양을 다 썼어요. 내일 또 그려 줄게요!', no_ai: '부모님: 서버에 Workers AI 연결(이름 AI)이 필요해요.'}[e.kind] ||
       '밑그림을 못 그렸어요. 잠시 후 다시 해 주세요. (' + e.kind + ')');
     return;
   }
@@ -3115,7 +3117,7 @@ async function aiBlob(path, body){                       // 그림을 받아 오
   const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 45000);
   try{
     const res = await fetch(settings.aiUrl.replace(/\/+$/, '') + path, {method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(Object.assign({code: settings.aiCode, who: PROFILE}, body)), signal: ctl.signal});
+      body: JSON.stringify(Object.assign({code: settings.aiCode, who: PROFILE, name: ADULT ? '' : KIDNAME()}, body)), signal: ctl.signal});
     if(!res.ok){ let d = null; try{ d = await res.json(); }catch(e){} const err = new Error((d && d.detail) || 'HTTP ' + res.status); err.kind = (d && d.error) || 'http'; throw err; }
     return await res.blob();
   }catch(e){ if(!e.kind) e.kind = e.name === 'AbortError' ? 'timeout' : 'network'; throw e; }
@@ -3141,7 +3143,7 @@ async function runEditor(opts){
 
 /* ---------- 🗣 그림 이야기 ----------
    그림 단어 카드 → 계단식 대화(고르기 → 예/아니오 → 빈칸 → 짧은 질문 → 상상) → 그림책 한 장
-   - 말풍선에 넣기 전에 "토비가 들은 말"을 아이가 확인 (✅ / 🔄 / 비슷한 말 / ✏️ 펜으로 고치기)
+   - 말풍선에 넣기 전에 "친구가 들은 말"을 아이가 확인 (✅ / 🔄 / 비슷한 말 / ✏️ 펜으로 고치기)
    - 못 하면 질문이 쉬워지고(서버), 선택지 버튼이 나옴. 3번 연속 안 되면 예시 답을 들려주고 다음으로 */
 const tkChat = $('#tkChat'), tkMic = $('#tkMic'), tkMicLabel = $('#tkMicLabel');
 let TK = null;
@@ -3160,7 +3162,7 @@ $('#tkLevels').onclick = e => {
   renderTkLevels();
 };
 function tkBody(st){ return {sid: st.sid, level: st.lv, info: {title: st.info.title, desc: st.info.desc, words: st.info.words}, history: st.hist, short: st.short}; }
-function tkThinking(){ return addBubble('tobi', '🦊 <span class="dots"><i></i><i></i><i></i></span>', tkChat); }
+function tkThinking(){ return addBubble('tobi', '' + BUD + ' <span class="dots"><i></i><i></i><i></i></span>', tkChat); }
 function tkHideConfirm(){ $('#tkConfirm').style.display = 'none'; $('#tkConfirm').innerHTML = ''; }
 $('#tkBack').onclick = () => { tkLeave(); showDr('home'); renderDrawHome(); };
 function tkLeave(){
@@ -3183,10 +3185,10 @@ async function startTalk(src, opts){
   st.img = await jpegOf(src, 1200, 0.88);                  // 그림책에 들어갈 그림
   imgUrl($('#tkImg'), st.img);
   if(!aiReady()){
-    addBubble('hint', '🔒 그림 이야기는 AI 토비가 연결돼야 할 수 있어요. 부모님께 설정 → "🤖 AI 토비 연결"을 부탁해요.', tkChat);
+    addBubble('hint', '🔒 그림 이야기는 AI 친구가 연결돼야 할 수 있어요. 부모님께 설정 → "🤖 AI 친구 연결"을 부탁해요.', tkChat);
     return;
   }
-  const th = addBubble('tobi', '🦊 그림을 보고 있어요 <span class="dots"><i></i><i></i><i></i></span>', tkChat);
+  const th = addBubble('tobi', '' + BUD + ' 그림을 보고 있어요 <span class="dots"><i></i><i></i><i></i></span>', tkChat);
   let r;
   try{
     const small = await jpegOf(src, 768, 0.8);
@@ -3197,7 +3199,7 @@ async function startTalk(src, opts){
   aiUsageSync(r);
   if(r.kind !== 'picture'){
     st.done = true;
-    addBubble('hint', r.kind === 'person_photo' ? '🙂 사람 얼굴 사진이네요! 토비는 그림 이야기를 좋아해요. 내가 그린 그림을 보여 줄래요?'
+    addBubble('hint', r.kind === 'person_photo' ? '🙂 사람 얼굴 사진이네요! 친구는 그림 이야기를 좋아해요. 내가 그린 그림을 보여 줄래요?'
       : '🙂 이 그림은 이야기하기 어려워요. 다른 그림을 보여 줄래요?', tkChat);
     speakTobi('Can you show me your drawing?', LEVELS[st.lv].rate, 'ai');
     return;
@@ -3205,7 +3207,7 @@ async function startTalk(src, opts){
   st.info = {title: r.title, title_ko: r.title_ko, desc: r.desc, words: r.words || []};
   $('#tkTitle').textContent = '🖼️ ' + r.title + (r.title_ko ? ' · ' + r.title_ko : '');
   $('#tkWords').innerHTML = st.info.words.map((w, k) => `<button class="wcard" data-k="${k}"><span class="e">${esc(w.emoji || '🔤')}</span>${esc(w.en)}<small>${esc(w.ko)}</small></button>`).join('');
-  const d = addBubble('hint', '🦊 그림 속 단어예요! 위의 카드를 눌러서 들어 보고, 준비되면 시작해요.<div class="row"><button class="btn main tk-go">🦊 토비랑 이야기 시작!</button></div>', tkChat);
+  const d = addBubble('hint', '' + BUD + ' 그림 속 단어예요! 위의 카드를 눌러서 들어 보고, 준비되면 시작해요.<div class="row"><button class="btn main tk-go">' + BUD + ' 친구랑 이야기 시작!</button></div>', tkChat);
   speakTobi("Wow, I love your picture! Let's look at the words first.", LEVELS[st.lv].rate, 'ai');
   d.querySelector('.tk-go').onclick = () => { d.querySelector('.row').remove(); tkBegin(st); };
 }
@@ -3227,7 +3229,7 @@ async function tkBegin(st){
   $('#tkCtrls').style.display = 'block';
   try{ await tkSay(st, r); } finally { st.busy = false; }
 }
-/* 토비 말 + (초급) 문장 틀 */
+/* 친구 말 + (초급) 문장 틀 */
 function tkSay(st, r){
   st.last = r; st.hintLv = 0;
   st.hist.push({w: 't', x: r.reply});
@@ -3252,7 +3254,7 @@ tkMic.onclick = async () => {
   const st = TK;
   if(!st || st.done || !st.last) return;
   if(isListening()){ stopListening(); return; }
-  if(st.busy){ if(!st.waiting){ speakToken++; if('speechSynthesis' in window) speechSynthesis.cancel(); } return; }   // 토비 말 건너뛰기
+  if(st.busy){ if(!st.waiting){ speakToken++; if('speechSynthesis' in window) speechSynthesis.cancel(); } return; }   // 친구 말 건너뛰기
   if(aiLeft() <= 0){ tkAskMore(); return; }
   tkHideConfirm();
   st.busy = true;
@@ -3274,12 +3276,12 @@ tkMic.onclick = async () => {
     tkConfirm(st, alts);
   } finally { st.busy = false; }
 };
-/* 토비가 들은 말 확인 */
+/* 친구가 들은 말 확인 */
 function tkConfirm(st, alts){
   const box = $('#tkConfirm');
   let heard = alts[0];
   box.style.display = 'block';
-  box.innerHTML = '<div class="small">🦊 토비가 들은 말</div><div class="heard"></div>' +
+  box.innerHTML = '<div class="small">🎤 내가 한 말</div><div class="heard"></div>' +
     (alts.length > 1 ? '<div class="small">혹시 이 말이었어요?</div><div class="choices">' + alts.slice(1, 4).map((a, k) => `<button class="chip" data-k="${k + 1}">${esc(a)}</button>`).join('') + '</div>' : '') +
     '<div class="row"><button class="btn main c-ok">✅ 맞아요</button><button class="btn c-again">🔄 다시 말하기</button><button class="btn c-pen">✏️ 고치기</button></div>' +
     '<input type="text" class="c-in" style="display:none" autocomplete="off" autocapitalize="off" spellcheck="false">';
@@ -3316,14 +3318,14 @@ async function tkQuiet(st){
   }
   tkChoices(st);
 }
-/* 3번 연속 안 되면: 어려웠던 질문으로 남기고 토비가 예시 답을 말한 뒤 쉬운 새 질문 */
+/* 3번 연속 안 되면: 어려웠던 질문으로 남기고 친구가 예시 답을 말한 뒤 쉬운 새 질문 */
 async function tkMoveOn(st){
   const q = st.last;
   const hard = store.get('hardQ', []);
   hard.push({t: Date.now(), q: q.reply, ko: q.ko, a: q.hint});
   if(hard.length > 30) hard.splice(0, hard.length - 30);
   store.set('hardQ', hard);
-  addBubble('hint', '👍 괜찮아요! 어려운 질문이었어요. 토비가 답을 알려 주고 다음 질문으로 갈게요.', tkChat);
+  addBubble('hint', '👍 괜찮아요! 어려운 질문이었어요. 친구가 답을 알려 주고 다음 질문으로 갈게요.', tkChat);
   st.fails = 0; st.quiet = 0;
   await tkSend(st, '[App note: she could not answer that question after several tries. Kindly say the example answer in one short sentence, then ask a new, much easier choice question about another part of the picture.]', true);
 }
@@ -3342,7 +3344,7 @@ async function tkSend(st, said, note){
   catch(e){
     st.hist.pop(); st.turns--; th.remove(); st.waiting = false; st.busy = false;
     if(st !== TK) return;
-    if(e.kind === 'refusal'){ addBubble('hint', '🙂 토비가 그 이야기는 잘 몰라요. 그림 이야기를 해 볼까요?', tkChat); return; }
+    if(e.kind === 'refusal'){ addBubble('hint', '🙂 친구가 그 이야기는 잘 몰라요. 그림 이야기를 해 볼까요?', tkChat); return; }
     tkFail(e); return;
   }
   th.remove(); st.waiting = false;
@@ -3372,7 +3374,7 @@ function aiFixBubbleIn(fx, box){
   const d = addBubble('fix', '💡 이렇게 말하면 더 자연스러워요<br><b>' + esc(fx.better) + '</b> <button class="replay" title="듣기">🔊</button>' + (fx.ko ? '<small>' + esc(fx.ko) + '</small>' : ''), box);
   d.querySelector('.replay').onclick = () => speak(fx.better, 0.85);
 }
-/* 한 단어 대답 → 토비가 늘려 준 문장을 따라 말하기 (별 1개, 한 번만 권함) */
+/* 한 단어 대답 → 친구가 늘려 준 문장을 따라 말하기 (별 1개, 한 번만 권함) */
 function tkExpand(st, sent){
   const d = addBubble('fix', '🔁 문장으로 말해 볼까요?<br><b>' + esc(sent) + '</b> <button class="replay x-say" title="듣기">🔊</button><button class="replay slow x-slow" title="또박또박">🐢</button>' +
     '<div class="row" style="justify-content:flex-start;margin-top:6px"><button class="btn x-mic">🎤 따라 말하기</button></div>', tkChat);
@@ -3401,7 +3403,7 @@ $('#tkHint').onclick = () => {
   const st = TK; if(!st || !st.last || st.done) return;
   const L = st.last, LV = LEVELS[st.lv];
   st.hintLv++;
-  if(st.hintLv === 1){ addBubble('hint', '👀 토비가 한 말의 뜻: ' + esc(L.ko) + '<small>한 번 더 누르면 문장 틀이 나와요</small>', tkChat); return; }
+  if(st.hintLv === 1){ addBubble('hint', '👀 친구가 한 말의 뜻: ' + esc(L.ko) + '<small>한 번 더 누르면 문장 틀이 나와요</small>', tkChat); return; }
   if(st.hintLv === 2 && L.frame){
     addBubble('frame', '✍️ ' + esc(L.frame).replace(/___/g, '<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u>') + (L.frame_ko ? '<small>' + esc(L.frame_ko) + '</small>' : '') + '<small>한 번 더 누르면 예시 답을 들려줘요</small>', tkChat);
     return;
@@ -3449,7 +3451,7 @@ $('#tkEnd').onclick = () => {
   tkFinish(st);
 };
 function tkAskMore(then){
-  const d = addBubble('hint', '🎯 오늘 AI 토비와 <b>' + dailyCount('aiTurn') + '번</b> 대답했어요! 정말 열심히 했어요. 더 할까요?' +
+  const d = addBubble('hint', '🎯 오늘 AI 친구와 <b>' + dailyCount('aiTurn') + '번</b> 대답했어요! 정말 열심히 했어요. 더 할까요?' +
     '<div class="row"><button class="btn main b-more">➕ ' + AI_EXT + '번 더 하기</button><button class="btn b-stop">오늘은 그만</button></div>', tkChat);
   d.querySelector('.b-stop').onclick = () => { d.querySelector('.row').remove(); if(TK && !TK.done && TK.turns) tkFinish(TK); };
   d.querySelector('.b-more').onclick = async ev => {
@@ -3471,7 +3473,7 @@ function tkFail(e){
   if(e.kind === 'limit'){ aiSync(e.data); if(aiLeft() > 0) dailyCount('aiTurn', aiLeft()); tkAskMore(); return; }
   if(e.kind === 'max'){ addBubble('hint', '🌙 오늘은 가족 전체 최대 횟수까지 대화했어요. 내일 또 만나요!', tkChat); return; }
   const pm = AI_PARENT_MSG[e.kind];
-  addBubble('hint', '🔌 토비 연결이 잠깐 안 돼요. 잠시 후 다시 해 봐요.' + (pm ? '<small>부모님: ' + esc(pm) + '</small>' : ''), tkChat);
+  addBubble('hint', '🔌 친구 연결이 잠깐 안 돼요. 잠시 후 다시 해 봐요.' + (pm ? '<small>부모님: ' + esc(pm) + '</small>' : ''), tkChat);
 }
 
 /* 끝 → 그림책 한 장 만들기 */
@@ -3486,7 +3488,7 @@ async function tkFinish(st){
     d.querySelector('.b-home').onclick = () => { showDr('home'); renderDrawHome(); };
     return;
   }
-  const box = addBubble('hint', '📖 토비가 내 이야기로 그림책 한 장을 만들고 있어요 <span class="dots"><i></i><i></i><i></i></span>', tkChat);
+  const box = addBubble('hint', '📖 친구가 내 이야기로 그림책 한 장을 만들고 있어요 <span class="dots"><i></i><i></i><i></i></span>', tkChat);
   let r = null;
   try{ r = await aiCallRetry('/picbook', tkBody(st)); aiUsageSync(r); }catch(e){ r = null; }
   saveAISession(st, r ? {praise: r.praise, better: st.fixes.slice(-3), words: [], tip: '📖 ' + r.sents.map(x => x.en).join(' ')} : null);
@@ -3530,7 +3532,7 @@ function openPage(page, mode){
   $('#pgTitle').textContent = page.title;
   $('#pgTitleKo').textContent = page.title_ko || '';
   $('#pgMsg').innerHTML = mode === 'make' ? '🎤를 누르고 문장을 하나씩 소리 내어 읽어 봐요!' + (page.praise ? '<div class="small">🌟 ' + esc(page.praise) + '</div>' : '')
-    : mode === 'review' ? '🦊 글자를 가렸어요. 그림을 보고 기억나는 대로 말해 봐요! (🎤를 누르고 말하면 맞는 문장이 나타나요)' : '';
+    : mode === 'review' ? '' + BUD + ' 글자를 가렸어요. 그림을 보고 기억나는 대로 말해 봐요! (🎤를 누르고 말하면 맞는 문장이 나타나요)' : '';
   renderSents();
   const btns = [];
   btns.push('<button class="btn blue p-play">▶ 처음부터 듣기</button>');
@@ -3669,7 +3671,7 @@ async function renderDrawHome(){
     const w = works.find(x => x.id === b.dataset.id); if(!w) return;
     const v = await sheet('🖼️ 이 그림으로 뭐 할까요?', [
       {ic: '✏️', t: '이어 그리기·색칠하기', v: 'edit'},
-      {ic: '🦊', t: '토비랑 이야기하기', s: '그림책 한 장을 만들어요', v: 'talk', off: !aiReady()},
+      {ic: BUD, t: 'AI 친구랑 이야기하기', s: '그림책 한 장을 만들어요', v: 'talk', off: !aiReady()},
       {ic: '🗑', t: '지우기', v: 'del'}
     ]);
     if(v === 'edit') editWork(w);
@@ -3689,7 +3691,7 @@ async function startTalkFlow(){
     {ic: '📷', t: '카메라로 찍기', s: '종이에 그린 그림', v: 'cam'},
     {ic: '🖼️', t: '갤러리에서 고르기', s: 'PENUP에 저장한 그림', v: 'gal'},
     {ic: '🎨', t: '내 그림에서 고르기', s: '이 앱에서 그린 그림', v: 'mine'}
-  ], aiReady() ? '' : '🔒 그림 이야기는 AI 토비가 연결되면 할 수 있어요.');
+  ], aiReady() ? '' : '🔒 그림 이야기는 AI 친구가 연결되면 할 수 있어요.');
   if(!v) return;
   if(v === 'mine'){ const w = await pickWork('🗣️ 소개할 그림 고르기'); if(w) startTalk(await workImage(w), {short: w.mode === 'color', work: w}); return; }
   const photo = await getPhoto(v);
@@ -3734,7 +3736,7 @@ async function takeShared(){
   if(info && info.name) try{ blob.name = info.name; }catch(e){}
   if(isTiff(blob) || (info && /tif/i.test(info.type + info.name))){ alert(TIFF_MSG); return; }
   const v = await sheet('🎨 보내 준 그림으로 뭐 할까요?', [
-    {ic: '🦊', t: '토비에게 그림 소개하기', s: '그림 이야기 → 그림책', v: 'talk', off: !aiReady()},
+    {ic: BUD, t: 'AI 친구에게 그림 소개하기', s: '그림 이야기 → 그림책', v: 'talk', off: !aiReady()},
     {ic: '✏️', t: '따라 그리기', v: 'trace'},
     {ic: '🖍️', t: '테두리 만들어서 색칠하기', v: 'color'}
   ]);
@@ -3749,7 +3751,7 @@ async function takeShared(){
 function renderHardQ(){
   const h = store.get('hardQ', []);
   $('#hardCard').style.display = h.length ? 'block' : 'none';
-  $('#hardBox').innerHTML = h.slice(-10).reverse().map(x => '<div class="item"><div class="t">' + fmt(x.t) + '</div>🦊 ' + esc(x.q) +
+  $('#hardBox').innerHTML = h.slice(-10).reverse().map(x => '<div class="item"><div class="t">' + fmt(x.t) + '</div>' + BUD + ' ' + esc(x.q) +
     '<br><span class="small">' + esc(x.ko || '') + (x.a ? ' · 예시 답: ' + esc(x.a) : '') + '</span></div>').join('');
 }
 
@@ -3776,15 +3778,15 @@ function renderRecord(){
     : '<p class="small">아직 없어요</p>';
   $('#logBox').innerHTML = log.slice(-50).reverse().map(x =>
     '<div class="item"><div class="t">' + fmt(x.t) + ' · ' + (MODE[x.mode] || x.mode) + (x.score != null ? ' · ' + x.score + '%' : '') + ' · ' + '⭐'.repeat(Math.min(x.stars || 0, 8)) + '</div>' +
-    (['role', 'ai', 'pic', 'color'].includes(x.mode) ? '🦊 ' : '목표: ') + esc(x.target) + '<br>🗣️ ' + esc(x.said) + '</div>'
+    (['role', 'ai', 'pic', 'color'].includes(x.mode) ? '' + BUD + ' ' : '목표: ') + esc(x.target) + '<br>🗣️ ' + esc(x.said) + '</div>'
   ).join('') || '<p class="small">아직 기록이 없어요</p>';
-  // AI 토비 대화 (부모님 확인용)
+  // AI 친구 대화 (부모님 확인용)
   const ai = store.get('aiLog', []);
   $('#aiLogCard').style.display = ai.length ? 'block' : 'none';
   $('#aiLogBox').innerHTML = ai.slice().reverse().map(s =>
     '<div class="item"><details><summary><span class="t">' + fmt(s.t) + '</span> <b>' + esc(AI_NAME[s.scene] || s.scene) + '</b> ' +
     esc((LEVELS[s.lv] || {}).name || '') + ' <span class="t">· 대답 ' + s.turns + '번 · ⭐ ' + s.stars + '</span></summary>' +
-    s.lines.map(l => '<div class="ln">' + (l.w === 'c' ? '🗣️ ' : '🦊 ') + esc(l.x) + '</div>').join('') +
+    s.lines.map(l => '<div class="ln">' + (l.w === 'c' ? '🗣️ ' : '' + BUD + ' ') + esc(l.x) + '</div>').join('') +
     (s.fixes || []).map(f => '<div class="ln small">💡 ' + esc(f.said) + ' → <b>' + esc(f.better) + '</b> ' + esc(f.ko || '') + '</div>').join('') +
     (s.sum ? '<div class="ln small">🌟 ' + esc(s.sum.praise) + (s.sum.tip ? '<br>👉 ' + esc(s.sum.tip) : '') + '</div>' : '') +
     '</details></div>').join('');
@@ -3820,7 +3822,7 @@ $('#setWhoBtn').onclick = openWho;
 $('#whoList').onclick = e => { const b = e.target.closest('.who-item'); if(b) switchProfile(b.dataset.id); };
 $('#whoClose').onclick = () => { $('#whoMenu').style.display = 'none'; };
 $('#whoMenu').onclick = e => { if(e.target.id === 'whoMenu') $('#whoMenu').style.display = 'none'; };
-/* AI 토비 연결 (부모님용) */
+/* AI 친구 연결 (부모님용) */
 function aiSettingsChanged(){
   saveSettings(); aiSetState(); if(typeof renderTts === 'function') renderTts();
   setRoleMode(aiReady() ? roleMode : 'script');
@@ -3876,7 +3878,7 @@ $('#ttsTest').onclick = async () => {
   const msg = $('#ttsMsg'); msg.textContent = '불러오는 중...';
   const tok = ++speakToken;
   try{
-    await serverSpeak(ADULT ? "Hello! I'm Tobi. Shall we practice English together today?" : "Hi! I'm Tobi. Do you want to be my friend? Let's talk in English!",
+    await serverSpeak(ADULT ? "Hello! Shall we practice English together today?" : "Hi " + KIDNAME() + "! Do you want to be my friend? Let's talk in English!",
       settings.rate, tok, settings.ttsVoice, !!settings.ttsTone);
     msg.textContent = '✅ 서버 목소리예요. 마음에 드는 목소리를 골라 주세요.';
   }catch(e){
@@ -3885,7 +3887,7 @@ $('#ttsTest').onclick = async () => {
   }
 };
 renderTts();
-$('#voiceTest').onclick = () => speak('Hi' + (settings.name ? ' ' + settings.name : '') + "! I'm Tobi. Let's speak English together!");
+$('#voiceTest').onclick = () => speak('Hi ' + (ADULT ? (settings.name || 'there') : KIDNAME()) + "! Let's speak English together!");
 const testMic = $('#testMic');
 testMic.onclick = async () => {
   if(isListening()){ stopListening(); return; }

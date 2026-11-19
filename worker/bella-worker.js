@@ -1,8 +1,8 @@
 /* =====================================================================
-   Bella English — AI 토비 연결 서버 (Cloudflare Worker) · 가족용
+   Bella English — AI 친구 연결 서버 (Cloudflare Worker) · 가족용
    ---------------------------------------------------------------------
    앱 → 이 서버 → Claude API.  API 키는 이 서버에만 있고 앱에는 없음.
-   가족: kid(딸) / dad(아빠) / mom(엄마)  — 어른은 어른용 토비·상황으로 대화
+   가족: kid(딸) / dad(아빠) / mom(엄마)  — 어른은 어른용 상황으로 대화
 
    [Cloudflare에 넣는 방법]
    1) Workers & Pages → Create application → Start with Hello World! → 이름 bella-tobi → Deploy
@@ -16,13 +16,13 @@
    4) (권장) Workers KV → Create instance → 이름 bella →
       bella-tobi Worker → Bindings → Add binding → KV namespace, Variable name: BELLA_KV
    4-1) (사람 같은 목소리) bella-tobi Worker → Bindings → Add binding → Workers AI, Variable name: AI
-        - Cloudflare 무료 양(하루 10,000 뉴런) 안에서 토비 목소리를 만들고, 넘으면 앱이 기기 목소리로 바꿈
+        - Cloudflare 무료 양(하루 10,000 뉴런) 안에서 AI 친구 목소리를 만들고, 넘으면 앱이 기기 목소리로 바꿈
    4-2) (여자아이 목소리 Ana) Azure Speech(무료 F0)의 키와 지역을 Secret으로 추가
         AZURE_SPEECH_KEY : 키 1,  AZURE_SPEECH_REGION : 지역 (예: koreacentral)
         - 없거나 안 되면 자동으로 Cloudflare 목소리(Stella)로 읽음
         - 있으면: 서버에서도 횟수 제한 + 사용 금액 계산 + 어디서나 대화 기록 확인 (/parent)
         - 없으면: 제한은 기기에서만, 기록도 기기 안에만 저장
-   5) 주소(https://bella-tobi.○○○.workers.dev)와 가족 코드를 앱 설정 → "AI 토비 연결"에 입력
+   5) 주소(https://bella-tobi.○○○.workers.dev)와 가족 코드를 앱 설정 → "AI 친구 연결"에 입력
 
    [🎨 그림 기능 (2026-11-16)]
    - 그림 이야기: 그림을 Claude가 한 번 보고(/picture) → 대화(/picchat) → 그림책 문장(/picbook). 그림은 서버에 저장하지 않음
@@ -53,8 +53,8 @@ const WHO = {kid: {ko: '👧 딸', adult: false}, dad: {ko: '👨 아빠', adult
 
 /* ---------- 상황: 아이용 12개 + 어른용 12개 + 자유 대화 + 단어 대화 ---------- */
 const SCENES = {
-  friend:   {ko: '🧒 새 친구 만나기', min: 4, max: 7, en: 'You are Tobi, a kid who just moved to her neighborhood from Canada. You meet her for the first time and want to be friends. Talk about names, age, likes, hobbies, and favorite things.'},
-  icecream: {ko: '🍦 아이스크림 가게', min: 4, max: 7, en: 'You work at "Tobi\'s Ice Cream". She is the customer. Help her order: flavor, cup or cone, size, toppings, for here or to go, paying. Goal: she gets her ice cream.'},
+  friend:   {ko: '🧒 새 친구 만나기', min: 4, max: 7, en: 'You are a kid who just moved to her neighborhood from Canada (if she asks your name, make up a simple English name). You meet her for the first time and want to be friends. Talk about names, age, likes, hobbies, and favorite things.'},
+  icecream: {ko: '🍦 아이스크림 가게', min: 4, max: 7, en: 'You work at an ice cream shop. She is the customer. Help her order: flavor, cup or cone, size, toppings, for here or to go, paying. Goal: she gets her ice cream.'},
   burger:   {ko: '🍔 햄버거 가게', min: 4, max: 7, en: 'You work at a burger restaurant. She is the customer. Help her order a meal: burger, fries, drink, sauce, for here or to go, paying. Goal: she finishes her order.'},
   tourist:  {ko: '🗺️ 외국인에게 길 안내', min: 4, max: 7, en: 'You are a tourist visiting Korea for the first time, a little lost. Ask her for help finding places (a subway station, a palace, a good place to eat). She helps you with directions and tips. Goal: you know where to go.'},
   birthday: {ko: '🎂 친구 생일 파티', min: 4, max: 7, en: 'It is your birthday party and she is your guest. Talk about the gift, cake, party games, birthday wishes, and having fun.'},
@@ -120,7 +120,9 @@ const EN_KO = {type: 'object', additionalProperties: false, properties: {en: {ty
 const TRANSLATE_SCHEMA = {type: 'object', additionalProperties: false,
   properties: {easy: EN_KO, natural: EN_KO, tip: {type: 'string'}}, required: ['easy', 'natural', 'tip']};
 
-/* ---------- 토비 지시문 ---------- */
+/* ---------- AI 친구 지시문 (2026-11-19: '토비' 이름 없앰, 아이를 이름으로 부름) ---------- */
+const NONAME = `You have no name of your own: never introduce yourself with a name. If she asks who you are or your name, say you are her AI English friend.`;
+const callName = name => `Her name is ${name}. Call her by her name now and then, warmly (for example "What do you think, ${name}?" or "Great job, ${name}!"), about once every two or three turns, not every turn.`;
 function wordPart(sceneId, words) {
   if (sceneId !== 'words' || !words.length) return '';
   return '\nTODAY\'S WORDS (just studied): ' + words.map(w => w.en + (w.ko ? ' (' + w.ko + ')' : '')).join(', ') +
@@ -138,9 +140,10 @@ OUTPUT FIELDS
 - fix: as described above.
 - effort: about THE LEARNER'S LAST MESSAGE. "good" = a real English answer that fits (a sentence at Intermediate/Advanced; at Beginner even 1-3 fitting words are good). "short" = an English attempt that is very short for their level, unclear, or only partly fits. "none" = no real English answer (silence, nonsense, Korean), or there is no message yet.`;
 
-function kidSystem(sceneId, lv, words, n) {
+function kidSystem(sceneId, lv, words, n, name) {
   const sc = SCENES[sceneId];
-  return `You are Tobi, a cheerful, kind fox character in "Bella English", an English speaking-practice app for a 10-year-old girl in Korea.
+  return `You are a cheerful, kind AI English friend in "Bella English", an English speaking-practice app for a 10-year-old girl in Korea.
+${NONAME} (In a pretend scene you play the scene's role.) ${callName(name || 'Bella')}
 She studies grammar and vocabulary at an academy and does fine on tests, but she has almost never spoken English with anyone, and she is shy. Your job: make speaking English feel safe, fun, and successful, so she keeps talking.
 
 HOW TO TALK
@@ -172,7 +175,7 @@ LEVEL: ${LEVELS_KID[lv]}${wordPart(sceneId, words)}`;
 
 function adultSystem(sceneId, lv, words, n) {
   const sc = SCENES[sceneId];
-  return `You are Tobi, a friendly, patient English conversation partner in "Bella English", a family English-speaking app.
+  return `You are a friendly, patient AI English conversation partner in "Bella English", a family English-speaking app. You have no name of your own; in a role-play scene, use a made-up name only if the role needs one.
 The learner is a Korean adult (a parent). They learned English grammar at school but rarely speak it and may feel nervous. They want practical, confident speaking for travel, business trips, work, and daily life. Your job: realistic practice that builds confidence.
 
 HOW TO TALK
@@ -201,13 +204,13 @@ LEVEL: ${LEVELS_ADULT[lv]}${wordPart(sceneId, words)}`;
 
 function summarySystem(sceneId, lv, adult) {
   const who = adult ? 'a Korean adult (a parent) learning practical English' : 'a 10-year-old girl and her parent';
-  return `You write a short, encouraging report in Korean (해요체, warm and simple) for ${who}, after a speaking practice with Tobi, an AI conversation partner.
+  return `You write a short, encouraging report in Korean (해요체, warm and simple) for ${who}, after a speaking practice with an AI conversation partner.
 Scene: ${SCENES[sceneId].en}
 Level: ${(adult ? LEVELS_ADULT : LEVELS_KID)[lv].split('.')[0]}
 The learner's lines came from speech recognition, so ignore likely recognition errors.
 - praise: 1-2 warm, specific Korean sentences about what they did well (mention a real sentence or expression they used).
 - better: up to ${adult ? 4 : 3} of their sentences that could be more natural${adult ? ' or more polite for the situation' : ''}. said = their words exactly as in the transcript, better = natural English, ko = a short Korean tip. Empty array if nothing important.
-- words: up to ${adult ? 5 : 4} useful English words or ${adult ? 'set phrases for this situation' : 'short expressions'} from this conversation worth learning, preferring ones Tobi used that may be new. en = English, ko = Korean meaning.
+- words: up to ${adult ? 5 : 4} useful English words or ${adult ? 'set phrases for this situation' : 'short expressions'} from this conversation worth learning, preferring ones the AI partner used that may be new. en = English, ko = Korean meaning.
 - tip: one short Korean sentence about what to try next time.`;
 }
 
@@ -255,9 +258,10 @@ ${purpose === 'color'
 - For each word: ko = Korean meaning, emoji = one emoji that fits.`;
 }
 
-function picSystem(info, lv, n, short) {
+function picSystem(info, lv, n, short, name) {
   const T = picTurns(lv, short);
-  return `You are Tobi, a cheerful, kind fox character in "Bella English", an English speaking-practice app for a 10-year-old girl in Korea. She is shy and usually speaks in short 1-4 word phrases. She drew or colored a picture, and now you talk with her about HER PICTURE.
+  return `You are a cheerful, kind AI English friend in "Bella English", an English speaking-practice app for a 10-year-old girl in Korea. ${NONAME} ${callName(name || 'Bella')}
+She is shy and usually speaks in short 1-4 word phrases. She drew or colored a picture, and now you talk with her about HER PICTURE.
 Goal: help her talk about her picture step by step, from very easy to a little harder, so that at the end she can say a few full sentences about it. Make it feel safe, fun, and successful.
 
 HER PICTURE (from an automatic description; it may be imperfect. If she says something different, she is right: it is her picture.)
@@ -311,7 +315,7 @@ LEVEL: ${LEVELS_KID[lv]}`;
 }
 
 function picbookSystem(lv) {
-  return `You write one page of a tiny picture book for "Bella English". A 10-year-old Korean girl drew or colored a picture and talked about it with Tobi, an AI fox friend. Now her picture becomes a page in her own picture book, and she will read the sentences aloud.
+  return `You write one page of a tiny picture book for "Bella English". A 10-year-old Korean girl drew or colored a picture and talked about it with her AI English friend. Now her picture becomes a page in her own picture book, and she will read the sentences aloud.
 - sents: exactly ${PIC_SENTS[lv]} short English sentences (${PIC_SENT_LEN[lv]} each) that tell about her picture in a natural order, like a tiny story.
 - Use HER ideas and words as much as possible (names she gave, colors and things she said, actions she imagined), turned into natural, correct English. Her lines came from speech recognition, so ignore likely recognition errors.
 - Talk about the picture's characters in the third person ("This is Mimi. Mimi is a pink cat."), or use "I" only if she said she drew herself.
@@ -347,6 +351,7 @@ export default {
       if (code !== String(env.FAMILY_CODE).trim()) return json({error: 'code'}, 401, cors);
       const ctx = {b, env, cors, who: WHO[b.who] ? b.who : 'kid'};
       ctx.adult = WHO[ctx.who].adult;
+      ctx.name = str(b.name, 20).replace(/[^\p{L}\p{N} .'-]/gu, '').trim() || '';   // 아이 이름 (영어 앱 Bella, 수학 앱 벨라)
       switch (url.pathname) {
         case '/ping': return await ping(ctx);
         case '/chat': return await chat(ctx);
@@ -555,7 +560,7 @@ async function azureTts(env, text, id) {
   } catch (e) { return null; }
 }
 
-/* 🔊 토비 목소리: Workers AI(Deepgram Aura)로 mp3를 만들어 돌려줌. 하루 상한을 넘으면 tts_limit → 앱이 기기 목소리로 */
+/* 🔊 AI 친구 목소리: Workers AI(Deepgram Aura)로 mp3를 만들어 돌려줌. 하루 상한을 넘으면 tts_limit → 앱이 기기 목소리로 */
 async function tts(ctx) {
   const {b, env, cors} = ctx;
   const text = str(b.text, 500);
@@ -603,7 +608,7 @@ async function chat(ctx) {
   }
   if (!isTurn && extraFull(rec, L)) return json(Object.assign({error: 'max'}, counts(rec, ctx.who, L)), 429, cors);
 
-  const system = (ctx.adult ? adultSystem : kidSystem)(sceneId, lv, cleanWords(b.words), n);
+  const system = (ctx.adult ? adultSystem : kidSystem)(sceneId, lv, cleanWords(b.words), n, ctx.name);
   const out = await guarded(ctx, rec, () => askClaude(env, rec, system, toMessages(hist), REPLY_SCHEMA, 1500));
   const fx = out.fix || {};
   const r = {
@@ -641,7 +646,7 @@ async function summary(ctx) {
   if (!hist.some(h => h.w === 'c')) return json({error: 'bad_request'}, 400, cors);
   const rec = await loadDay(env);
   if (extraFull(rec, L)) return json({error: 'max'}, 429, cors);
-  const transcript = hist.map(h => (h.w === 'c' ? 'Learner: ' : 'Tobi: ') + h.x).join('\n');
+  const transcript = hist.map(h => (h.w === 'c' ? 'Learner: ' : 'AI: ') + h.x).join('\n');
   const out = await guarded(ctx, rec, () => askClaude(env, rec, summarySystem(sceneId, lv, ctx.adult), [{role: 'user', content: 'Transcript:\n' + transcript}], SUMMARY_SCHEMA, 2000));
   const r = {
     praise: str(out.praise, 300), tip: str(out.tip, 200),
@@ -724,7 +729,7 @@ async function picchat(ctx) {
   }
   if (!isTurn && extraFull(rec, L)) return json(Object.assign({error: 'max'}, counts(rec, ctx.who, L)), 429, cors);
   const start = '[The app just showed her the picture and its word cards. Start: say one short, happy sentence about her picture, then ask your first question.]';
-  const out = await guarded(ctx, rec, () => askClaude(env, rec, picSystem(info, lv, n, short), toMessages(hist, start), PICCHAT_SCHEMA, 1800));
+  const out = await guarded(ctx, rec, () => askClaude(env, rec, picSystem(info, lv, n, short, ctx.name), toMessages(hist, start), PICCHAT_SCHEMA, 1800));
   const fx = out.fix || {};
   const end = !!out.end && isTurn;
   const r = {
@@ -757,7 +762,7 @@ async function picbook(ctx) {
   if (!hist.some(h => h.w === 'c')) return json({error: 'bad_request'}, 400, cors);
   const rec = await loadDay(env);
   if (extraFull(rec, L)) return json({error: 'max'}, 429, cors);
-  const transcript = hist.filter(h => !/^\[/.test(h.x)).map(h => (h.w === 'c' ? 'Girl: ' : 'Tobi: ') + h.x).join('\n');
+  const transcript = hist.filter(h => !/^\[/.test(h.x)).map(h => (h.w === 'c' ? 'Girl: ' : 'AI: ') + h.x).join('\n');
   const user = 'Picture title idea: ' + info.title + '\nPicture description: ' + info.desc + '\n\nConversation:\n' + transcript;
   const out = await guarded(ctx, rec, () => askClaude(env, rec, picbookSystem(lv), [{role: 'user', content: user}], PICBOOK_SCHEMA, 1500));
   const sents = (out.sents || []).map(x => ({en: str(x && x.en, 160), ko: str(x && x.ko, 160)})).filter(x => x.en).slice(0, PIC_SENTS[lv] + 1);
@@ -874,20 +879,22 @@ const MATH_PIC_RULES = `PICTURES (pic): the app draws simple pictures from these
 - numberline: x = start, y = end (max 30 apart is easiest to read), nums = the points of jumps in order, e.g. [0,3,6,9] draws jumps 0→3→6→9.
 - blocks: base-ten blocks. nums = [hundreds, tens, ones], e.g. [3,2,4] for 324 (each at most 9).`;
 
-function mathKidSystem(level, info, prev, adult) {
-  return `You are Tobi, a cheerful, kind fox character in "Bella Math", a math helper app for a 9-10 year-old girl in Korea (3rd grade). She got stuck on a workbook problem. Her parents are not teachers, so you explain it to her. ${adult ? 'Right now her mom is reading this explanation (to learn how to explain it), but write it for the child exactly the same way.' : ''}
+function mathKidSystem(level, info, prev, adult, name) {
+  name = name || '벨라';
+  return `You are a kind, cheerful helper in "Bella Math", a math helper app for a 9-10 year-old girl in Korea (3rd grade). Her name is ${name}. She got stuck on a workbook problem. Her parents are not teachers, so you explain it to her.
+You have no name of your own: never call yourself by a name or say who is explaining ("토비가", "선생님이" etc.); just talk to her. ${adult ? 'Right now her mom is reading this explanation (to learn how to explain it), but write it for the child exactly the same way.' : ''}
 
 THE MOST IMPORTANT RULE
-- NEVER tell the final answer, in any form (digits, words, unit, a picture labeled with it, a choice that is the answer). The answer is given below ONLY so that you can avoid it. Stop right before the last calculation and invite her to do it ("이 부분은 직접 해 볼까요?").
+- NEVER tell the final answer, in any form (digits, words, unit, a picture labeled with it, a choice that is the answer). The answer is given below ONLY so that you can avoid it. Stop right before the last calculation and invite her to do it ("이 부분은 ${name}가 직접 해 볼까?").
 - Example numbers you invent must give results different from the real answer.
 
 HOW TO EXPLAIN
-- Korean 해요체, warm and encouraging, like a kind older sister/teacher. Very short sentences a 3rd grader understands. Each card: 1-3 sentences, at most about 90 Korean characters.
+- Korean 반말, warm and friendly like a kind older sister talking to her ("~해 볼까?", "~야", "~지?"). Call her by her name on some cards (about one card in three), e.g. "${name}는 어떻게 생각해?", "${name}야, 여기 봐!", "잘했어, ${name}!". Very short sentences a 3rd grader understands. Each card: 1-3 sentences, at most about 90 Korean characters.
 - One idea per card. Bold nothing, no markdown, no lists. Emojis: at most one per card.
 - Use only methods taught up to Korean 3rd grade (no algebra, no x, no negative numbers). Follow the textbook way (세로셈, 받아올림, 곱셈구구, 몫과 나머지 ...).
 - say: the same content written for Korean text-to-speech: no emojis or symbols (+ 더하기, − 빼기, × 곱하기, ÷ 나누기, = 는, □ 네모, ? 물음표 칸, 3/4 → 4분의 3), digits are fine.
 - For cards without a question: q "", choices [], correct 0, hint "".
-- closing: one short warm Korean sentence for the end (e.g. "이제 문제집에 직접 써 볼까요? 할 수 있어요!"), without the answer.
+- closing: one short warm Korean sentence for the end with her name (e.g. "${name}야, 이제 문제집에 직접 써 볼까? 할 수 있어!"), without the answer.
 
 ${MATH_LEVELS[level]}
 
@@ -899,11 +906,12 @@ TEACHER'S SOLUTION (secret, for you only): ${info.s}
 ANSWER (secret, NEVER say it): ${info.a}${prev ? '\n\nEXPLANATIONS SHE ALREADY SAW AND DID NOT UNDERSTAND (do not repeat them; explain differently):\n' + prev : ''}`;
 }
 
-function mathParentSystem(info) {
-  return `You help a Korean mom teach her 3rd-grade daughter (9-10 years old) a math problem from a workbook (눈높이 수학 등). The parents are not teachers and feel they explain badly. Write in Korean, polite 해요체, short and practical.
+function mathParentSystem(info, name) {
+  name = name || '벨라';
+  return `You help a Korean mom teach her 3rd-grade daughter ${name} (9-10 years old) a math problem from a workbook (눈높이 수학 등). The parents are not teachers and feel they explain badly. Write in Korean, polite 해요체, short and practical.
 - answer: the final answer (for the mom only), with unit.
 - concept: 1-2 sentences: what concept this problem checks, with the 3rd-grade unit name, and why children find it hard.
-- cards: 3-5 steps of HOW to teach it. text = what to do with the child (use real objects at home when helpful: 사탕, 동전, 색종이, 블록...). say = an example of exactly what the mom can say to her child (one or two short sentences, child-friendly, NOT revealing the answer; the child should find it). tip = one short tip (e.g. "아이가 먼저 말하게 기다려 주세요"). pic: optional picture (see PICTURES), kind "none" if not needed.
+- cards: 3-5 steps of HOW to teach it. text = what to do with the child (use real objects at home when helpful: 사탕, 동전, 색종이, 블록...). say = an example of exactly what the mom can say to her child, in warm Korean 반말, sometimes using her name (e.g. "${name}야, ..."; one or two short sentences, child-friendly, NOT revealing the answer; the child should find it). tip = one short tip (e.g. "아이가 먼저 말하게 기다려 주세요"). pic: optional picture (see PICTURES), kind "none" if not needed.
 - mistakes: 2-3 common mistakes children make on this type of problem, each one short sentence.
 - check: one similar easier problem the mom can give to check understanding. check_answer: its answer.
 - Use only methods taught up to Korean 3rd grade (no algebra). Encourage patience; never suggest scolding.
@@ -1040,13 +1048,13 @@ async function mathExplain(ctx) {
   const mask = answerMasker(info);
   let r;
   if (parent) {
-    const out = await guarded(ctx, rec, () => askClaude(env, rec, mathParentSystem(info), [{role: 'user', content: 'Write the guide for the mom.'}], MATH_PARENT_SCHEMA, 5000, mathOpt(env, 'low')));
+    const out = await guarded(ctx, rec, () => askClaude(env, rec, mathParentSystem(info, ctx.name), [{role: 'user', content: 'Write the guide for the mom.'}], MATH_PARENT_SCHEMA, 5000, mathOpt(env, 'low')));
     r = {mode: 'parent', answer: info.a, concept: str(out.concept, 300),
       cards: (out.cards || []).slice(0, 6).map(c => ({text: str(c.text, 300), say: mask(str(c.say, 240)).s, tip: str(c.tip, 160), pic: cleanPic(c.pic, mask)})).filter(c => c.text),
       mistakes: (out.mistakes || []).slice(0, 4).map(x => str(x, 160)).filter(Boolean),
       check: str(out.check, 200), check_answer: str(out.check_answer, 80)};
   } else {
-    const out = await guarded(ctx, rec, () => askClaude(env, rec, mathKidSystem(level, info, prev, ctx.adult), [{role: 'user', content: 'Write the level ' + level + ' explanation cards.'}], MATH_EXPLAIN_SCHEMA, 6000, mathOpt(env, 'low')));
+    const out = await guarded(ctx, rec, () => askClaude(env, rec, mathKidSystem(level, info, prev, ctx.adult, ctx.name), [{role: 'user', content: 'Write the level ' + level + ' explanation cards.'}], MATH_EXPLAIN_SCHEMA, 6000, mathOpt(env, 'low')));
     let masked = 0;
     const cards = (out.cards || []).slice(0, 8).map(c => {
       const t = mask(str(c.text, 400)), sy = mask(str(c.say, 400));
@@ -1059,7 +1067,7 @@ async function mathExplain(ctx) {
       return {text: t.s, say: sy.s || t.s, pic: cleanPic(c.pic, mask), q: q.s, choices, correct, hint: choices.length ? str(c.hint, 160) : ''};
     }).filter(c => c.text);
     if (!cards.length) throw fail('ai', 'no cards');
-    r = {mode: 'kid', level, cards, closing: mask(str(out.closing, 160)).s || '이제 문제집에 직접 풀어 볼까요? 할 수 있어요!', masked};
+    r = {mode: 'kid', level, cards, closing: mask(str(out.closing, 160)).s || '이제 문제집에 직접 풀어 볼까? 할 수 있어!', masked};
   }
   if (rec) {
     rec.mathx = (rec.mathx || 0) + 1;
@@ -1117,7 +1125,7 @@ button{background:#ff7aa8;color:#fff;border:none;cursor:pointer}
 .sum{background:#f0f7ff;border-radius:8px;padding:8px;margin-top:6px;font-size:14px}
 .money b{font-size:20px;color:#e0457b}.low{color:#c00;font-weight:700}
 details summary{cursor:pointer}
-</style></head><body><header>🦊 Bella · 가족 대화 · 🧮 수학 기록</header><main>
+</style></head><body><header>👧 Bella · 가족 대화 · 🧮 수학 기록</header><main>
 <div class="card"><input id="code" type="password" placeholder="부모 코드" style="width:150px">
 <select id="days"><option value="1">오늘</option><option value="3">3일</option><option value="7" selected>7일</option><option value="14">14일</option><option value="30">30일</option></select>
 <select id="who"><option value="">가족 모두</option><option value="kid">👧 딸</option><option value="dad">👨 아빠</option><option value="mom">👩 엄마</option></select>
@@ -1141,7 +1149,7 @@ $('#go').onclick=async()=>{
       (u.credit?' · 충전 후 '+usd(u.sinceCredit)+' / '+usd(u.credit)+'<br>남은 금액(추정) <b>'+usd(u.left)+'</b>'+(u.low?' <span class="low">— 곧 충전이 필요해요</span>':''):'<br><span class="t">CREDIT_USD를 넣으면 남은 금액도 보여요</span>')+
       '<div class="t">한 사람 하루 '+d.limits.person+'번 (+'+d.limits.step+'번씩 더 하기) · 가족 전체 하루 최대 '+d.limits.max+'번</div></div>';
     const who=$('#who').value;
-    $('#msg').textContent=d.days.length?'':'이 기간에 AI 토비 대화·수학 풀이가 없어요.';
+    $('#msg').textContent=d.days.length?'':'이 기간에 AI 친구 대화·수학 풀이가 없어요.';
     $('#out').innerHTML=d.days.map(day=>{
       const ss=Object.values(day.sessions||{}).filter(s=>!who||(s.who||'kid')===who).sort((a,b)=>b.t-a.t);
       const pp=Object.entries(day.people||{}).map(([k,p])=>(d.who[k]||k)+' '+p.turns+'번').join(' · ')+(day.math?' · 🧮 수학 '+day.math+'문제':'');
@@ -1157,7 +1165,7 @@ $('#go').onclick=async()=>{
         const sum=s.summary?'<div class="sum">🌟 '+esc(s.summary.praise)+(s.summary.better||[]).map(x=>'<div>✏️ '+esc(x.said)+' → <b>'+esc(x.better)+'</b> '+esc(x.ko)+'</div>').join('')+(s.summary.words&&s.summary.words.length?'<div>📒 '+s.summary.words.map(w=>esc(w.en)+'('+esc(w.ko)+')').join(', ')+'</div>':'')+'<div>👉 '+esc(s.summary.tip)+'</div></div>':'';
         const fx=(s.fixes||[]).map(x=>'<div class="fix">💡 '+esc(x.said)+' → <b>'+esc(x.better)+'</b> '+esc(x.ko)+'</div>').join('');
         return '<div class="s"><details><summary>'+esc(d.who[s.who||'kid']||'')+' · <b>'+esc(d.scenes[s.scene]||s.scene)+'</b> '+(LV[s.level]||'')+' <span class="t">'+hm+' · 대답 '+kids+'번</span></summary>'+
-          s.lines.map(x=>'<div class="l'+(x.w==='c'?' c':'')+'">'+(x.w==='c'?me+' ':'🦊 ')+esc(x.x)+'</div>').join('')+fx+'</details>'+sum+'</div>';
+          s.lines.map(x=>'<div class="l'+(x.w==='c'?' c':'')+'">'+(x.w==='c'?me+' ':'🤖 ')+esc(x.x)+'</div>').join('')+fx+'</details>'+sum+'</div>';
       }).join(''):'<span class="t">대화 없음</span>')+'</div>';
     }).join('');
   }catch(e){$('#msg').textContent='연결 오류: '+e.message;}

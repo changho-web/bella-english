@@ -81,7 +81,7 @@ label.set{display:block;margin:12px 0 4px;font-weight:700;font-size:15px}
 </head>
 <body>
 <header>
-  <h1>🦊 Bella Math</h1>
+  <h1>👧 Bella Math</h1>
   <button class="hb" id="whoBtn">👧</button>
   <button class="hb" id="setBtn" aria-label="설정">⚙️</button>
 </header>
@@ -89,7 +89,7 @@ label.set{display:block;margin:12px 0 4px;font-weight:700;font-size:15px}
 
 <!-- 처음 화면 -->
 <section id="home">
-  <div class="hello" style="margin:6px 0 10px"><div class="fox">🦊</div><div class="bubble" id="helloMsg">막히는 문제가 있어요? 사진을 찍어 주면 토비가 푸는 방법을 알려 줄게요!</div></div>
+  <div class="hello" style="margin:6px 0 10px"><div class="fox">👧</div><div class="bubble" id="helloMsg">벨라야, 막히는 문제가 있어? 사진을 찍어 주면 푸는 방법을 알려 줄게!</div></div>
   <button class="big" id="camBtn">📷 문제 찍기</button>
   <button class="big white" id="galBtn">🖼️ 사진에서 고르기</button>
   <input type="file" id="camIn" accept="image/*" capture="environment" hidden>
@@ -102,8 +102,8 @@ label.set{display:block;margin:12px 0 4px;font-weight:700;font-size:15px}
 <!-- 자르기 -->
 <section id="crop">
   <div class="card" style="padding:12px">
-    <b>✂️ 문제 하나만 손가락으로 네모를 그려 주세요</b>
-    <div class="sub" style="margin:4px 0 8px">네모 안을 끌면 옮겨지고, 모서리를 끌면 크기가 바뀌어요.</div>
+    <b>✂️ 문제 하나만 손가락으로 네모를 그려 줘</b>
+    <div class="sub" style="margin:4px 0 8px">네모 안을 끌면 옮겨지고, 모서리를 끌면 크기가 바뀌어.</div>
     <div id="cropWrap"><canvas id="cropCv"></canvas></div>
     <div class="row" style="margin-top:10px">
       <button class="sm" id="rotBtn">↻ 돌리기</button>
@@ -115,13 +115,13 @@ label.set{display:block;margin:12px 0 4px;font-weight:700;font-size:15px}
 </section>
 
 <!-- 기다리기 -->
-<section id="wait"><div class="wait"><div class="fox">🦊</div><p id="waitMsg" style="font-size:20px">문제를 읽고 있어요...</p><p class="sub" id="waitSub"></p></div></section>
+<section id="wait"><div class="wait"><div class="fox">👧</div><p id="waitMsg" style="font-size:20px">문제를 읽고 있어...</p><p class="sub" id="waitSub"></p></div></section>
 
 <!-- 문제 확인 -->
 <section id="confirm">
   <div class="card">
     <img id="cfImg" class="thumb" alt="">
-    <div class="sub">토비가 읽은 문제예요</div>
+    <div class="sub">사진에서 읽은 문제</div>
     <div class="row" style="align-items:flex-start;gap:8px;margin-top:4px">
       <div class="prob" id="cfProb" style="flex:1"></div>
       <button class="spk" id="cfSpk" style="flex:0 0 52px">🔊</button>
@@ -129,9 +129,9 @@ label.set{display:block;margin:12px 0 4px;font-weight:700;font-size:15px}
     <div class="sub" id="cfTopic" style="margin-top:6px"></div>
     <div class="note" id="cfNote" style="display:none"></div>
   </div>
-  <div id="cfAsk" style="font-size:19px;text-align:center;margin:6px 0">이 문제가 맞아요?</div>
+  <div id="cfAsk" style="font-size:19px;text-align:center;margin:6px 0">이 문제 맞아?</div>
   <div id="cfKid">
-    <button class="big green" id="cfYes">✅ 맞아요! 설명해 주세요</button>
+    <button class="big green" id="cfYes">✅ 맞아! 설명해 줘</button>
   </div>
   <div id="cfMom" style="display:none">
     <button class="big pink" id="cfTeach">👩 가르치는 방법 + 정답 보기</button>
@@ -162,8 +162,8 @@ label.set{display:block;margin:12px 0 4px;font-weight:700;font-size:15px}
     <button class="big" id="nextBtn" style="flex:1;margin:0">다음 ▶</button>
   </div>
   <div id="exEnd" style="display:none">
-    <button class="big green" id="gotIt">😊 이해했어요!</button>
-    <button class="big orange" id="notYet">🤔 잘 모르겠어요</button>
+    <button class="big green" id="gotIt">😊 이해했어!</button>
+    <button class="big orange" id="notYet">🤔 잘 모르겠어</button>
     <button class="sm" id="backCard" style="width:100%">◀ 설명 다시 보기</button>
   </div>
 </section>
@@ -187,8 +187,8 @@ label.set{display:block;margin:12px 0 4px;font-weight:700;font-size:15px}
 <section id="done">
   <div class="card" style="text-align:center">
     <div class="party">🎉⭐🎉</div>
-    <p style="font-size:22px;font-weight:700" id="doneMsg">잘했어요!</p>
-    <p style="font-size:19px">이제 문제집에 직접 풀어 봐요.<br>토비는 할 수 있다고 믿어요! 💪</p>
+    <p style="font-size:22px;font-weight:700" id="doneMsg">잘했어!</p>
+    <p style="font-size:19px" id="doneSub">이제 문제집에 직접 풀어 봐!</p>
   </div>
   <button class="big" id="doneNext">📷 다음 문제 찍기</button>
   <button class="sm" id="doneHome" style="width:100%">🏠 처음으로</button>
@@ -197,9 +197,9 @@ label.set{display:block;margin:12px 0 4px;font-weight:700;font-size:15px}
 <!-- 엄마랑 같이 -->
 <section id="stuck">
   <div class="card" style="text-align:center">
-    <div style="font-size:60px">🦊🤗</div>
-    <p style="font-size:21px;font-weight:700">끝까지 생각해 본 것만으로도 정말 멋져요!</p>
-    <p style="font-size:18px">이 문제는 엄마랑 같이 보면 좋겠어요.<br>엄마에게 이 화면을 보여 주세요.</p>
+    <div style="font-size:60px">👧🤗</div>
+    <p style="font-size:21px;font-weight:700" id="stuckMsg">끝까지 생각해 본 것만으로도 정말 멋져!</p>
+    <p style="font-size:18px">이 문제는 엄마랑 같이 보자.<br>엄마에게 이 화면을 보여 줘.</p>
   </div>
   <button class="big pink" id="stuckMom">👩 엄마가 볼게요</button>
   <button class="sm" id="stuckHome" style="width:100%">🏠 처음으로</button>
@@ -214,6 +214,11 @@ label.set{display:block;margin:12px 0 4px;font-weight:700;font-size:15px}
     <label class="set" for="sCode">가족 코드</label><input type="password" id="sCode">
     <button class="big" id="sTest">🔌 연결 테스트</button>
     <div id="sMsg" class="sub"></div>
+  </div>
+  <div class="card">
+    <b>👧 아이 이름</b>
+    <div class="sub">설명할 때 이 이름을 불러 줘요. (예: "벨라는 어떻게 생각해?")</div>
+    <input type="text" id="sName" maxlength="10" placeholder="벨라" style="margin-top:8px">
   </div>
   <div class="card">
     <b>🔊 읽어 주기</b>
@@ -236,7 +241,7 @@ label.set{display:block;margin:12px 0 4px;font-weight:700;font-size:15px}
     <button class="sm" id="sClear" style="margin-top:8px">이 기기의 최근 문제 지우기</button>
   </div>
   <button class="big white" id="sBack">◀ 돌아가기</button>
-  <p class="sub" style="text-align:center">Bella Math v1 · 2026-11-18</p>
+  <p class="sub" style="text-align:center">Bella Math v2 · 2026-11-19</p>
 </section>
 </main>
 
@@ -257,7 +262,11 @@ const lsSet = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catc
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ---------- 설정 ---------- */
-let S = Object.assign({url:'', code:'', auto:true, rate:0.95, voice:'', who:'kid'}, lsGet('bm_settings', {}));
+let S = Object.assign({url:'', code:'', auto:true, rate:0.95, voice:'', who:'kid', kidName:'벨라'}, lsGet('bm_settings', {}));
+const N = () => S.kidName || '벨라';
+const bat = w => { const c = String(w).charCodeAt(String(w).length - 1) - 0xAC00; return c >= 0 && c <= 11171 && c % 28 !== 0; };   // 받침 있음?
+const NYA = () => N() + (bat(N()) ? '아' : '야');            // 벨라야 / 지민아
+const NNEUN = () => N() + (bat(N()) ? '은' : '는');          // 벨라는 / 지민은
 if(!S.url || !S.code){                                   // 같은 기기에 영어 앱이 있으면 연결 정보를 가져옴
   const sh = lsGet('bella_shared', null) || lsGet('bella_settings', null);
   if(sh && sh.aiUrl && sh.aiCode){ S.url = sh.aiUrl; S.code = sh.aiCode; }
@@ -282,7 +291,7 @@ function renderWho(){
   $('#whoBtn').textContent = MOM() ? '👩 엄마' : '👧 아이';
   $('#helloMsg').textContent = MOM()
     ? '문제를 찍으면 정답과 아이에게 설명하는 방법을 알려 드려요. 아이용 설명도 같이 볼 수 있어요.'
-    : '막히는 문제가 있어요? 사진을 찍어 주면 토비가 푸는 방법을 알려 줄게요!';
+    : NYA() + ', 막히는 문제가 있어? 사진을 찍어 주면 푸는 방법을 알려 줄게!';
 }
 function renderHome(){
   renderWho();
@@ -331,7 +340,7 @@ async function api(path, body, timeoutMs){
   let res;
   try{
     res = await fetch(S.url.replace(/\/+$/, '') + path, {method:'POST', headers:{'Content-Type':'application/json'}, signal: ctl.signal,
-      body: JSON.stringify(Object.assign({code: S.code, who: S.who}, body))});
+      body: JSON.stringify(Object.assign({code: S.code, who: S.who, name: N()}, body))});
   }catch(e){ throw {kind: e.name === 'AbortError' ? 'timeout' : 'net'}; }
   finally{ clearTimeout(tm); }
   const d = await res.json().catch(() => ({}));
@@ -341,8 +350,8 @@ async function api(path, body, timeoutMs){
 function errMsg(e){
   const k = e && e.kind;
   return ({setup:'서버가 아직 연결되지 않았어요. 엄마·아빠에게 ⚙️ 설정을 부탁해요.', net:'인터넷 연결을 확인해 주세요.', timeout:'시간이 너무 오래 걸렸어요. 다시 해 볼까요?',
-    code:'가족 코드가 달라요. ⚙️ 설정을 확인해 주세요.', math_limit:'오늘은 문제를 많이 풀었어요! 내일 또 해요. (하루 ' + (e.max || '') + '문제)',
-    busy:'토비가 지금 바빠요. 잠시 후 다시 해 주세요.', credit:'AI 사용 금액이 부족해요. 엄마·아빠에게 알려 주세요.', apikey:'서버의 API 키를 확인해 주세요.',
+    code:'가족 코드가 달라요. ⚙️ 설정을 확인해 주세요.', math_limit:'오늘은 문제를 많이 풀었어! 내일 또 하자. (하루 ' + (e.max || '') + '문제)',
+    busy:'지금 조금 바빠. 잠깐 뒤에 다시 해 줘.', credit:'AI 사용 금액이 부족해요. 엄마·아빠에게 알려 주세요.', apikey:'서버의 API 키를 확인해 주세요.',
     not_configured:'서버 비밀값(ANTHROPIC_API_KEY, FAMILY_CODE)을 확인해 주세요.', not_found:'서버를 수학 기능이 있는 새 버전으로 바꿔 주세요.',
     too_big:'사진이 너무 커요. 문제 부분만 잘라 주세요.', sealed:'이 문제는 다시 찍어 주세요.', refusal:'이 사진은 설명할 수 없어요.'}[k]) || ('잠시 후 다시 해 주세요. (' + (k || '오류') + ')');
 }
@@ -436,13 +445,13 @@ $('#cropOk').onclick = async () => {
 };
 async function readProblem(body, fullImg, thumb, keep){
   const id = keep ? keep.id : newId();
-  wait('문제를 읽고 있어요...', '사진 속 숫자를 꼼꼼히 보는 중이에요');
+  wait('문제를 읽고 있어...', '사진 속 숫자를 꼼꼼히 보는 중이야');
   try{
     const d = await api('/mathread', Object.assign({sid: id}, body), 120000);
     if(d.counts) lsSet('bm_counts', Object.assign({day: new Date().toDateString()}, d.counts));
     if(d.kind !== 'math'){
       show('home');
-      toast(d.kind === 'not_math' ? '수학 문제가 안 보여요. 문제를 다시 찍어 주세요.' : '글씨가 잘 안 보여요. 밝은 곳에서 문제를 가까이 찍어 주세요.', 4000);
+      toast(d.kind === 'not_math' ? '수학 문제가 안 보여. 문제를 다시 찍어 줘.' : '글씨가 잘 안 보여. 밝은 곳에서 문제를 가까이 찍어 줘.', 4000);
       return;
     }
     solved = {};
@@ -456,6 +465,7 @@ function showConfirm(){
   $('#cfProb').textContent = cur.problem;
   $('#cfTopic').textContent = cur.topic ? '📘 ' + cur.topic : '';
   $('#cfNote').style.display = cur.note ? 'block' : 'none'; $('#cfNote').textContent = cur.note ? '💡 ' + cur.note : '';
+  $('#cfAsk').textContent = MOM() ? '이 문제가 맞나요?' : '이 문제 맞아?';
   $('#cfKid').style.display = MOM() ? 'none' : 'block'; $('#cfMom').style.display = MOM() ? 'block' : 'none';
   $('#editBox').style.display = 'none';
   show('confirm');
@@ -484,7 +494,7 @@ $('#histList').onclick = e => {
 
 /* ---------- 아이용 설명 ---------- */
 const LV_NAME = {1:'1단계 · 기본 설명', 2:'2단계 · 더 쉽게', 3:'3단계 · 그림으로', 4:'4단계 · 같이 한 걸음씩'};
-const LV_WAIT = {1:'토비가 푸는 방법을 생각하고 있어요...', 2:'더 쉽게 설명할 방법을 찾고 있어요...', 3:'그림으로 설명을 준비하고 있어요...', 4:'같이 한 걸음씩 풀 준비를 하고 있어요...'};
+const LV_WAIT = {1:'푸는 방법을 생각하고 있어...', 2:'더 쉽게 설명할 방법을 찾고 있어...', 3:'그림으로 설명을 준비하고 있어...', 4:'같이 한 걸음씩 풀 준비를 하고 있어...'};
 let lvNow = 1, idx = 0;
 async function startLevel(lv){
   if(cur.levels[lv]) return openLevel(lv, 0);
@@ -517,10 +527,10 @@ function renderCard(){
   $('#exEnd').style.display = end ? 'block' : 'none';
   tries = 0;
   if(end){
-    $('#exBody').innerHTML = '<div style="text-align:center;font-size:48px">🦊</div><div class="t" style="text-align:center">' + esc(L.closing) + '</div>' +
-      '<div class="sub" style="text-align:center">토비 설명을 이해했나요?</div>';
-    $('#notYet').textContent = lvNow < 4 ? '🤔 잘 모르겠어요 (더 쉽게)' : '🤔 그래도 잘 모르겠어요';
-    if(S.auto) speak(L.closing + ' 토비 설명을 이해했나요?', $('#exSpk'));
+    $('#exBody').innerHTML = '<div style="text-align:center;font-size:48px">👧</div><div class="t" style="text-align:center">' + esc(L.closing) + '</div>' +
+      '<div class="sub" style="text-align:center">' + esc(NYA()) + ', 설명을 이해했어?</div>';
+    $('#notYet').textContent = lvNow < 4 ? '🤔 잘 모르겠어 (더 쉽게)' : '🤔 그래도 잘 모르겠어';
+    if(S.auto) speak(L.closing + ' ' + NYA() + ', 설명을 이해했어?', $('#exSpk'));
     return;
   }
   const c = L.cards[idx], key = lvNow + ':' + idx;
@@ -532,7 +542,7 @@ function renderCard(){
   $('#prevBtn').style.visibility = idx > 0 ? 'visible' : 'hidden';
   const locked = c.q && !solved[key];
   $('#nextBtn').disabled = !!locked; $('#nextBtn').style.opacity = locked ? .45 : 1;
-  $('#nextBtn').textContent = idx === n - 1 ? '다 봤어요 ▶' : '다음 ▶';
+  $('#nextBtn').textContent = idx === n - 1 ? '다 봤어 ▶' : '다음 ▶';
   if(S.auto) speak(c.say + (c.q ? ' ' + c.q : ''), $('#exSpk'));
 }
 $('#exBody').onclick = e => {
@@ -541,15 +551,15 @@ $('#exBody').onclick = e => {
   if(solved[key]) return;
   if(i === c.correct){
     solved[key] = true; b.classList.add('ok');
-    $('#hint').textContent = ['🎉 맞았어요!', '👍 잘했어요!', '⭐ 정답이에요!'][Math.floor(Math.random() * 3)];
+    $('#hint').textContent = ['🎉 맞았어!', '👍 잘했어, ' + N() + '!', '⭐ 정답이야!'][Math.floor(Math.random() * 3)];
     $('#hint').style.color = 'var(--green)';
     $('#nextBtn').disabled = false; $('#nextBtn').style.opacity = 1;
-    speak('맞았어요! 잘했어요.');
+    speak('맞았어! 잘했어, ' + N() + '!');
   }else{
     tries++; b.classList.remove('no'); void b.offsetWidth; b.classList.add('no');
-    $('#hint').textContent = '💡 ' + (c.hint || '다시 한번 생각해 볼까요?') + (tries >= 2 ? ' (정답은 초록색이에요)' : '');
+    $('#hint').textContent = '💡 ' + (c.hint || '다시 한번 생각해 볼까?') + (tries >= 2 ? ' (정답은 초록색이야)' : '');
     if(tries >= 2){ solved[key] = true; document.querySelectorAll('.ch')[c.correct].classList.add('ok'); $('#nextBtn').disabled = false; $('#nextBtn').style.opacity = 1; }
-    speak(c.hint || '다시 한번 생각해 볼까요?');
+    speak(c.hint || '다시 한번 생각해 볼까?');
   }
 };
 $('#nextBtn').onclick = () => { if($('#nextBtn').disabled) return; idx++; renderCard(); window.scrollTo(0, 0); };
@@ -562,13 +572,15 @@ $('#exSpk').onclick = () => {
 };
 $('#gotIt').onclick = () => {
   cur.result = 'understood'; syncHist(); done('understood');
-  $('#doneMsg').textContent = ['잘했어요! 🌟', '최고예요! 💯', '멋져요! ✨'][Math.floor(Math.random() * 3)];
-  show('done'); speak($('#doneMsg').textContent + ' 이제 문제집에 직접 풀어 봐요. 할 수 있어요!');
+  $('#doneMsg').textContent = ['잘했어, ' + N() + '! 🌟', '최고야, ' + N() + '! 💯', '멋져, ' + N() + '! ✨'][Math.floor(Math.random() * 3)];
+  $('#doneSub').innerHTML = '이제 문제집에 직접 풀어 봐!<br>' + esc(NNEUN()) + ' 할 수 있어! 💪';
+  show('done'); speak($('#doneMsg').textContent + ' 이제 문제집에 직접 풀어 봐. ' + NNEUN() + ' 할 수 있어!');
 };
 $('#notYet').onclick = () => {
   if(lvNow < 4) return startLevel(lvNow + 1);
   cur.result = 'stuck'; syncHist(); done('stuck');
-  show('stuck'); speak('끝까지 생각해 본 것만으로도 정말 멋져요! 이 문제는 엄마랑 같이 보면 좋겠어요.');
+  $('#stuckMsg').textContent = NYA() + ', 끝까지 생각해 본 것만으로도 정말 멋져!';
+  show('stuck'); speak(NYA() + ', 끝까지 생각해 본 것만으로도 정말 멋져! 이 문제는 엄마랑 같이 보자.');
 };
 function done(result){ api('/mathdone', {sid: cur.id, result, level: lvNow}).catch(() => {}); }
 $('#doneNext').onclick = () => { show('home'); $('#camBtn').click(); };
@@ -624,7 +636,7 @@ $('#whoBtn').onclick = () => {
 $('#setBtn').onclick = () => {
   if(screen === 'settings') return show('home');
   const go = () => {
-    $('#sUrl').value = S.url; $('#sCode').value = S.code; $('#sAuto').checked = !!S.auto; $('#sRate').value = S.rate; $('#sRateV').textContent = (+S.rate).toFixed(2);
+    $('#sUrl').value = S.url; $('#sCode').value = S.code; $('#sName').value = S.kidName || ''; $('#sAuto').checked = !!S.auto; $('#sRate').value = S.rate; $('#sRateV').textContent = (+S.rate).toFixed(2);
     $('#sPin').value = ''; $('#sPin').placeholder = lsGet('bm_pin', '') ? '●●●● (바꾸려면 새로 입력)' : '숫자 4자리'; $('#sMsg').textContent = '';
     loadVoices(); show('settings');
   };
@@ -634,9 +646,10 @@ $('#sBack').onclick = () => show('home');
 const saveConn = () => { S.url = $('#sUrl').value.trim().replace(/\/+$/, ''); S.code = $('#sCode').value.trim(); save(); };
 $('#sUrl').onchange = $('#sCode').onchange = saveConn;
 $('#sAuto').onchange = () => { S.auto = $('#sAuto').checked; save(); };
+$('#sName').onchange = () => { S.kidName = $('#sName').value.trim().slice(0, 10) || '벨라'; save(); };
 $('#sRate').oninput = () => { S.rate = +$('#sRate').value; $('#sRateV').textContent = S.rate.toFixed(2); save(); };
 $('#sVoice').onchange = () => { S.voice = $('#sVoice').value; save(); };
-$('#sListen').onclick = () => speak('안녕! 나는 토비야. 324 곱하기 3을 같이 생각해 볼까?');
+$('#sListen').onclick = () => speak('안녕, ' + N() + '! 324 곱하기 3을 같이 생각해 볼까?');
 $('#sPinSave').onclick = () => { const v = $('#sPin').value.trim(); if(v && !/^\d{4,8}$/.test(v)) return toast('숫자 4자리 이상으로 정해 주세요'); lsSet('bm_pin', v); $('#sPin').value = ''; toast(v ? '🔒 비밀번호를 저장했어요' : '비밀번호를 지웠어요'); };
 $('#sParent').onclick = () => { if(S.url) window.open(S.url.replace(/\/+$/, '') + '/parent', '_blank'); };
 $('#sClear').onclick = () => { hist = []; lsSet('bm_hist', hist); toast('최근 문제를 지웠어요'); };
