@@ -33,6 +33,7 @@
    - 문제 사진 읽기(/mathread) → 단계별 설명(/mathexplain). 정답은 앱으로 보내지 않음(암호화해서 왕복)
    - 설명에 정답이 섞이면 서버가 □로 가림. 사진은 저장하지 않음
    - 모델: MATH_MODEL(기본 claude-sonnet-5-5, 사진 읽기·계산 정확도 때문), 하루 문제 수 MATH_DAILY(기본 40, 가족 전체)
+   - 설명 읽어 주기(2026-11-19): 4-2의 Azure 키로 한국어 여자 선생님 목소리(지민·서현·유진·선희·순복). 없으면 앱이 기기 목소리로
    ===================================================================== */
 
 const DEFAULT_MODEL = 'claude-haiku-5-5';
@@ -379,7 +380,7 @@ function corsHeaders(origin, env) {
   const extra = String(env.EXTRA_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
   if (!ORIGINS.concat(extra).includes(origin)) return {};
   return {'Access-Control-Allow-Origin': origin, 'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Max-Age': '86400', 'Vary': 'Origin'};
+    'Access-Control-Allow-Headers': 'Content-Type', 'Access-Control-Expose-Headers': 'x-voice-hd', 'Access-Control-Max-Age': '86400', 'Vary': 'Origin'};
 }
 function json(obj, status, headers) {
   return new Response(JSON.stringify(obj), {status, headers: Object.assign({'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store'}, headers || {})});
@@ -543,20 +544,37 @@ async function ping(ctx) {
       img: t ? (t.img || 0) : 0, imgMax: num(env.COLORING_DAILY, COLORING_DAILY)}}, counts(rec, ctx.who, L)), 200, ctx.cors);
 }
 
-const AZ_VOICES = {ana: 'en-US-AnaNeural'};
-async function azureTts(env, text, id) {
+/* Azure 목소리: 영어 앱 여자아이(Ana) + 수학 앱 한국어 여자 선생님 목소리 */
+const AZ_VOICES = {ana: 'en-US-AnaNeural',
+  jimin: 'ko-KR-JiMinNeural', seohyeon: 'ko-KR-SeoHyeonNeural', yujin: 'ko-KR-YuJinNeural', sunhi: 'ko-KR-SunHiNeural', soonbok: 'ko-KR-SoonBokNeural'};
+const HD_SUFFIX = [':DragonHDOmniLatestNeural', ':DragonHDLatestNeural'];
+const hdMiss = {};                                     // 이 지역에서 HD가 안 되는 목소리 (잠깐 기억)
+async function azureTts(env, text, id, rate, pitch, hd) {
+  if (hd && !hdMiss[id]) {
+    for (const suf of HD_SUFFIX) {
+      const r = await azureTts1(env, text, (AZ_VOICES[id] || AZ_VOICES.ana).replace(/Neural$/, '') + suf, rate, pitch);
+      if (r) return Object.assign(r, {hd: true});
+    }
+    hdMiss[id] = true;
+  }
+  return azureTts1(env, text, AZ_VOICES[id] || AZ_VOICES.ana, rate, pitch);
+}
+async function azureTts1(env, text, name, rate, pitch) {
   if (!env.AZURE_SPEECH_KEY || !env.AZURE_SPEECH_REGION) return null;
-  const name = AZ_VOICES[id] || AZ_VOICES.ana;
+  const lang = name.slice(0, 5);
   const esc = t => t.replace(/[<>&'"]/g, c => ({'<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;'}[c]));
+  const r0 = Math.max(-40, Math.min(30, Math.round(+rate || 0))), p0 = Math.max(-15, Math.min(15, Math.round(+pitch || 0)));
+  const inner = r0 || p0 ? `<prosody rate="${r0 >= 0 ? '+' : ''}${r0}%" pitch="${p0 >= 0 ? '+' : ''}${p0}%">${esc(text)}</prosody>` : esc(text);
   try {
     const r = await fetch('https://' + String(env.AZURE_SPEECH_REGION).trim() + '.tts.speech.microsoft.com/cognitiveservices/v1', {
       method: 'POST',
       headers: {'Ocp-Apim-Subscription-Key': String(env.AZURE_SPEECH_KEY).trim(), 'Content-Type': 'application/ssml+xml',
         'X-Microsoft-OutputFormat': 'audio-24khz-48kbitrate-mono-mp3', 'User-Agent': 'bella-english'},
-      body: `<speak version="1.0" xml:lang="en-US"><voice name="${name}">${esc(text)}</voice></speak>`
+      body: `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="${lang}"><voice name="${name}">${inner}</voice></speak>`
     });
     if (!r.ok) return null;
-    return await r.arrayBuffer();
+    const buf = await r.arrayBuffer();
+    return buf.byteLength > 200 ? {buf} : null;
   } catch (e) { return null; }
 }
 
@@ -565,10 +583,12 @@ async function tts(ctx) {
   const {b, env, cors} = ctx;
   const text = str(b.text, 500);
   if (!text) return json({error: 'bad_request'}, 400, cors);
-  if (String(b.voice || '').startsWith('az:')) {                 // Azure 여자아이 목소리 (Ana)
-    const r = await azureTts(env, text, b.voice.slice(3));
-    if (r) return new Response(r, {headers: Object.assign({'content-type': 'audio/mpeg', 'cache-control': 'no-store'}, cors)});
-    b.voice = 'a1:stella';                                       // Azure가 안 되면 Stella로
+  if (String(b.voice || '').startsWith('az:')) {                 // Azure: 영어 Ana / 수학 한국어 선생님 목소리
+    const id = b.voice.slice(3), ko = /^ko-/.test(AZ_VOICES[id] || '');
+    const r = await azureTts(env, text, id, b.rate, b.pitch, ko && !!b.hd);
+    if (r) return new Response(r.buf, {headers: Object.assign({'content-type': 'audio/mpeg', 'cache-control': 'no-store', 'x-voice-hd': r.hd ? '1' : '0'}, cors)});
+    if (ko) return json({error: env.AZURE_SPEECH_KEY ? 'tts' : 'no_azure'}, 503, cors);   // 한국어는 앱이 기기 목소리로
+    b.voice = 'a1:stella';                                       // Ana가 안 되면 Stella로
   }
   if (!env.AI) return json({error: 'no_tts'}, 503, cors);
   const [m, sp] = String(b.voice || 'a2:luna').split(':');

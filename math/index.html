@@ -224,9 +224,14 @@ label.set{display:block;margin:12px 0 4px;font-weight:700;font-size:15px}
     <b>🔊 읽어 주기</b>
     <label style="display:flex;align-items:center;gap:8px;margin:10px 0"><input type="checkbox" id="sAuto" style="width:22px;height:22px"> 설명이 나오면 자동으로 읽어 주기</label>
     <label class="set" for="sRate">빠르기 <span id="sRateV"></span></label><input type="range" id="sRate" min="0.6" max="1.3" step="0.05" style="width:100%">
-    <label class="set" for="sVoice">목소리</label><select id="sVoice" style="width:100%;font-size:16px;padding:8px;border-radius:12px"></select>
-    <button class="sm" id="sListen" style="margin-top:8px">▶ 들어보기</button>
-    <div class="sub" id="sVoiceMsg"></div>
+    <label class="set">목소리 고르기 <span class="sub">(▶를 눌러 들어 보고, 마음에 드는 목소리를 고르세요)</span></label>
+    <div id="vList"></div>
+    <label style="display:flex;align-items:center;gap:8px;margin:10px 0"><input type="checkbox" id="sHd" style="width:22px;height:22px"> ✨ HD 목소리 (더 자연스러움 · 안 되면 기본으로)</label>
+    <label class="set" for="sTestTx">들어 볼 문장</label>
+    <textarea id="sTestTx" style="min-height:90px;font-size:16px"></textarea>
+    <div class="sub" id="sVoiceMsg" style="margin-top:6px"></div>
+    <details style="margin-top:8px"><summary class="sub">📱 기기 목소리 종류</summary>
+      <select id="sVoice" style="width:100%;font-size:16px;padding:8px;border-radius:12px;margin-top:6px"></select></details>
   </div>
   <div class="card">
     <b>👩 엄마 비밀번호</b>
@@ -241,7 +246,7 @@ label.set{display:block;margin:12px 0 4px;font-weight:700;font-size:15px}
     <button class="sm" id="sClear" style="margin-top:8px">이 기기의 최근 문제 지우기</button>
   </div>
   <button class="big white" id="sBack">◀ 돌아가기</button>
-  <p class="sub" style="text-align:center">Bella Math v2 · 2026-11-19</p>
+  <p class="sub" style="text-align:center">Bella Math v3 · 2026-11-19</p>
 </section>
 </main>
 
@@ -262,7 +267,7 @@ const lsSet = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catc
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ---------- 설정 ---------- */
-let S = Object.assign({url:'', code:'', auto:true, rate:0.95, voice:'', who:'kid', kidName:'벨라'}, lsGet('bm_settings', {}));
+let S = Object.assign({url:'', code:'', auto:true, rate:0.95, voice:'', who:'kid', kidName:'벨라', tts:'az:jimin', hd:true}, lsGet('bm_settings', {}));
 const N = () => S.kidName || '벨라';
 const bat = w => { const c = String(w).charCodeAt(String(w).length - 1) - 0xAC00; return c >= 0 && c <= 11171 && c % 28 !== 0; };   // 받침 있음?
 const NYA = () => N() + (bat(N()) ? '아' : '야');            // 벨라야 / 지민아
@@ -314,23 +319,76 @@ function loadVoices(){
   sel.value = S.voice;
   $('#sVoiceMsg').textContent = koVoices.length ? '' : '이 기기에서 한국어 목소리를 찾지 못했어요. 기기 설정 → 텍스트 음성 변환에서 한국어를 설치해 주세요.';
 }
-let speakBtn = null;
-function speak(text, btn){
-  if(!('speechSynthesis' in window) || !text) return;
+let speakBtn = null, speakTok = 0, audio = null, ttsWarned = false;
+const VOICES = [
+  ['az:jimin', '지민', '여자 목소리'], ['az:seohyeon', '서현', '여자 목소리'], ['az:yujin', '유진', '여자 목소리'],
+  ['az:sunhi', '선희', '여자 목소리'], ['az:soonbok', '순복', '여자 목소리'], ['device', '기기 목소리', '무료 · 폰에 들어 있는 목소리']];
+const SAMPLE = () => N() + '야, 이 문제는 사탕 12개를 친구 4명에게 똑같이 나눠 주는 문제야. 먼저 사탕을 한 개씩 차례대로 나눠 줘 볼까? 한 사람이 몇 개씩 받는지 세어 보면 돼. 아주 잘하고 있어! 마지막 계산은 ' + N() + '가 직접 해 볼까?';
+const ttsCache = new Map();
+async function serverAudio(text, voice){
+  const key = voice + '|' + (S.hd ? 1 : 0) + '|' + S.rate + '|' + text;
+  if(ttsCache.has(key)) return ttsCache.get(key);
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 20000);
+  try{
+    const res = await fetch(S.url.replace(/\/+$/, '') + '/tts', {method: 'POST', headers: {'Content-Type': 'application/json'}, signal: ctl.signal,
+      body: JSON.stringify({code: S.code, who: S.who, voice, hd: !!S.hd, text: text.slice(0, 480), rate: Math.round((+S.rate - 1) * 100), pitch: 2})});
+    if(!res.ok){ const d = await res.json().catch(() => ({})); throw {kind: d.error || 'http'}; }
+    const url = URL.createObjectURL(await res.blob());
+    const hd = res.headers.get('x-voice-hd');
+    if(ttsCache.size > 80){ const k = ttsCache.keys().next().value; URL.revokeObjectURL(ttsCache.get(k).url); ttsCache.delete(k); }
+    const r = {url, hd}; ttsCache.set(key, r); return r;
+  }finally{ clearTimeout(tm); }
+}
+async function speak(text, btn, voiceOverride){
+  if(!text) return;
   stopSpeak();
-  const u = new SpeechSynthesisUtterance(cleanSay(text));
+  const my = ++speakTok, say = cleanSay(text);
+  if(btn){ speakBtn = btn; btn.classList.add('on'); }
+  const done = () => { if(my !== speakTok) return; if(speakBtn) speakBtn.classList.remove('on'); speakBtn = null; };
+  const v = voiceOverride || S.tts;
+  if(v && v.startsWith('az:') && S.url && S.code){
+    try{
+      const r = await serverAudio(say, v);
+      if(my !== speakTok) return;
+      audio = new Audio(r.url); audio.onended = audio.onerror = done;
+      await audio.play();
+      return r;
+    }catch(e){
+      if(my !== speakTok) return;
+      if(!ttsWarned || voiceOverride){ ttsWarned = true; toast(e && e.kind === 'no_azure' ? '서버에 Azure 연결이 없어서 기기 목소리로 읽어요' : '서버 목소리가 잠깐 안 돼서 기기 목소리로 읽어요', 3000); }
+    }
+  }
+  deviceSpeak(say, done);
+}
+function prefetch(text){                                  // 다음 카드 목소리를 미리 만들어 둠 (기다림 줄이기)
+  if(text && S.tts && S.tts.startsWith('az:') && S.url && S.code) serverAudio(cleanSay(text), S.tts).catch(() => {});
+}
+function deviceSpeak(say, done){
+  if(!('speechSynthesis' in window)) return done();
+  const u = new SpeechSynthesisUtterance(say);
   u.lang = 'ko-KR'; u.rate = +S.rate || 0.95;
   const v = koVoices.find(x => x.voiceURI === S.voice) || koVoices.find(x => /google/i.test(x.name)) || koVoices[0];
   if(v) u.voice = v;
-  if(btn){ speakBtn = btn; btn.classList.add('on'); }
-  u.onend = u.onerror = () => { if(speakBtn) speakBtn.classList.remove('on'); speakBtn = null; };
+  u.onend = u.onerror = done;
   speechSynthesis.speak(u);
 }
-function stopSpeak(){ try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){} if(speakBtn) speakBtn.classList.remove('on'); speakBtn = null; }
+function stopSpeak(){
+  speakTok++;
+  try{ if('speechSynthesis' in window) speechSynthesis.cancel(); }catch(e){}
+  try{ if(audio){ audio.pause(); audio = null; } }catch(e){}
+  if(speakBtn) speakBtn.classList.remove('on'); speakBtn = null;
+}
+function renderVoices(){
+  $('#vList').innerHTML = VOICES.map(([id, name, desc]) =>
+    '<div class="hist" style="cursor:default"><label style="display:flex;align-items:center;gap:10px;flex:1;cursor:pointer">' +
+    '<input type="radio" name="vsel" value="' + id + '"' + (S.tts === id ? ' checked' : '') + ' style="width:22px;height:22px">' +
+    '<div><b>' + name + '</b><div class="sub">' + desc + '</div></div></label>' +
+    '<button class="spk" data-v="' + id + '" style="width:46px;height:46px;flex:0 0 46px;font-size:20px">▶</button></div>').join('');
+}
 function cleanSay(t){
   return String(t).replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '')
     .replace(/(\d+)\s*\/\s*(\d+)/g, '$2분의 $1').replace(/×/g, ' 곱하기 ').replace(/÷/g, ' 나누기 ')
-    .replace(/\s\+\s/g, ' 더하기 ').replace(/\s[−-]\s/g, ' 빼기 ').replace(/\s=\s/g, ' 는 ').replace(/□/g, ' 네모 ').replace(/\?/g, '');
+    .replace(/\s\+\s/g, ' 더하기 ').replace(/\s[−-]\s/g, ' 빼기 ').replace(/\s=\s/g, ' 는 ').replace(/□/g, ' 네모 ').replace(/[?](?=[?\d])/g, '').replace(/(?<=\d)[?]/g, '');   // 물음표 칸만 지우고 묻는 말의 ?는 살림
 }
 
 /* ---------- 서버 ---------- */
@@ -544,6 +602,7 @@ function renderCard(){
   $('#nextBtn').disabled = !!locked; $('#nextBtn').style.opacity = locked ? .45 : 1;
   $('#nextBtn').textContent = idx === n - 1 ? '다 봤어 ▶' : '다음 ▶';
   if(S.auto) speak(c.say + (c.q ? ' ' + c.q : ''), $('#exSpk'));
+  const nx = L.cards[idx + 1]; prefetch(nx ? nx.say + (nx.q ? ' ' + nx.q : '') : L.closing + ' ' + NYA() + ', 설명을 이해했어?');
 }
 $('#exBody').onclick = e => {
   const b = e.target.closest('.ch'); if(!b) return;
@@ -638,7 +697,7 @@ $('#setBtn').onclick = () => {
   const go = () => {
     $('#sUrl').value = S.url; $('#sCode').value = S.code; $('#sName').value = S.kidName || ''; $('#sAuto').checked = !!S.auto; $('#sRate').value = S.rate; $('#sRateV').textContent = (+S.rate).toFixed(2);
     $('#sPin').value = ''; $('#sPin').placeholder = lsGet('bm_pin', '') ? '●●●● (바꾸려면 새로 입력)' : '숫자 4자리'; $('#sMsg').textContent = '';
-    loadVoices(); show('settings');
+    loadVoices(); renderVoices(); $('#sHd').checked = !!S.hd; if(!$('#sTestTx').value) $('#sTestTx').value = SAMPLE(); show('settings');
   };
   lsGet('bm_pin', '') && !MOM() ? askMom(go) : go();
 };
@@ -649,7 +708,16 @@ $('#sAuto').onchange = () => { S.auto = $('#sAuto').checked; save(); };
 $('#sName').onchange = () => { S.kidName = $('#sName').value.trim().slice(0, 10) || '벨라'; save(); };
 $('#sRate').oninput = () => { S.rate = +$('#sRate').value; $('#sRateV').textContent = S.rate.toFixed(2); save(); };
 $('#sVoice').onchange = () => { S.voice = $('#sVoice').value; save(); };
-$('#sListen').onclick = () => speak('안녕, ' + N() + '! 324 곱하기 3을 같이 생각해 볼까?');
+$('#sHd').onchange = () => { S.hd = $('#sHd').checked; save(); };
+$('#vList').onchange = e => { if(e.target.name === 'vsel'){ S.tts = e.target.value; save(); toast('🔊 ' + VOICES.find(v => v[0] === S.tts)[1] + ' 목소리로 읽어요'); } };
+$('#vList').onclick = async e => {
+  const b = e.target.closest('[data-v]'); if(!b) return;
+  if(speakBtn === b) return stopSpeak();
+  const v = b.dataset.v, t = $('#sTestTx').value.trim() || SAMPLE();
+  $('#sVoiceMsg').textContent = v === 'device' ? '' : '목소리를 만드는 중...';
+  const r = await speak(t, b, v);
+  $('#sVoiceMsg').textContent = r ? (S.hd ? (r.hd === '1' ? '✨ HD 목소리예요' : 'HD가 안 돼서 기본 목소리예요') : '') : '';
+};
 $('#sPinSave').onclick = () => { const v = $('#sPin').value.trim(); if(v && !/^\d{4,8}$/.test(v)) return toast('숫자 4자리 이상으로 정해 주세요'); lsSet('bm_pin', v); $('#sPin').value = ''; toast(v ? '🔒 비밀번호를 저장했어요' : '비밀번호를 지웠어요'); };
 $('#sParent').onclick = () => { if(S.url) window.open(S.url.replace(/\/+$/, '') + '/parent', '_blank'); };
 $('#sClear').onclick = () => { hist = []; lsSet('bm_hist', hist); toast('최근 문제를 지웠어요'); };
